@@ -1,5 +1,8 @@
 # AGENTS.md — Modern 3D Filmation Game Foundation (Godot 4.7.2)
 
+## Mandatory Project Memory Review
+- Read [memory/ARCHITECTURE_AND_DEVELOPMENT_MEMORY.md](memory/ARCHITECTURE_AND_DEVELOPMENT_MEMORY.md) at the start of every session before designing or implementing changes, and keep it updated when major architecture or milestones land.
+
 ## Stack & Engine Invariants
 - **Engine**: Godot 4.7.2 Standard (`Forward+` renderer, `Jolt Physics 3D` default).
 - **Primary Runtime Language**: Strictly typed **GDScript 2.0**.

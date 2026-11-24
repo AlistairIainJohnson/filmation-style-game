@@ -12,10 +12,10 @@ A reusable, data-driven modern 3D interpretation of classic ZX Spectrum **Filmat
   - `VoxelGI` + `SSAO` + `SSIL` + `AgX` tonemapping + `DirectionalLight3D` orthogonal shadows (`SDFGI` explicitly disabled to prevent orthographic striping).
   - Switchable Day (`castle_stone_skylight`) and Moonlight Night (`castle_moonlight_night`) presets.
 - **Deterministic Player Controller & Readability Aids (`core/player/`)**:
-  - Kinematic `CharacterBody3D` supporting both camera-relative 8-way movement and isometric grid-aligned 4-way movement.
+  - Kinematic `CharacterBody3D` (`physics_interpolation=true`) supporting camera-relative 8-way and isometric grid-aligned 4-way movement with smooth ground acceleration/deceleration ramps, exponential facing damping + diagonal-release debounce, animation crossfades, and `INTERPOLATION_CUBIC` humanoid motion (`core/characters/humanoid_animation_library.gd`).
   - Analytical asymmetric jump curve (`jump_height = 1.35 m`, `time_to_apex = 0.28 s`, `time_to_descent = 0.22 s`) with coyote time & jump input buffering.
-  - Height-reactive `ShapeCast3D` + `Decal` drop shadow (`cull_mask = 1`, isolated from player visual layer `2`).
-  - Camera-ray AABB gated 8×8 Bayer cutaway dithering (`core/shaders/foreground_cutaway.gdshader`) that activates on pillars/tall occluders **only** when the character is behind them.
+  - Height-reactive `ShapeCast3D` + interpolated `Decal` drop shadow (`cull_mask = 1`, isolated from player visual layer `2`).
+  - Camera-ray AABB gated 8×8 Bayer cutaway dithering (`core/shaders/foreground_cutaway.gdshader`) capped to preserve partial foreground visibility (`25%` halftone silhouette) paired with opaque `ShadowCaster` siblings so pillars keep casting solid shadows while transparent.
 - **Hybrid Kinematic Puzzle Entities (`core/entities/`)**:
   - `PushableBlock` (`CharacterBody3D` + 0.5 m half-grid snap + multi-block stack carry), `Portcullis` (`AnimatableBody3D`), `MovingPlatform` (`sync_to_physics`), `CollapsingTile`, `TriggerSwitch`, `CollectibleItem`, and `PatrolHazard`.
 - **Multi-Room World Graph & Day/Night Meta-Loop (`core/world/`)**:
@@ -23,7 +23,9 @@ A reusable, data-driven modern 3D interpretation of classic ZX Spectrum **Filmat
   - `CycleManager` driving Day → Night atmospheric shifts, jump height boost (`1.22×`), and Explorer → Werewolf morphing.
 - **100% Local Sprite-to-3D Pipeline (`tools/asset_pipeline/`)**:
   - `extract_spritesheet.py` pairs 1-bit ink & mask passes from `concept-art/knight-lore-sprites.jpg` into clean transparent `RGBA` sprites (`187` extracted cells across 12 rows + `28` full-body Explorer/Werewolf composites).
-  - Headless **Blender 5.3.0** (`blender_sculpt_generator.py` + `normalize_glb.py`) generates & normalizes 14 PBR `.glb` props, gothic architecture, and 17-bone `SkeletonProfileHumanoid` characters validated by `validate_glb.py`.
+  - Headless **Blender 5.3.0** (`blender_sculpt_generator.py` + `normalize_glb.py`) generates & normalizes 16 PBR `.glb` props, gothic architecture (including continuous doorway lintel masonry), and 17-bone `SkeletonProfileHumanoid` characters validated by `validate_glb.py`.
+- **Architecture & Development Memory (`memory/ARCHITECTURE_AND_DEVELOPMENT_MEMORY.md`)**:
+  - Captures verified rendering/cutaway invariants, physics smoothing & animation architecture, the 16-asset manifest, git milestone history, and test baseline.
 
 ---
 
@@ -40,7 +42,7 @@ A reusable, data-driven modern 3D interpretation of classic ZX Spectrum **Filmat
 
 ## Verification & Local Tooling
 
-All scripts, JSON schemas, LDtk compilation, 14 `.glb` assets, GUT unit/physics tests, and Metal screenshots are validated by:
+All scripts, JSON schemas, LDtk compilation, 16 `.glb` assets, GUT unit/physics tests, and Metal screenshots are validated by:
 
 ```bash
 ./scripts/verify.sh --visual
