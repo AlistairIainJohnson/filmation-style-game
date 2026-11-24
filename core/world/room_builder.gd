@@ -101,6 +101,61 @@ static func _configure_static_model_recursive(node: Node, override_mat: Material
 		_configure_static_model_recursive(child, override_mat, cutaway_active_zero)
 
 
+static func _compute_relative_transform(node: Node3D, ancestor: Node3D) -> Transform3D:
+	var rel := Transform3D.IDENTITY
+	var cur: Node = node
+	while cur != null and cur != ancestor:
+		if cur is Node3D:
+			rel = (cur as Node3D).transform * rel
+		cur = cur.get_parent()
+	return rel
+
+
+static func _collect_mesh_instances_recursive(node: Node, out: Array[MeshInstance3D]) -> void:
+	if node is MeshInstance3D:
+		out.append(node as MeshInstance3D)
+	for child: Node in node.get_children():
+		_collect_mesh_instances_recursive(child, out)
+
+
+static func _attach_cutaway_shadow_caster(body: StaticBody3D, opaque_mat: Material) -> void:
+	if body.get_node_or_null("ShadowCaster") != null:
+		return
+	var sources: Array[MeshInstance3D] = []
+	var model_root: Node = body.get_node_or_null("PillarModel")
+	if model_root == null:
+		model_root = body.get_node_or_null("BlockModel")
+	var proxy_mesh: MeshInstance3D = body.get_node_or_null("Mesh") as MeshInstance3D
+	if model_root != null:
+		_collect_mesh_instances_recursive(model_root, sources)
+		if proxy_mesh != null:
+			proxy_mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	elif proxy_mesh != null:
+		sources.append(proxy_mesh)
+
+	if sources.is_empty():
+		return
+
+	var caster_root := Node3D.new()
+	caster_root.name = "ShadowCaster"
+	body.add_child(caster_root)
+
+	for idx: int in range(sources.size()):
+		var src_mi: MeshInstance3D = sources[idx]
+		src_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		if src_mi.mesh == null:
+			continue
+		var shadow_mi := MeshInstance3D.new()
+		shadow_mi.name = "ShadowMesh_%02d" % idx
+		shadow_mi.mesh = src_mi.mesh
+		shadow_mi.transform = _compute_relative_transform(src_mi, body)
+		shadow_mi.layers = 1
+		shadow_mi.gi_mode = GeometryInstance3D.GI_MODE_DISABLED
+		shadow_mi.material_override = opaque_mat
+		shadow_mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY
+		caster_root.add_child(shadow_mi)
+
+
 func build_room_from_path(
 	parent: Node3D,
 	room_json_path: String,
@@ -169,6 +224,7 @@ func build_room_into(
 		)
 		_attach_block_or_pillar_model(blk_node, blk_type, sz, blk_mat if use_cutaway else null, use_cutaway)
 		if use_cutaway:
+			_attach_cutaway_shadow_caster(blk_node, get_material(mat_name))
 			blk_node.add_to_group("foreground_occluders")
 			blk_node.set_meta("cutaway", true)
 			blk_node.set_meta("cutaway_active", false)
@@ -198,6 +254,7 @@ func build_room_into(
 		occ_node.set_meta("cutaway", use_cutaway)
 		occ_node.set_meta("cutaway_active", false)
 		if use_cutaway:
+			_attach_cutaway_shadow_caster(occ_node, get_material(mat_name))
 			var occ_mesh: MeshInstance3D = occ_node.get_node_or_null("Mesh") as MeshInstance3D
 			if occ_mesh != null:
 				occ_mesh.set_instance_shader_parameter(&"cutaway_active", 0.0)

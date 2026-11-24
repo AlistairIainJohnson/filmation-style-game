@@ -226,6 +226,7 @@ func test_foreground_occluders_only_use_cutaway_shader() -> void:
 			assert_gt(max_trans, 0.0, "Cutaway transparency cap must allow dithering")
 			assert_lt(max_trans, 1.0, "Cutaway transparency cap must leave foreground partially visible")
 			assert_true(fg_child.is_in_group("foreground_occluders"), "%s %s must belong to foreground_occluders group" % [room_path, fg_child.name])
+			_assert_cutaway_shadow_caster_valid(fg_child, "%s %s" % [room_path, fg_child.name])
 
 		var arch_root: Node3D = result.get("architecture_root") as Node3D
 		var pillar_count: int = 0
@@ -236,6 +237,7 @@ func test_foreground_occluders_only_use_cutaway_shader() -> void:
 				var p_box: BoxMesh = p_mesh.mesh as BoxMesh
 				assert_true(p_box.material is ShaderMaterial, "%s %s must use cutaway ShaderMaterial" % [room_path, arch_child.name])
 				assert_true(arch_child.is_in_group("foreground_occluders"), "%s %s must belong to foreground_occluders group" % [room_path, arch_child.name])
+				_assert_cutaway_shadow_caster_valid(arch_child, "%s %s" % [room_path, arch_child.name])
 
 		assert_gt(pillar_count, 0, room_path + " must validate at least one interior stone_pillar")
 
@@ -301,3 +303,24 @@ func test_pillar_cutaway_activates_only_when_player_is_behind_pillar() -> void:
 	player.sync_shader_world_pos()
 	assert_true(bool(interior_pillar.get_meta("cutaway_active", false)), "Interior pillar must cut away when player is behind it")
 	assert_false(bool(corner_pillar.get_meta("cutaway_active", true)))
+
+
+func _assert_cutaway_shadow_caster_valid(occ: Node, label: String) -> void:
+	var caster: Node = occ.get_node_or_null("ShadowCaster")
+	assert_not_null(caster, label + " must have dedicated opaque ShadowCaster child")
+	var caster_meshes: int = 0
+	for child: Node in caster.get_children():
+		if child is MeshInstance3D:
+			caster_meshes += 1
+			var mi: MeshInstance3D = child as MeshInstance3D
+			assert_eq(mi.cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_SHADOWS_ONLY, label + " ShadowCaster mesh must be shadows-only")
+			assert_true(mi.material_override is StandardMaterial3D, label + " ShadowCaster mesh must use opaque StandardMaterial3D")
+	assert_gt(caster_meshes, 0, label + " ShadowCaster must contain at least one MeshInstance3D")
+
+	var pillar_model: Node = occ.get_node_or_null("PillarModel")
+	if pillar_model != null:
+		var visual_meshes: Array[MeshInstance3D] = []
+		RoomBuilder._collect_mesh_instances_recursive(pillar_model, visual_meshes)
+		assert_gt(visual_meshes.size(), 0, label + " PillarModel must contain visual MeshInstance3D nodes")
+		for mi: MeshInstance3D in visual_meshes:
+			assert_eq(mi.cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, label + " visual PillarModel must not cast shadow")

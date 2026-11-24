@@ -340,6 +340,8 @@ func update_occluder_cutaways() -> void:
 
 
 static func _set_cutaway_active_recursive(node: Node, active_val: float) -> void:
+	if node.name == "ShadowCaster":
+		return
 	if node is MeshInstance3D:
 		(node as MeshInstance3D).set_instance_shader_parameter(&"cutaway_active", active_val)
 	for child: Node in node.get_children():
