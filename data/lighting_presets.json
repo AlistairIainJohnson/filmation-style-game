@@ -1,0 +1,142 @@
+{
+  "castle_stone_skylight": {
+    "background_color": [0.06, 0.07, 0.10],
+    "ambient": {
+      "color": [0.36, 0.42, 0.52],
+      "energy": 0.45
+    },
+    "tonemap": {
+      "exposure": 1.05,
+      "agx_white": 10.0,
+      "agx_contrast": 1.25
+    },
+    "ssao": {
+      "enabled": true,
+      "radius": 0.9,
+      "intensity": 2.2,
+      "power": 1.6
+    },
+    "ssil": {
+      "enabled": true,
+      "radius": 2.5,
+      "intensity": 1.1
+    },
+    "volumetric_fog": {
+      "enabled": true,
+      "density": 0.006,
+      "albedo": [0.65, 0.72, 0.82],
+      "emission": [0.04, 0.05, 0.07],
+      "length": 48.0
+    },
+    "glow": {
+      "enabled": true,
+      "intensity": 0.45,
+      "bloom": 0.12
+    },
+    "directional_light": {
+      "color": [1.0, 0.94, 0.84],
+      "energy": 1.85,
+      "rotation_degrees": [-52.0, 28.0, 0.0],
+      "shadow_normal_bias": 1.8,
+      "shadow_bias": 0.03,
+      "pancake_size": 20.0,
+      "max_distance": 65.0
+    },
+    "area_lights": [
+      {
+        "name": "OverheadSkylight",
+        "rel_pos": [0.5, 0.95, 0.5],
+        "color": [0.82, 0.90, 1.0],
+        "energy": 24.0,
+        "size": [4.5, 4.5],
+        "range": 14.0,
+        "attenuation": 1.4,
+        "rotation_degrees": [-90.0, 0.0, 0.0],
+        "shadow_enabled": true,
+        "shadow_normal_bias": 1.5
+      },
+      {
+        "name": "AlcoveTorchAccent",
+        "rel_pos": [0.22, 0.55, 0.18],
+        "color": [1.0, 0.62, 0.28],
+        "energy": 10.0,
+        "size": [1.4, 1.8],
+        "range": 9.0,
+        "attenuation": 1.6,
+        "rotation_degrees": [-35.0, -45.0, 0.0],
+        "shadow_enabled": false,
+        "shadow_normal_bias": 1.2
+      }
+    ]
+  },
+  "castle_moonlight_night": {
+    "background_color": [0.02, 0.03, 0.06],
+    "ambient": {
+      "color": [0.16, 0.22, 0.36],
+      "energy": 0.32
+    },
+    "tonemap": {
+      "exposure": 1.10,
+      "agx_white": 9.0,
+      "agx_contrast": 1.3
+    },
+    "ssao": {
+      "enabled": true,
+      "radius": 0.9,
+      "intensity": 2.4,
+      "power": 1.7
+    },
+    "ssil": {
+      "enabled": true,
+      "radius": 2.5,
+      "intensity": 1.25
+    },
+    "volumetric_fog": {
+      "enabled": true,
+      "density": 0.012,
+      "albedo": [0.24, 0.34, 0.52],
+      "emission": [0.02, 0.04, 0.08],
+      "length": 48.0
+    },
+    "glow": {
+      "enabled": true,
+      "intensity": 0.65,
+      "bloom": 0.18
+    },
+    "directional_light": {
+      "color": [0.55, 0.70, 1.0],
+      "energy": 0.85,
+      "rotation_degrees": [-48.0, 22.0, 0.0],
+      "shadow_normal_bias": 1.8,
+      "shadow_bias": 0.03,
+      "pancake_size": 20.0,
+      "max_distance": 65.0
+    },
+    "area_lights": [
+      {
+        "name": "MoonlightSkylight",
+        "rel_pos": [0.48, 0.95, 0.48],
+        "color": [0.42, 0.60, 0.98],
+        "energy": 14.0,
+        "size": [4.0, 4.0],
+        "range": 14.0,
+        "attenuation": 1.5,
+        "rotation_degrees": [-90.0, 0.0, 0.0],
+        "shadow_enabled": true,
+        "shadow_normal_bias": 1.5
+      },
+      {
+        "name": "CauldronEmeraldGlow",
+        "rel_pos": [0.67, 0.42, 0.67],
+        "color": [0.22, 1.0, 0.58],
+        "energy": 14.0,
+        "size": [1.5, 1.5],
+        "range": 8.5,
+        "attenuation": 1.5,
+        "rotation_degrees": [-90.0, 0.0, 0.0],
+        "shadow_enabled": false,
+        "shadow_normal_bias": 1.2
+      }
+    ]
+  }
+}

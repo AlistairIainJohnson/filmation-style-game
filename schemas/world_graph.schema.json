@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Filmation World Graph Schema",
+  "type": "object",
+  "required": ["world_name", "grid_size", "start_room", "start_spawn", "cycle", "rooms"],
+  "properties": {
+    "world_name": {"type": "string", "minLength": 1},
+    "grid_size": {
+      "type": "array",
+      "prefixItems": [{"type": "integer", "minimum": 1}, {"type": "integer", "minimum": 1}],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "start_room": {
+      "type": "array",
+      "prefixItems": [{"type": "integer", "minimum": 0}, {"type": "integer", "minimum": 0}],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "start_spawn": {"type": "string", "minLength": 1},
+    "cycle": {
+      "type": "object",
+      "required": ["enabled", "day_duration_sec", "night_duration_sec", "night_jump_height_multiplier"],
+      "properties": {
+        "enabled": {"type": "boolean"},
+        "day_duration_sec": {"type": "number", "exclusiveMinimum": 0.0},
+        "night_duration_sec": {"type": "number", "exclusiveMinimum": 0.0},
+        "night_jump_height_multiplier": {"type": "number", "exclusiveMinimum": 0.0}
+      },
+      "additionalProperties": false
+    },
+    "rooms": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "json_path", "lighting_preset_day", "lighting_preset_night", "exits"],
+        "properties": {
+          "id": {
+            "type": "array",
+            "prefixItems": [{"type": "integer", "minimum": 0}, {"type": "integer", "minimum": 0}],
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "json_path": {"type": "string", "minLength": 1},
+          "scene_path": {"type": "string", "minLength": 1},
+          "lighting_preset_day": {"type": "string", "minLength": 1},
+          "lighting_preset_night": {"type": "string", "minLength": 1},
+          "exits": {
+            "type": "object",
+            "properties": {
+              "north": {"$ref": "#/$defs/coord"},
+              "south": {"$ref": "#/$defs/coord"},
+              "east": {"$ref": "#/$defs/coord"},
+              "west": {"$ref": "#/$defs/coord"}
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "$defs": {
+    "coord": {
+      "type": "array",
+      "prefixItems": [{"type": "integer", "minimum": 0}, {"type": "integer", "minimum": 0}],
+      "minItems": 2,
+      "maxItems": 2
+    }
+  },
+  "additionalProperties": false
+}

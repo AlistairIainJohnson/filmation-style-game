@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Lighting Presets Schema",
+  "type": "object",
+  "minProperties": 1,
+  "additionalProperties": {
+    "type": "object",
+    "required": ["background_color", "ambient", "tonemap", "ssao", "ssil", "volumetric_fog", "directional_light", "area_lights"],
+    "properties": {
+      "background_color": {"$ref": "#/$defs/rgb"},
+      "ambient": {
+        "type": "object",
+        "required": ["color", "energy"],
+        "properties": {
+          "color": {"$ref": "#/$defs/rgb"},
+          "energy": {"type": "number", "minimum": 0.0}
+        },
+        "additionalProperties": false
+      },
+      "tonemap": {
+        "type": "object",
+        "required": ["exposure", "agx_white", "agx_contrast"],
+        "properties": {
+          "exposure": {"type": "number", "exclusiveMinimum": 0.0},
+          "agx_white": {"type": "number", "exclusiveMinimum": 0.0},
+          "agx_contrast": {"type": "number", "exclusiveMinimum": 0.0}
+        },
+        "additionalProperties": false
+      },
+      "ssao": {
+        "type": "object",
+        "required": ["enabled", "radius", "intensity", "power"],
+        "properties": {
+          "enabled": {"type": "boolean"},
+          "radius": {"type": "number", "exclusiveMinimum": 0.0},
+          "intensity": {"type": "number", "minimum": 0.0},
+          "power": {"type": "number", "exclusiveMinimum": 0.0}
+        },
+        "additionalProperties": false
+      },
+      "ssil": {
+        "type": "object",
+        "required": ["enabled", "radius", "intensity"],
+        "properties": {
+          "enabled": {"type": "boolean"},
+          "radius": {"type": "number", "exclusiveMinimum": 0.0},
+          "intensity": {"type": "number", "minimum": 0.0}
+        },
+        "additionalProperties": false
+      },
+      "volumetric_fog": {
+        "type": "object",
+        "required": ["enabled", "density", "albedo", "emission", "length"],
+        "properties": {
+          "enabled": {"type": "boolean"},
+          "density": {"type": "number", "minimum": 0.0},
+          "albedo": {"$ref": "#/$defs/rgb"},
+          "emission": {"$ref": "#/$defs/rgb"},
+          "length": {"type": "number", "exclusiveMinimum": 0.0}
+        },
+        "additionalProperties": false
+      },
+      "glow": {
+        "type": "object",
+        "properties": {
+          "enabled": {"type": "boolean"},
+          "intensity": {"type": "number", "minimum": 0.0},
+          "bloom": {"type": "number", "minimum": 0.0}
+        },
+        "additionalProperties": false
+      },
+      "directional_light": {
+        "type": "object",
+        "required": ["color", "energy", "rotation_degrees", "shadow_normal_bias", "shadow_bias", "pancake_size", "max_distance"],
+        "properties": {
+          "color": {"$ref": "#/$defs/rgb"},
+          "energy": {"type": "number", "minimum": 0.0},
+          "rotation_degrees": {"$ref": "#/$defs/vec3"},
+          "shadow_normal_bias": {"type": "number", "minimum": 0.0},
+          "shadow_bias": {"type": "number", "minimum": 0.0},
+          "pancake_size": {"type": "number", "exclusiveMinimum": 0.0},
+          "max_distance": {"type": "number", "exclusiveMinimum": 0.0}
+        },
+        "additionalProperties": false
+      },
+      "area_lights": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["name", "color", "energy", "size", "range", "rotation_degrees", "shadow_enabled"],
+          "properties": {
+            "name": {"type": "string", "minLength": 1},
+            "rel_pos": {"$ref": "#/$defs/vec3"},
+            "pos": {"$ref": "#/$defs/vec3"},
+            "color": {"$ref": "#/$defs/rgb"},
+            "energy": {"type": "number", "minimum": 0.0},
+            "size": {
+              "type": "array",
+              "prefixItems": [{"type": "number", "exclusiveMinimum": 0.0}, {"type": "number", "exclusiveMinimum": 0.0}],
+              "minItems": 2,
+              "maxItems": 2
+            },
+            "range": {"type": "number", "exclusiveMinimum": 0.0},
+            "attenuation": {"type": "number", "minimum": 0.0},
+            "rotation_degrees": {"$ref": "#/$defs/vec3"},
+            "shadow_enabled": {"type": "boolean"},
+            "shadow_normal_bias": {"type": "number", "minimum": 0.0}
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "additionalProperties": false
+  },
+  "$defs": {
+    "rgb": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        {"type": "number", "minimum": 0.0, "maximum": 1.0}
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "vec3": {
+      "type": "array",
+      "prefixItems": [{"type": "number"}, {"type": "number"}, {"type": "number"}],
+      "minItems": 3,
+      "maxItems": 3
+    }
+  }
+}

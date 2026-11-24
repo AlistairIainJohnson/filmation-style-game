@@ -1,0 +1,8 @@
+---
+description: Orthographic diorama shader and Early-Z cutaway rules
+globs: "**/*.gdshader"
+alwaysApply: false
+---
+- Use global shader uniform `global uniform vec3 player_world_pos;` updated via `RenderingServer.global_shader_parameter_set(&"player_world_pos", pos)`.
+- Apply dither cutaway `discard` ONLY to foreground occluder walls/columns, never globally across a room, to preserve Early-Z depth rejection.
+- Prefer 8x8 Bayer or world-indexed blue-noise dither thresholds for clean orthographic diorama readability.

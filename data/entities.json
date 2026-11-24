@@ -1,0 +1,58 @@
+{
+  "pushable_chest": {
+    "shape": "box",
+    "size": [0.98, 1.0, 0.98],
+    "material": "oak_chest",
+    "kinematic_kind": "pushable_block",
+    "model_path": "res://assets/props/pushable_chest.glb"
+  },
+  "pressure_plate": {
+    "shape": "box",
+    "size": [0.86, 0.10, 0.86],
+    "material": "brass_plate",
+    "kinematic_kind": "trigger_switch",
+    "model_path": "res://assets/props/pressure_plate.glb"
+  },
+  "portcullis": {
+    "shape": "box",
+    "size": [1.9, 2.6, 0.24],
+    "material": "iron_portcullis",
+    "kinematic_kind": "animatable_gate",
+    "model_path": "res://assets/props/portcullis_gate.glb"
+  },
+  "cauldron": {
+    "shape": "cylinder",
+    "size": [0.95, 0.95, 0.95],
+    "material": "cauldron_glow",
+    "kinematic_kind": "static_prop",
+    "model_path": "res://assets/props/cauldron.glb"
+  },
+  "moving_platform": {
+    "shape": "box",
+    "size": [1.9, 0.35, 1.9],
+    "material": "platform_stone",
+    "kinematic_kind": "moving_platform",
+    "model_path": "res://assets/props/moving_platform.glb"
+  },
+  "collapsing_tile": {
+    "shape": "box",
+    "size": [0.98, 0.25, 0.98],
+    "material": "cracked_tile",
+    "kinematic_kind": "collapsing_tile",
+    "model_path": "res://assets/props/collapsing_tile.glb"
+  },
+  "collectible_key": {
+    "shape": "box",
+    "size": [0.42, 0.42, 0.42],
+    "material": "gold_key",
+    "kinematic_kind": "collectible",
+    "model_path": "res://assets/props/collectible_key.glb"
+  },
+  "patrol_sentinel": {
+    "shape": "cylinder",
+    "size": [0.68, 1.4, 0.68],
+    "material": "hazard_crimson",
+    "kinematic_kind": "patrol_hazard",
+    "model_path": "res://assets/characters/patrol_sentinel.glb"
+  }
+}

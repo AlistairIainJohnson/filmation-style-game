@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# 1. Protect Godot 4.4+ *.uid sidecar files
+deleted_uids=$(git diff --cached --name-only --diff-filter=D | grep -E '\.(gd|gdshader)\.uid$' || true)
+for uid_file in $deleted_uids; do
+  base_file="${uid_file%.uid}"
+  if [ -f "$base_file" ]; then
+    echo "ERROR: Refusing to delete $uid_file while $base_file still exists." >&2
+    echo "Move/rename .gd/.gdshader and .uid pairs together with 'git mv'." >&2
+    exit 1
+  fi
+done
+
+staged_scripts=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(core|game)/.*\.(gd|gdshader)$' || true)
+for script_file in $staged_scripts; do
+  uid_file="${script_file}.uid"
+  if [ ! -f "$uid_file" ]; then
+    echo "ERROR: Missing Godot UID sidecar $uid_file for $script_file." >&2
+    echo "Run 'godot --headless --path . --import' and stage the .uid file together." >&2
+    exit 1
+  fi
+done
+
+# 2. Validate JSON files under data/ and schemas/
+staged_json=$(git diff --cached --name-only --diff-filter=ACM | grep -E '^(data|schemas)/.*\.json$' || true)
+for json_file in $staged_json; do
+  python3 -c "import json, sys; json.load(open(sys.argv[1], 'r', encoding='utf-8'))" "$json_file"
+done
+
+# 3. Reject legacy Godot 3 syntax in staged .gd files
+all_gd=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.gd$' | grep -v '^addons/' || true)
+for gd_file in $all_gd; do
+  if grep -nE 'extends[[:space:]]+(Spatial|KinematicBody3D)\b|\byield[[:space:]]*\(|^[[:space:]]*(export|onready)[[:space:]]+var\b' "$gd_file"; then
+    echo "ERROR: Legacy Godot 3 syntax detected in $gd_file. Use Godot 4 APIs only." >&2
+    exit 1
+  fi
+done

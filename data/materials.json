@@ -1,0 +1,83 @@
+{
+  "stone_floor": {
+    "albedo": [0.36, 0.37, 0.40],
+    "metallic": 0.0,
+    "roughness": 0.82
+  },
+  "stone_floor_alt": {
+    "albedo": [0.30, 0.31, 0.35],
+    "metallic": 0.0,
+    "roughness": 0.85
+  },
+  "stone_wall": {
+    "albedo": [0.42, 0.40, 0.38],
+    "metallic": 0.0,
+    "roughness": 0.86
+  },
+  "stone_pillar": {
+    "albedo": [0.47, 0.46, 0.44],
+    "metallic": 0.04,
+    "roughness": 0.78
+  },
+  "stone_ledge": {
+    "albedo": [0.56, 0.49, 0.40],
+    "metallic": 0.0,
+    "roughness": 0.76
+  },
+  "foreground_curb": {
+    "albedo": [0.22, 0.23, 0.26],
+    "metallic": 0.08,
+    "roughness": 0.72
+  },
+  "doorway_trim": {
+    "albedo": [0.34, 0.28, 0.22],
+    "metallic": 0.65,
+    "roughness": 0.45
+  },
+  "oak_chest": {
+    "albedo": [0.52, 0.32, 0.17],
+    "metallic": 0.05,
+    "roughness": 0.62
+  },
+  "brass_plate": {
+    "albedo": [0.78, 0.58, 0.24],
+    "metallic": 0.82,
+    "roughness": 0.36
+  },
+  "iron_portcullis": {
+    "albedo": [0.25, 0.26, 0.29],
+    "metallic": 0.85,
+    "roughness": 0.48
+  },
+  "cauldron_glow": {
+    "albedo": [0.16, 0.22, 0.20],
+    "metallic": 0.55,
+    "roughness": 0.32,
+    "emission": [0.18, 0.92, 0.52],
+    "emission_energy": 2.4
+  },
+  "platform_stone": {
+    "albedo": [0.44, 0.50, 0.56],
+    "metallic": 0.15,
+    "roughness": 0.65
+  },
+  "cracked_tile": {
+    "albedo": [0.54, 0.42, 0.34],
+    "metallic": 0.0,
+    "roughness": 0.90
+  },
+  "gold_key": {
+    "albedo": [0.95, 0.78, 0.22],
+    "metallic": 0.92,
+    "roughness": 0.24,
+    "emission": [0.45, 0.35, 0.05],
+    "emission_energy": 0.8
+  },
+  "hazard_crimson": {
+    "albedo": [0.68, 0.18, 0.18],
+    "metallic": 0.55,
+    "roughness": 0.38,
+    "emission": [0.55, 0.08, 0.08],
+    "emission_energy": 0.9
+  }
+}

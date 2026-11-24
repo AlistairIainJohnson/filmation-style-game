@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://game/rooms/test_chamber.gd" id="1_test_chamber"]
+
+[node name="TestChamber" type="Node3D"]
+script = ExtResource("1_test_chamber")

@@ -1,0 +1,12 @@
+[project]
+name = "filmation-tools"
+version = "0.1.0"
+description = "Offline asset normalization, sprite conditioning, and level validation tools for Modern 3D Filmation games"
+requires-python = ">=3.13"
+dependencies = [
+    "httpx>=0.28.0",
+    "jsonschema>=4.23.0",
+    "pillow>=11.0.0",
+    "pygltflib>=1.16.0",
+    "trimesh>=4.6.0",
+]

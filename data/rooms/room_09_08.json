@@ -1,0 +1,105 @@
+{
+  "room_id": [9, 8],
+  "name": "Eastern Gallery",
+  "dimensions": {
+    "width": 12,
+    "depth": 12,
+    "height": 6
+  },
+  "camera": {
+    "mode": "true_isometric",
+    "margin": 0.10
+  },
+  "lighting_preset": "castle_stone_skylight",
+  "floor": {
+    "material": "stone_floor",
+    "checker_material": "stone_floor_alt",
+    "thickness": 0.5,
+    "void_cells": [
+      [5, 2], [5, 3], [5, 4], [5, 5], [5, 6],
+      [6, 2], [6, 3], [6, 4], [6, 5], [6, 6]
+    ]
+  },
+  "walls": {
+    "material": "stone_wall",
+    "curb_material": "foreground_curb",
+    "trim_material": "doorway_trim",
+    "thickness": 0.5,
+    "curb_height": 0.4
+  },
+  "exits": {
+    "north": {
+      "target_room": [9, 7],
+      "door_pos": [5, 0],
+      "width": 2,
+      "height": 3.0
+    },
+    "west": {
+      "target_room": [8, 8],
+      "door_pos": [0, 5],
+      "width": 2,
+      "height": 3.0
+    }
+  },
+  "blocks": [
+    {
+      "type": "stone_balcony",
+      "material": "stone_ledge",
+      "pos": [8, 0, 1],
+      "size": [3, 1, 2]
+    },
+    {
+      "type": "stone_plinth",
+      "material": "stone_pillar",
+      "pos": [2, 0, 8],
+      "size": [2, 1, 2]
+    },
+    {
+      "type": "stone_pillar",
+      "material": "stone_pillar",
+      "pos": [1, 0, 1],
+      "size": [1, 4.0, 1],
+      "cutaway": true
+    }
+  ],
+  "foreground_occluders": [
+    {
+      "type": "arch_column",
+      "material": "stone_pillar",
+      "pos": [10, 0, 10],
+      "size": [1, 4, 1],
+      "cutaway": true
+    }
+  ],
+  "entities": [
+    {
+      "id": "plat_east_01",
+      "archetype": "moving_platform",
+      "pos": [4.5, 0.0, 5.5],
+      "persistent": true,
+      "waypoints": [[4.5, 0.0, 5.5], [7.5, 0.0, 5.5]],
+      "move_speed": 2.0
+    },
+    {
+      "id": "key_01",
+      "archetype": "collectible_key",
+      "pos": [9.5, 1.0, 2.0],
+      "persistent": true,
+      "item_kind": "vault_key"
+    },
+    {
+      "id": "guard_01",
+      "archetype": "patrol_sentinel",
+      "pos": [8.5, 0.0, 8.5],
+      "persistent": true,
+      "waypoints": [[8.5, 0.0, 8.5], [8.5, 0.0, 4.5]],
+      "patrol_speed": 2.0
+    },
+    {
+      "id": "chest_east_01",
+      "archetype": "pushable_chest",
+      "pos": [3.0, 0.0, 4.0],
+      "persistent": true
+    }
+  ]
+}

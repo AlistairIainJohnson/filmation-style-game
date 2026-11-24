@@ -1,0 +1,58 @@
+{
+  "world_name": "Filmation Citadel",
+  "grid_size": [16, 16],
+  "start_room": [8, 8],
+  "start_spawn": "north",
+  "cycle": {
+    "enabled": false,
+    "day_duration_sec": 45.0,
+    "night_duration_sec": 35.0,
+    "night_jump_height_multiplier": 1.22
+  },
+  "rooms": [
+    {
+      "id": [8, 8],
+      "json_path": "res://data/rooms/room_08_08.json",
+      "scene_path": "res://core/world/chamber_shell.tscn",
+      "lighting_preset_day": "castle_stone_skylight",
+      "lighting_preset_night": "castle_moonlight_night",
+      "exits": {
+        "north": [8, 7],
+        "east": [9, 8]
+      }
+    },
+    {
+      "id": [9, 8],
+      "json_path": "res://data/rooms/room_09_08.json",
+      "scene_path": "res://core/world/chamber_shell.tscn",
+      "lighting_preset_day": "castle_stone_skylight",
+      "lighting_preset_night": "castle_moonlight_night",
+      "exits": {
+        "north": [9, 7],
+        "west": [8, 8]
+      }
+    },
+    {
+      "id": [9, 7],
+      "json_path": "res://data/rooms/room_09_07.json",
+      "scene_path": "res://core/world/chamber_shell.tscn",
+      "lighting_preset_day": "castle_stone_skylight",
+      "lighting_preset_night": "castle_moonlight_night",
+      "exits": {
+        "south": [9, 8],
+        "west": [8, 7]
+      }
+    },
+    {
+      "id": [8, 7],
+      "json_path": "res://data/rooms/room_08_07.json",
+      "scene_path": "res://core/world/chamber_shell.tscn",
+      "lighting_preset_day": "castle_stone_skylight",
+      "lighting_preset_night": "castle_moonlight_night",
+      "exits": {
+        "south": [8, 8],
+        "east": [9, 7]
+      }
+    }
+  ]
+}

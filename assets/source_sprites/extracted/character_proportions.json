@@ -1,0 +1,101 @@
+{
+  "source_sheet": "/Users/alistairjohnson/filmation-style-game/concept-art/knight-lore-sprites.jpg",
+  "explorer": {
+    "proportions": {
+      "composite_px": [
+        22,
+        36
+      ],
+      "legs_cell_px": [
+        24,
+        16
+      ],
+      "body_cell_px": [
+        24,
+        26
+      ],
+      "legs_ratio": 0.4444,
+      "head_and_torso_ratio": 0.5556,
+      "aspect_width_to_height": 0.6111
+    },
+    "palette": {
+      "helmet": [
+        0.784,
+        0.663,
+        0.431
+      ],
+      "hatband": [
+        0.278,
+        0.18,
+        0.106
+      ],
+      "tunic": [
+        0.788,
+        0.643,
+        0.361
+      ],
+      "skin": [
+        0.839,
+        0.624,
+        0.494
+      ],
+      "boots": [
+        0.278,
+        0.18,
+        0.106
+      ],
+      "brass": [
+        0.851,
+        0.659,
+        0.259
+      ]
+    }
+  },
+  "werewolf": {
+    "proportions": {
+      "composite_px": [
+        22,
+        41
+      ],
+      "legs_cell_px": [
+        24,
+        16
+      ],
+      "body_cell_px": [
+        24,
+        30
+      ],
+      "legs_ratio": 0.3902,
+      "head_and_torso_ratio": 0.6098,
+      "aspect_width_to_height": 0.5366
+    },
+    "palette": {
+      "fur": [
+        0.294,
+        0.208,
+        0.153
+      ],
+      "ruff": [
+        0.431,
+        0.325,
+        0.251
+      ],
+      "tattered_tunic": [
+        0.722,
+        0.588,
+        0.333
+      ],
+      "amber_eye": [
+        0.961,
+        0.706,
+        0.153
+      ],
+      "claws": [
+        0.14,
+        0.115,
+        0.105
+      ]
+    }
+  },
+  "extracted_frames_count": 28
+}

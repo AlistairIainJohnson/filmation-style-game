@@ -1,0 +1,108 @@
+{
+  "room_id": [9, 7],
+  "name": "Sanctum Chamber",
+  "dimensions": {
+    "width": 12,
+    "depth": 12,
+    "height": 6
+  },
+  "camera": {
+    "mode": "true_isometric",
+    "margin": 0.10
+  },
+  "lighting_preset": "castle_stone_skylight",
+  "floor": {
+    "material": "stone_floor",
+    "checker_material": "stone_floor_alt",
+    "thickness": 0.5,
+    "void_cells": [[4, 4], [4, 5], [7, 4], [7, 5]]
+  },
+  "walls": {
+    "material": "stone_wall",
+    "curb_material": "foreground_curb",
+    "trim_material": "doorway_trim",
+    "thickness": 0.5,
+    "curb_height": 0.4
+  },
+  "exits": {
+    "south": {
+      "target_room": [9, 8],
+      "door_pos": [5, 11],
+      "width": 2,
+      "height": 3.0
+    },
+    "west": {
+      "target_room": [8, 7],
+      "door_pos": [0, 5],
+      "width": 2,
+      "height": 3.0,
+      "locked_by": "sanctum_gate_01"
+    }
+  },
+  "blocks": [
+    {
+      "type": "sanctum_altar",
+      "material": "stone_ledge",
+      "pos": [5, 0, 1],
+      "size": [2, 1, 2]
+    },
+    {
+      "type": "stone_pillar",
+      "material": "stone_pillar",
+      "pos": [9, 0, 2],
+      "size": [1, 4.0, 1],
+      "cutaway": true
+    },
+    {
+      "type": "sanctum_step",
+      "material": "stone_ledge",
+      "pos": [4, 0, 1],
+      "size": [1, 1, 1]
+    }
+  ],
+  "foreground_occluders": [
+    {
+      "type": "arch_column",
+      "material": "stone_pillar",
+      "pos": [10, 0, 10],
+      "size": [1, 4, 1],
+      "cutaway": true
+    }
+  ],
+  "entities": [
+    {
+      "id": "sanctum_chest_01",
+      "archetype": "pushable_chest",
+      "pos": [5.5, 0.0, 7.5],
+      "persistent": true
+    },
+    {
+      "id": "sanctum_plate_01",
+      "archetype": "pressure_plate",
+      "pos": [8.5, 0.0, 6.5],
+      "persistent": true,
+      "triggers": ["sanctum_gate_01"]
+    },
+    {
+      "id": "sanctum_gate_01",
+      "archetype": "portcullis",
+      "pos": [-0.15, 0.0, 6.0],
+      "rotation_y": 90.0,
+      "persistent": true,
+      "starts_closed": true
+    },
+    {
+      "id": "sanctum_relic",
+      "archetype": "collectible_key",
+      "pos": [6.0, 1.0, 2.0],
+      "persistent": true,
+      "item_kind": "sanctum_orb"
+    },
+    {
+      "id": "sanctum_crumble",
+      "archetype": "collapsing_tile",
+      "pos": [5.5, 0.0, 4.5],
+      "persistent": true
+    }
+  ]
+}

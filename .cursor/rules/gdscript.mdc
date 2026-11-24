@@ -1,0 +1,9 @@
+---
+description: Strict Godot 4.7 GDScript 2.0 typing, API, and UID sidecar rules
+globs: "**/*.gd"
+alwaysApply: false
+---
+- Enforce strict static typing on all variables, parameters, and return types (`-> void`).
+- Reject legacy Godot 3 syntax (`Spatial`, `KinematicBody3D`, `yield`, `export var`, `onready var`).
+- Pushable puzzle blocks use kinematic `CharacterBody3D` / `AnimatableBody3D`, never unconstrained `RigidBody3D`.
+- Move `.gd` and `.gd.uid` sidecar pairs together atomically with `git mv`.

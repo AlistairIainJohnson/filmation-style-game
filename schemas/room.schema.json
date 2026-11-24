@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Filmation Room Schema",
+  "type": "object",
+  "required": ["room_id", "name", "dimensions", "camera", "lighting_preset", "floor", "walls", "exits", "blocks", "foreground_occluders", "entities"],
+  "properties": {
+    "room_id": {
+      "type": "array",
+      "prefixItems": [{"type": "integer", "minimum": 0}, {"type": "integer", "minimum": 0}],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "name": {"type": "string", "minLength": 1},
+    "dimensions": {
+      "type": "object",
+      "required": ["width", "depth", "height"],
+      "properties": {
+        "width": {"type": "integer", "minimum": 4, "maximum": 32},
+        "depth": {"type": "integer", "minimum": 4, "maximum": 32},
+        "height": {"type": "integer", "minimum": 4, "maximum": 16}
+      },
+      "additionalProperties": false
+    },
+    "camera": {
+      "type": "object",
+      "required": ["mode", "margin"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["true_isometric", "dimetric_2_1"]},
+        "margin": {"type": "number", "minimum": 0.0, "maximum": 0.5}
+      },
+      "additionalProperties": false
+    },
+    "lighting_preset": {"type": "string", "minLength": 1},
+    "floor": {
+      "type": "object",
+      "required": ["material", "thickness", "void_cells"],
+      "properties": {
+        "material": {"type": "string", "minLength": 1},
+        "checker_material": {"type": "string", "minLength": 1},
+        "thickness": {"type": "number", "exclusiveMinimum": 0.0},
+        "void_cells": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [{"type": "integer", "minimum": 0}, {"type": "integer", "minimum": 0}],
+            "minItems": 2,
+            "maxItems": 2
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "walls": {
+      "type": "object",
+      "required": ["material", "curb_material", "thickness", "curb_height"],
+      "properties": {
+        "material": {"type": "string", "minLength": 1},
+        "curb_material": {"type": "string", "minLength": 1},
+        "trim_material": {"type": "string", "minLength": 1},
+        "thickness": {"type": "number", "exclusiveMinimum": 0.0},
+        "curb_height": {"type": "number", "minimum": 0.0}
+      },
+      "additionalProperties": false
+    },
+    "exits": {
+      "type": "object",
+      "properties": {
+        "north": {"$ref": "#/$defs/exit"},
+        "south": {"$ref": "#/$defs/exit"},
+        "east": {"$ref": "#/$defs/exit"},
+        "west": {"$ref": "#/$defs/exit"}
+      },
+      "additionalProperties": false
+    },
+    "blocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "material", "pos", "size"],
+        "properties": {
+          "type": {"type": "string", "minLength": 1},
+          "material": {"type": "string", "minLength": 1},
+          "pos": {"$ref": "#/$defs/vec3"},
+          "size": {"$ref": "#/$defs/positive_vec3"},
+          "cutaway": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "foreground_occluders": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "material", "pos", "size", "cutaway"],
+        "properties": {
+          "type": {"type": "string", "minLength": 1},
+          "material": {"type": "string", "minLength": 1},
+          "pos": {"$ref": "#/$defs/vec3"},
+          "size": {"$ref": "#/$defs/positive_vec3"},
+          "cutaway": {"type": "boolean"}
+        },
+        "additionalProperties": false
+      }
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "archetype", "pos", "persistent"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "archetype": {"type": "string", "minLength": 1},
+          "pos": {"$ref": "#/$defs/vec3"},
+          "persistent": {"type": "boolean"},
+          "triggers": {"type": "array", "items": {"type": "string"}},
+          "starts_closed": {"type": "boolean"},
+          "waypoints": {"type": "array", "items": {"$ref": "#/$defs/vec3"}}
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "$defs": {
+    "vec3": {
+      "type": "array",
+      "prefixItems": [{"type": "number"}, {"type": "number"}, {"type": "number"}],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "positive_vec3": {
+      "type": "array",
+      "prefixItems": [
+        {"type": "number", "exclusiveMinimum": 0.0},
+        {"type": "number", "exclusiveMinimum": 0.0},
+        {"type": "number", "exclusiveMinimum": 0.0}
+      ],
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "exit": {
+      "type": "object",
+      "required": ["target_room", "door_pos", "width"],
+      "properties": {
+        "target_room": {
+          "type": "array",
+          "prefixItems": [{"type": "integer", "minimum": 0}, {"type": "integer", "minimum": 0}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "door_pos": {
+          "type": "array",
+          "prefixItems": [{"type": "integer", "minimum": 0}, {"type": "integer", "minimum": 0}],
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "width": {"type": "integer", "minimum": 1, "maximum": 6},
+        "height": {"type": "number", "exclusiveMinimum": 0.0},
+        "locked_by": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
