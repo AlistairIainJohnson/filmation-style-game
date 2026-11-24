@@ -16,6 +16,7 @@ func test_all_manifest_glb_assets_load_in_godot() -> void:
 		"res://assets/props/stone_pillar.glb",
 		"res://assets/props/arch_stone_doorway.glb",
 		"res://assets/props/wall_stone_panel.glb",
+		"res://assets/props/wall_stone_lintel.glb",
 		"res://assets/props/portcullis_gate.glb",
 		"res://assets/props/stone_block.glb",
 		"res://assets/props/moving_platform.glb",
@@ -117,6 +118,10 @@ func test_room_08_08_entities_use_normalized_3d_models_with_exact_colliders() ->
 
 	var gate: Node = entity_map.get("gate_01") as Node
 	assert_not_null(gate.get_node_or_null("ModelVisual"), "Portcullis must use portcullis_gate.glb visual")
+
+	var arch: Node = host.get_node_or_null("Architecture")
+	assert_not_null(arch)
+	assert_not_null(arch.get_node_or_null("WallLintelMasonry_north_00"), "Tall doorway lintel must attach wall_stone_lintel masonry")
 
 	var plate: Node = entity_map.get("plate_01") as Node
 	assert_not_null(plate.get_node_or_null("ModelVisual"), "TriggerSwitch must use pressure_plate.glb visual")

@@ -122,6 +122,18 @@
       "output_glb": "assets/props/wall_stone_panel.glb"
     },
     {
+      "id": "wall_stone_lintel",
+      "source_sprite": "assets/source_sprites/extracted/all/r01_c15.png",
+      "mode": "static",
+      "provider": "local_blender_sculpt",
+      "asset_kind": "prop_wall_lintel_panel",
+      "target_height": 3.0,
+      "max_tris": 3500,
+      "max_size_kb": 1024,
+      "add_col_suffix": "",
+      "output_glb": "assets/props/wall_stone_lintel.glb"
+    },
+    {
       "id": "portcullis_gate",
       "source_sprite": "assets/source_sprites/extracted/all/r01_c09.png",
       "mode": "static",

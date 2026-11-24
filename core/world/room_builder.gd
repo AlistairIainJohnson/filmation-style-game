@@ -382,6 +382,40 @@ func _attach_wall_masonry_span(
 		idx += 1
 
 
+func _attach_wall_lintel_masonry(
+	arch_root: Node3D,
+	prefix: String,
+	seg_start: float,
+	seg_end: float,
+	base_y: float,
+	lintel_h: float,
+	fixed_coord: float,
+	along_x: bool
+) -> void:
+	var span: float = seg_end - seg_start
+	if span <= 0.2 or lintel_h <= 0.2:
+		return
+	var panel_scene: PackedScene = _load_prop_scene("res://assets/props/wall_stone_lintel.glb")
+	if panel_scene == null:
+		return
+	var cursor: float = seg_start
+	var idx: int = 0
+	while cursor < seg_end - 0.05:
+		var seg_w: float = minf(2.0, seg_end - cursor)
+		var inst: Node3D = panel_scene.instantiate() as Node3D
+		inst.name = "%s_%02d" % [prefix, idx]
+		if along_x:
+			inst.position = Vector3(cursor + seg_w * 0.5, base_y, fixed_coord)
+		else:
+			inst.position = Vector3(fixed_coord, base_y, cursor + seg_w * 0.5)
+			inst.rotation_degrees.y = 90.0
+		inst.scale = Vector3(seg_w / 2.0, lintel_h / 3.0, 1.0)
+		_configure_static_model_recursive(inst)
+		arch_root.add_child(inst)
+		cursor += seg_w
+		idx += 1
+
+
 func _build_wall_along_x(
 	arch_root: Node3D,
 	doorways_root: Node3D,
@@ -419,6 +453,7 @@ func _build_wall_along_x(
 	if is_tall_wall and wall_h > door_h:
 		var lintel_h: float = wall_h - door_h
 		_create_static_box(arch_root, "Wall_%s_Lintel" % dir_name, Vector3(door_x + door_w * 0.5, door_h + lintel_h * 0.5, z_center), Vector3(door_w, lintel_h, t), wall_mat)
+		_attach_wall_lintel_masonry(arch_root, "WallLintelMasonry_" + dir_name, door_x, door_x + door_w, door_h, lintel_h, 0.02, true)
 		var trim_box: StaticBody3D = _create_static_box(arch_root, "Trim_%s_Top" % dir_name, Vector3(door_x + door_w * 0.5, door_h + 0.1, z_center), Vector3(door_w + 0.3, 0.2, t + 0.12), trim_mat)
 		var arch_scene: PackedScene = _load_prop_scene("res://assets/props/arch_stone_doorway.glb")
 		if arch_scene != null:
@@ -494,6 +529,7 @@ func _build_wall_along_z(
 	if is_tall_wall and wall_h > door_h:
 		var lintel_h: float = wall_h - door_h
 		_create_static_box(arch_root, "Wall_%s_Lintel" % dir_name, Vector3(x_center, door_h + lintel_h * 0.5, door_z + door_w * 0.5), Vector3(t, lintel_h, door_w), wall_mat)
+		_attach_wall_lintel_masonry(arch_root, "WallLintelMasonry_" + dir_name, door_z, door_z + door_w, door_h, lintel_h, 0.02, false)
 		var trim_box: StaticBody3D = _create_static_box(arch_root, "Trim_%s_Top" % dir_name, Vector3(x_center, door_h + 0.1, door_z + door_w * 0.5), Vector3(t + 0.12, 0.2, door_w + 0.3), trim_mat)
 		var arch_scene: PackedScene = _load_prop_scene("res://assets/props/arch_stone_doorway.glb")
 		if arch_scene != null:

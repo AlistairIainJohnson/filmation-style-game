@@ -719,6 +719,24 @@ def build_prop_wall_panel() -> None:
     add_beveled_box("TopCoping", (0.0, 0.0, 5.84), (2.0, 0.26, 0.32), dark_mat, bevel_width=0.025)
 
 
+def build_prop_wall_lintel_panel() -> None:
+    """Upper stone lintel masonry & coping cornice continuing wall_stone_panel above doorways (2.0w x 3.0h x 0.24d)."""
+    wall_mat = make_pbr_material("WallBase", (0.42, 0.40, 0.38, 1.0), metallic=0.0, roughness=0.86)
+    stone_mat = make_pbr_material("WallBrickA", (0.46, 0.43, 0.39, 1.0), metallic=0.03, roughness=0.82)
+    dark_mat = make_pbr_material("WallBrickB", (0.35, 0.33, 0.31, 1.0), metallic=0.04, roughness=0.88)
+
+    add_beveled_box("WallBackPlate", (0.0, 0.04, 1.42), (1.98, 0.12, 2.84), wall_mat, bevel_width=0.01)
+    brick_rows = [
+        (1.15, [(-0.50, 0.82), (0.46, 0.84)], stone_mat),
+        (2.30, [(-0.64, 0.62), (0.02, 0.68), (0.66, 0.60)], dark_mat),
+    ]
+    for r_idx, (rz, blocks, bmat) in enumerate(brick_rows):
+        for b_idx, (bx, bw) in enumerate(blocks):
+            add_beveled_box(f"Brick_{r_idx}_{b_idx}", (bx, 0.0, rz), (bw, 0.18, 0.38), bmat, bevel_width=0.025)
+
+    add_beveled_box("TopCoping", (0.0, 0.0, 2.84), (2.0, 0.26, 0.32), dark_mat, bevel_width=0.025)
+
+
 def build_prop_portcullis() -> None:
     """Iron spear-tipped lattice portcullis gate matching sprite R01C09-10 (1.9w x 2.6h)."""
     iron_mat = make_pbr_material("PortcullisIron", (0.22, 0.23, 0.26, 1.0), metallic=0.86, roughness=0.44)
@@ -879,6 +897,8 @@ def main() -> int:
         build_prop_arch_doorway()
     elif args.kind == "prop_wall_panel":
         build_prop_wall_panel()
+    elif args.kind == "prop_wall_lintel_panel":
+        build_prop_wall_lintel_panel()
     elif args.kind == "prop_portcullis":
         build_prop_portcullis()
     elif args.kind == "prop_stone_block":
