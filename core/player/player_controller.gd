@@ -12,6 +12,10 @@ const WORLD_COLLISION_MASK: int = 1 | 4
 
 @export var move_speed: float = 4.2
 @export var push_speed: float = 2.4
+@export var ground_accel: float = 56.0
+@export var ground_decel: float = 52.0
+@export var turn_speed: float = 18.0
+@export var diagonal_release_debounce: float = 0.045
 @export var push_normal_y_threshold: float = 0.25
 @export var jump_height: float = 1.35
 @export var time_to_apex: float = 0.28
@@ -37,6 +41,13 @@ var collision_shape: CollisionShape3D
 var _camera_rig: DioramaCameraRig
 var _coyote_timer: float = 0.0
 var _jump_buffer_timer: float = 0.0
+var _target_yaw: float = 0.0
+var _has_facing_target: bool = false
+var _prev_input_was_diagonal: bool = false
+var _diag_debounce_timer: float = 0.0
+var _last_diag_yaw: float = 0.0
+var _was_on_floor: bool = true
+var _land_timer: float = 0.0
 
 
 func _init() -> void:
@@ -222,6 +233,11 @@ func _physics_process(delta: float) -> void:
 		sync_shader_world_pos()
 
 
+func _process(_delta: float) -> void:
+	if is_inside_tree():
+		sync_shader_world_pos(true)
+
+
 func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) -> void:
 	if is_on_floor():
 		_coyote_timer = coyote_time
@@ -234,11 +250,37 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) ->
 		_jump_buffer_timer = maxf(0.0, _jump_buffer_timer - delta)
 
 	var dir: Vector3 = compute_move_direction(input_vec)
-	velocity.x = dir.x * move_speed
-	velocity.z = dir.z * move_speed
+	var horiz_vel := Vector2(velocity.x, velocity.z)
+	var target_vel := Vector2(dir.x, dir.z) * move_speed
+	var accel_rate: float = ground_accel if dir.length_squared() > 0.001 else ground_decel
+	horiz_vel = horiz_vel.move_toward(target_vel, accel_rate * delta)
+	velocity.x = horiz_vel.x
+	velocity.z = horiz_vel.y
 
-	if dir.length_squared() > 0.001 and visual_root != null:
-		visual_root.rotation.y = atan2(-dir.x, -dir.z)
+	if dir.length_squared() > 0.001:
+		var is_diag: bool = absf(input_vec.x) > 0.2 and absf(input_vec.y) > 0.2
+		var desired_yaw: float = atan2(-dir.x, -dir.z)
+		if is_diag:
+			_prev_input_was_diagonal = true
+			_diag_debounce_timer = diagonal_release_debounce
+			_last_diag_yaw = desired_yaw
+			_target_yaw = desired_yaw
+			_has_facing_target = true
+		elif _prev_input_was_diagonal and _diag_debounce_timer > 0.0:
+			_diag_debounce_timer = maxf(0.0, _diag_debounce_timer - delta)
+			_target_yaw = _last_diag_yaw
+			_has_facing_target = true
+		else:
+			_prev_input_was_diagonal = false
+			_diag_debounce_timer = 0.0
+			_target_yaw = desired_yaw
+			_has_facing_target = true
+	else:
+		_prev_input_was_diagonal = false
+		_diag_debounce_timer = 0.0
+
+	if visual_root != null and _has_facing_target:
+		visual_root.rotation.y = lerp_angle(visual_root.rotation.y, _target_yaw, 1.0 - exp(-turn_speed * delta))
 
 	if _jump_buffer_timer > 0.0 and _coyote_timer > 0.0:
 		velocity.y = jump_velocity
@@ -250,6 +292,13 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) ->
 		velocity.y -= g * delta
 
 	move_and_slide()
+
+	var grounded_now: bool = is_on_floor()
+	if grounded_now and not _was_on_floor:
+		_land_timer = 0.14
+	elif _land_timer > 0.0:
+		_land_timer = maxf(0.0, _land_timer - delta)
+	_was_on_floor = grounded_now
 
 	var is_pushing: bool = false
 	if dir.length_squared() > 0.001:
@@ -275,18 +324,28 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) ->
 
 
 func _update_anim_state(dir: Vector3, is_pushing: bool) -> void:
+	var horiz_speed: float = Vector2(velocity.x, velocity.z).length()
 	var next_anim: StringName = &"idle"
 	if not is_on_floor():
 		next_anim = &"jump" if velocity.y > 0.0 else &"fall"
 	elif is_pushing:
 		next_anim = &"push"
-	elif dir.length_squared() > 0.001:
+	elif dir.length_squared() > 0.001 or horiz_speed > 0.35:
 		next_anim = &"walk"
+	elif _land_timer > 0.0:
+		next_anim = &"land"
 
 	if next_anim != current_anim_state:
 		current_anim_state = next_anim
 		if anim_player != null and anim_player.has_animation(next_anim):
-			anim_player.play(next_anim)
+			var blend_sec: float = 0.06 if (next_anim == &"jump" or next_anim == &"land") else 0.12
+			anim_player.play(next_anim, blend_sec)
+
+	if anim_player != null:
+		if current_anim_state == &"walk":
+			anim_player.speed_scale = clampf(horiz_speed / maxf(move_speed, 0.01), 0.35, 1.35)
+		else:
+			anim_player.speed_scale = 1.0
 
 
 static func _apply_visual_layer_recursive(node: Node, layer_mask: int) -> void:
@@ -298,15 +357,17 @@ static func _apply_visual_layer_recursive(node: Node, layer_mask: int) -> void:
 		_apply_visual_layer_recursive(child, layer_mask)
 
 
-func sync_shader_world_pos() -> void:
-	RenderingServer.global_shader_parameter_set(&"player_world_pos", global_position + Vector3(0.0, 0.75, 0.0))
-	update_occluder_cutaways()
+func sync_shader_world_pos(use_interpolated: bool = false) -> void:
+	var origin: Vector3 = get_global_transform_interpolated().origin if (use_interpolated and is_inside_tree()) else global_position
+	RenderingServer.global_shader_parameter_set(&"player_world_pos", origin + Vector3(0.0, 0.75, 0.0))
+	update_occluder_cutaways(origin)
 
 
-func update_occluder_cutaways() -> void:
+func update_occluder_cutaways(world_origin: Vector3 = Vector3.INF) -> void:
 	if not is_inside_tree():
 		return
 
+	var base_origin: Vector3 = global_position if world_origin == Vector3.INF else world_origin
 	var cam_dir: Vector3 = Vector3(1.0, 1.0, 1.0).normalized()
 	var cam_right: Vector3 = Vector3(0.70710678, 0.0, -0.70710678)
 	if _camera_rig != null and is_instance_valid(_camera_rig):
@@ -315,11 +376,11 @@ func update_occluder_cutaways() -> void:
 		cam_right = _camera_rig.get_camera_right_xz()
 
 	var sample_origins: Array[Vector3] = [
-		global_position + Vector3(0.0, 0.30, 0.0),
-		global_position + Vector3(0.0, 0.75, 0.0),
-		global_position + Vector3(0.0, 1.20, 0.0),
-		global_position + Vector3(0.0, 0.75, 0.0) + cam_right * 0.20,
-		global_position + Vector3(0.0, 0.75, 0.0) - cam_right * 0.20
+		base_origin + Vector3(0.0, 0.30, 0.0),
+		base_origin + Vector3(0.0, 0.75, 0.0),
+		base_origin + Vector3(0.0, 1.20, 0.0),
+		base_origin + Vector3(0.0, 0.75, 0.0) + cam_right * 0.20,
+		base_origin + Vector3(0.0, 0.75, 0.0) - cam_right * 0.20
 	]
 
 	for occ: Node in get_tree().get_nodes_in_group("foreground_occluders"):

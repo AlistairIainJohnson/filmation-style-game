@@ -321,6 +321,7 @@ func _spawn_player_in_room(spawn_dir: String) -> void:
 	var spawn_pos: Vector3 = _resolve_spawn_position(spawn_dir)
 	active_player.position = spawn_pos
 	active_room_node.add_child(active_player)
+	active_player.reset_physics_interpolation()
 	active_player.sync_shader_world_pos()
 	if active_player.drop_shadow != null:
 		active_player.drop_shadow.call_deferred("update_shadow")
@@ -443,6 +444,7 @@ func hydrate_world_save(save_data: Dictionary) -> bool:
 		var p_arr: Array = save_data["player_pos"] as Array
 		if p_arr.size() >= 3:
 			active_player.global_position = Vector3(float(p_arr[0]), float(p_arr[1]), float(p_arr[2]))
+			active_player.reset_physics_interpolation()
 			active_player.sync_shader_world_pos()
 	return true
 

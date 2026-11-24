@@ -14,6 +14,8 @@ const WORLD_COLLISION_MASK: int = 1 | 4
 
 var shape_cast: ShapeCast3D
 var decal: Decal
+var _has_ground_hit: bool = false
+var _last_hit_y: float = 0.0
 
 
 func _init() -> void:
@@ -44,6 +46,7 @@ func _ensure_nodes() -> void:
 		decal.lower_fade = 0.05
 		decal.texture_albedo = _create_radial_shadow_texture()
 		decal.modulate = Color(1.0, 1.0, 1.0, max_alpha)
+		decal.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 		add_child(decal)
 
 
@@ -65,6 +68,18 @@ func _physics_process(_delta: float) -> void:
 	update_shadow()
 
 
+func _process(_delta: float) -> void:
+	if not _has_ground_hit or not is_inside_tree() or decal == null or not is_instance_valid(decal):
+		return
+	var interp_origin: Vector3 = get_global_transform_interpolated().origin
+	var height_above: float = maxf(0.0, interp_origin.y - _last_hit_y)
+	var t: float = clampf(height_above / max_fade_height, 0.0, 1.0)
+	decal.global_position = Vector3(interp_origin.x, _last_hit_y + 0.02, interp_origin.z)
+	var diam: float = lerpf(base_radius * 2.0, base_radius * 1.3, t)
+	decal.size = Vector3(diam, 0.45, diam)
+	decal.modulate = Color(1.0, 1.0, 1.0, lerpf(max_alpha, min_alpha, t))
+
+
 func update_shadow() -> void:
 	_ensure_nodes()
 	if not is_inside_tree():
@@ -78,6 +93,8 @@ func update_shadow() -> void:
 			var pt: Vector3 = shape_cast.get_collision_point(i)
 			if pt.y > hit_y:
 				hit_y = pt.y
+		_has_ground_hit = true
+		_last_hit_y = hit_y
 		var height_above: float = maxf(0.0, global_position.y - hit_y)
 		var t: float = clampf(height_above / max_fade_height, 0.0, 1.0)
 		decal.visible = true
@@ -86,4 +103,5 @@ func update_shadow() -> void:
 		decal.size = Vector3(diam, 0.45, diam)
 		decal.modulate = Color(1.0, 1.0, 1.0, lerpf(max_alpha, min_alpha, t))
 	else:
+		_has_ground_hit = false
 		decal.visible = false

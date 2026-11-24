@@ -249,9 +249,17 @@ func test_foreground_occluders_only_use_cutaway_shader() -> void:
 				assert_true(opaque_box.material is StandardMaterial3D, opaque_name + " must stay opaque StandardMaterial3D")
 				assert_false(opaque_node.is_in_group("foreground_occluders"), opaque_name + " must NOT be in foreground_occluders")
 
-		var tile: StaticBody3D = arch_root.get_node("FloorTiles").get_child(0) as StaticBody3D
+		var tile: Node3D = arch_root.get_node("FloorTiles").get_child(0) as Node3D
 		var tile_box: BoxMesh = (tile.get_node("Mesh") as MeshInstance3D).mesh as BoxMesh
 		assert_true(tile_box.material is StandardMaterial3D, "Floor tiles must NOT use cutaway shader (protect Early-Z)")
+		var floor_col: StaticBody3D = arch_root.get_node_or_null("FloorCollision") as StaticBody3D
+		assert_not_null(floor_col, room_path + " must expose merged FloorCollision StaticBody3D")
+		var merged_shapes: int = 0
+		for fc: Node in floor_col.get_children():
+			if fc is CollisionShape3D:
+				merged_shapes += 1
+		assert_gt(merged_shapes, 0)
+		assert_lt(merged_shapes, 20, room_path + " floor colliders must be merged into few boxes")
 
 
 func test_pillar_cutaway_activates_only_when_player_is_behind_pillar() -> void:
@@ -324,3 +332,65 @@ func _assert_cutaway_shadow_caster_valid(occ: Node, label: String) -> void:
 		assert_gt(visual_meshes.size(), 0, label + " PillarModel must contain visual MeshInstance3D nodes")
 		for mi: MeshInstance3D in visual_meshes:
 			assert_eq(mi.cast_shadow, GeometryInstance3D.SHADOW_CASTING_SETTING_OFF, label + " visual PillarModel must not cast shadow")
+
+
+func test_smooth_movement_physics_interpolation_and_animation_blending() -> void:
+	assert_true(bool(ProjectSettings.get_setting("physics/common/physics_interpolation", false)), "3D physics interpolation must be enabled in project.godot")
+
+	var arena: Node3D = _create_floor_and_block_arena()
+	var player := PlayerController.new()
+	player.enable_player_input = false
+	player.move_mode = PlayerController.MoveMode.ISO_AXIS_4_WAY
+	player.position = Vector3(-4.0, 0.0, 0.0)
+	arena.add_child(player)
+
+	await wait_physics_frames(3)
+	player.step_movement(Vector2.ZERO, false, 1.0 / 60.0)
+	await wait_physics_frames(1)
+
+	# 1. Acceleration ramp: 1 tick produces partial speed, ~8 ticks reaches full speed
+	player.step_movement(Vector2(1.0, 0.0), false, 1.0 / 60.0)
+	var first_speed: float = Vector2(player.velocity.x, player.velocity.z).length()
+	assert_gt(first_speed, 0.1, "Acceleration ramp must start moving on first tick")
+	assert_lt(first_speed, player.move_speed, "Acceleration ramp must not snap to full speed in 1 tick")
+
+	for _i: int in range(8):
+		player.step_movement(Vector2(1.0, 0.0), false, 1.0 / 60.0)
+	var cruise_speed: float = Vector2(player.velocity.x, player.velocity.z).length()
+	assert_almost_eq(cruise_speed, player.move_speed, 0.05, "Player must reach move_speed within ~8 ticks")
+
+	# 2. Smooth 180-degree facing turn (exponential damping rather than 1-tick snap)
+	var yaw_before: float = player.visual_root.rotation.y
+	player.step_movement(Vector2(-1.0, 0.0), false, 1.0 / 60.0)
+	var yaw_after_1: float = player.visual_root.rotation.y
+	var target_reverse_yaw: float = atan2(1.0, 0.0)
+	assert_gt(absf(angle_difference(yaw_after_1, target_reverse_yaw)), 0.5, "180-degree turn must damp over multiple ticks instead of snapping")
+	for _i: int in range(25):
+		player.step_movement(Vector2(-1.0, 0.0), false, 1.0 / 60.0)
+	assert_lt(absf(angle_difference(player.visual_root.rotation.y, target_reverse_yaw)), 0.05, "Facing yaw must converge smoothly")
+	assert_ne(yaw_before, player.visual_root.rotation.y)
+
+	# 3. Diagonal release debounce preserves diagonal heading across a 1-tick partial key release
+	player.set_move_mode(PlayerController.MoveMode.SCREEN_8_WAY)
+	var expected_diag_dir: Vector3 = player.compute_move_direction(Vector2(1.0, 1.0))
+	var diag_target: float = atan2(-expected_diag_dir.x, -expected_diag_dir.z)
+	for _i: int in range(25):
+		player.step_movement(Vector2(1.0, 1.0), false, 1.0 / 60.0)
+	var diag_yaw: float = player.visual_root.rotation.y
+	player.step_movement(Vector2(1.0, 0.0), false, 1.0 / 60.0)
+	assert_lt(absf(angle_difference(player.visual_root.rotation.y, diag_target)), 0.05, "Single-tick diagonal release must keep diagonal heading")
+	assert_lt(absf(angle_difference(player.visual_root.rotation.y, diag_yaw)), 0.05)
+
+	# 4. Touchdown triggers 'land' clip when horizontally settled
+	player.velocity = Vector3.ZERO
+	player.position = Vector3(-4.0, 0.5, 0.0)
+	player.reset_physics_interpolation()
+	await wait_physics_frames(2)
+	var saw_land: bool = false
+	for _i: int in range(25):
+		player.step_movement(Vector2.ZERO, false, 1.0 / 60.0)
+		await wait_physics_frames(1)
+		if player.current_anim_state == &"land":
+			saw_land = true
+			break
+	assert_true(saw_land, "Landing after airborne descent must play the 'land' animation state")

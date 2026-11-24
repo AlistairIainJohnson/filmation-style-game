@@ -5,7 +5,7 @@ extends RefCounted
 ## idle, walk, push, jump, fall, and land immediately.
 
 const LIBRARY_PATH: String = "res://assets/animations/humanoid_core.res"
-const LIBRARY_FORMAT_VERSION: int = 3
+const LIBRARY_FORMAT_VERSION: int = 4
 const ANIMATED_BONES: Array[String] = [
 	"Spine",
 	"Chest",
@@ -99,6 +99,14 @@ static func attach_to_character(model_root: Node) -> AnimationPlayer:
 							pose_q = -pose_q
 						dup.track_set_key_value(t_idx, k_idx, pose_q)
 						prev_q = pose_q
+			elif dup.track_get_type(t_idx) == Animation.TYPE_POSITION_3D and colon_idx >= 0:
+				var pos_bone_name: String = old_path.substr(colon_idx + 1)
+				var pos_bone_idx: int = skel.find_bone(pos_bone_name)
+				if pos_bone_idx >= 0:
+					var rest_origin: Vector3 = skel.get_bone_rest(pos_bone_idx).origin
+					for k_idx: int in range(dup.track_get_key_count(t_idx)):
+						var delta_pos: Vector3 = dup.track_get_key_value(t_idx, k_idx) as Vector3
+						dup.track_set_key_value(t_idx, k_idx, rest_origin + delta_pos)
 		bound_lib.add_animation(anim_name, dup)
 
 	player.add_animation_library(&"", bound_lib)
@@ -108,7 +116,8 @@ static func attach_to_character(model_root: Node) -> AnimationPlayer:
 static func _add_rot_track(anim: Animation, bone: String, keys: Array[Array]) -> void:
 	var idx: int = anim.add_track(Animation.TYPE_ROTATION_3D)
 	anim.track_set_path(idx, NodePath("Skeleton3D:" + bone))
-	anim.track_set_interpolation_type(idx, Animation.INTERPOLATION_LINEAR)
+	anim.track_set_interpolation_type(idx, Animation.INTERPOLATION_CUBIC)
+	anim.track_set_interpolation_loop_wrap(idx, anim.loop_mode != Animation.LOOP_NONE)
 	for kf: Array in keys:
 		var time_sec: float = float(kf[0])
 		var euler_deg: Vector3 = kf[1] as Vector3
@@ -116,13 +125,32 @@ static func _add_rot_track(anim: Animation, bone: String, keys: Array[Array]) ->
 		anim.rotation_track_insert_key(idx, time_sec, q)
 
 
+static func _add_pos_track(anim: Animation, bone: String, keys: Array[Array]) -> void:
+	var idx: int = anim.add_track(Animation.TYPE_POSITION_3D)
+	anim.track_set_path(idx, NodePath("Skeleton3D:" + bone))
+	anim.track_set_interpolation_type(idx, Animation.INTERPOLATION_CUBIC)
+	anim.track_set_interpolation_loop_wrap(idx, anim.loop_mode != Animation.LOOP_NONE)
+	for kf: Array in keys:
+		var time_sec: float = float(kf[0])
+		var offset: Vector3 = kf[1] as Vector3
+		anim.position_track_insert_key(idx, time_sec, offset)
+
+
 static func _fill_missing_neutral_tracks(anim: Animation) -> void:
 	var keyed_bones: Dictionary = {}
+	var has_hips_pos: bool = false
 	for t_idx: int in range(anim.get_track_count()):
 		var p_str: String = str(anim.track_get_path(t_idx))
 		var colon_idx: int = p_str.find(":")
 		if colon_idx >= 0:
-			keyed_bones[p_str.substr(colon_idx + 1)] = true
+			var b_name: String = p_str.substr(colon_idx + 1)
+			if anim.track_get_type(t_idx) == Animation.TYPE_POSITION_3D and b_name == "Hips":
+				has_hips_pos = true
+			elif anim.track_get_type(t_idx) == Animation.TYPE_ROTATION_3D:
+				keyed_bones[b_name] = true
+
+	if not has_hips_pos:
+		_add_pos_track(anim, "Hips", [[0.0, Vector3.ZERO], [anim.length, Vector3.ZERO]])
 
 	for bone_name: String in ANIMATED_BONES:
 		if not keyed_bones.has(bone_name):
@@ -143,15 +171,17 @@ static func _make_walk_anim() -> Animation:
 	var a := Animation.new()
 	a.length = 0.6
 	a.loop_mode = Animation.LOOP_LINEAR
-	_add_rot_track(a, "LeftUpperLeg", [[0.0, Vector3(-28, 0, 0)], [0.3, Vector3(28, 0, 0)], [0.6, Vector3(-28, 0, 0)]])
-	_add_rot_track(a, "LeftLowerLeg", [[0.0, Vector3(10, 0, 0)], [0.3, Vector3(22, 0, 0)], [0.6, Vector3(10, 0, 0)]])
-	_add_rot_track(a, "RightUpperLeg", [[0.0, Vector3(28, 0, 0)], [0.3, Vector3(-28, 0, 0)], [0.6, Vector3(28, 0, 0)]])
-	_add_rot_track(a, "RightLowerLeg", [[0.0, Vector3(22, 0, 0)], [0.3, Vector3(10, 0, 0)], [0.6, Vector3(22, 0, 0)]])
-	_add_rot_track(a, "LeftUpperArm", [[0.0, Vector3(22, 0, 0)], [0.3, Vector3(-22, 0, 0)], [0.6, Vector3(22, 0, 0)]])
-	_add_rot_track(a, "LeftLowerArm", [[0.0, Vector3(-12, 0, 0)], [0.3, Vector3(-18, 0, 0)], [0.6, Vector3(-12, 0, 0)]])
-	_add_rot_track(a, "RightUpperArm", [[0.0, Vector3(-22, 0, 0)], [0.3, Vector3(22, 0, 0)], [0.6, Vector3(-22, 0, 0)]])
-	_add_rot_track(a, "RightLowerArm", [[0.0, Vector3(-18, 0, 0)], [0.3, Vector3(-12, 0, 0)], [0.6, Vector3(-18, 0, 0)]])
-	_add_rot_track(a, "Chest", [[0.0, Vector3(5, -5, 0)], [0.3, Vector3(5, 5, 0)], [0.6, Vector3(5, -5, 0)]])
+	_add_pos_track(a, "Hips", [[0.0, Vector3(0, -0.025, 0)], [0.15, Vector3(0, 0.025, 0)], [0.30, Vector3(0, -0.025, 0)], [0.45, Vector3(0, 0.025, 0)], [0.60, Vector3(0, -0.025, 0)]])
+	_add_rot_track(a, "LeftUpperLeg", [[0.0, Vector3(-28, 0, 0)], [0.15, Vector3(-2, 0, 0)], [0.30, Vector3(28, 0, 0)], [0.45, Vector3(-8, 0, 0)], [0.60, Vector3(-28, 0, 0)]])
+	_add_rot_track(a, "LeftLowerLeg", [[0.0, Vector3(10, 0, 0)], [0.15, Vector3(6, 0, 0)], [0.30, Vector3(22, 0, 0)], [0.45, Vector3(34, 0, 0)], [0.60, Vector3(10, 0, 0)]])
+	_add_rot_track(a, "RightUpperLeg", [[0.0, Vector3(28, 0, 0)], [0.15, Vector3(-8, 0, 0)], [0.30, Vector3(-28, 0, 0)], [0.45, Vector3(-2, 0, 0)], [0.60, Vector3(28, 0, 0)]])
+	_add_rot_track(a, "RightLowerLeg", [[0.0, Vector3(22, 0, 0)], [0.15, Vector3(34, 0, 0)], [0.30, Vector3(10, 0, 0)], [0.45, Vector3(6, 0, 0)], [0.60, Vector3(22, 0, 0)]])
+	_add_rot_track(a, "LeftUpperArm", [[0.0, Vector3(22, 0, 0)], [0.15, Vector3(0, 0, 0)], [0.30, Vector3(-22, 0, 0)], [0.45, Vector3(0, 0, 0)], [0.60, Vector3(22, 0, 0)]])
+	_add_rot_track(a, "LeftLowerArm", [[0.0, Vector3(-12, 0, 0)], [0.15, Vector3(-15, 0, 0)], [0.30, Vector3(-18, 0, 0)], [0.45, Vector3(-15, 0, 0)], [0.60, Vector3(-12, 0, 0)]])
+	_add_rot_track(a, "RightUpperArm", [[0.0, Vector3(-22, 0, 0)], [0.15, Vector3(0, 0, 0)], [0.30, Vector3(22, 0, 0)], [0.45, Vector3(0, 0, 0)], [0.60, Vector3(-22, 0, 0)]])
+	_add_rot_track(a, "RightLowerArm", [[0.0, Vector3(-18, 0, 0)], [0.15, Vector3(-15, 0, 0)], [0.30, Vector3(-12, 0, 0)], [0.45, Vector3(-15, 0, 0)], [0.60, Vector3(-18, 0, 0)]])
+	_add_rot_track(a, "Spine", [[0.0, Vector3(3, -2, 0)], [0.15, Vector3(1, 0, 0)], [0.30, Vector3(3, 2, 0)], [0.45, Vector3(1, 0, 0)], [0.60, Vector3(3, -2, 0)]])
+	_add_rot_track(a, "Chest", [[0.0, Vector3(5, -5, 0)], [0.15, Vector3(3, 0, 0)], [0.30, Vector3(5, 5, 0)], [0.45, Vector3(3, 0, 0)], [0.60, Vector3(5, -5, 0)]])
 	_add_rot_track(a, "Head", [[0.0, Vector3(-3, 0, 0)], [0.6, Vector3(-3, 0, 0)]])
 	_fill_missing_neutral_tracks(a)
 	return a
@@ -216,6 +246,7 @@ static func _make_land_anim() -> Animation:
 	var a := Animation.new()
 	a.length = 0.25
 	a.loop_mode = Animation.LOOP_NONE
+	_add_pos_track(a, "Hips", [[0.0, Vector3(0, -0.04, 0)], [0.25, Vector3.ZERO]])
 	_add_rot_track(a, "Spine", [[0.0, Vector3(15, 0, 0)], [0.25, Vector3(0, 0, 0)]])
 	_add_rot_track(a, "Chest", [[0.0, Vector3(5, 0, 0)], [0.25, Vector3(0, 0, 0)]])
 	_add_rot_track(a, "Head", [[0.0, Vector3(-8, 0, 0)], [0.25, Vector3(0, 0, 0)]])

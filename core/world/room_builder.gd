@@ -313,18 +313,73 @@ func _build_floor(arch_root: Node3D, room_data: Dictionary, width: int, depth: i
 	floor_group.name = "FloorTiles"
 	arch_root.add_child(floor_group)
 
+	var floor_body := StaticBody3D.new()
+	floor_body.name = "FloorCollision"
+	floor_body.collision_layer = 1
+	floor_body.collision_mask = 0
+	arch_root.add_child(floor_body)
+
+	var walkable: Array[bool] = []
+	var visited: Array[bool] = []
+	walkable.resize(width * depth)
+	visited.resize(width * depth)
+
 	for x: int in range(width):
 		for z: int in range(depth):
+			var idx: int = z * width + x
 			if void_lookup.has(Vector2i(x, z)):
+				walkable[idx] = false
+				visited[idx] = true
 				continue
+			walkable[idx] = true
+			visited[idx] = false
 			var tile_mat: StandardMaterial3D = mat_primary if ((x + z) % 2 == 0) else mat_checker
-			_create_static_box(
-				floor_group,
-				"Tile_%02d_%02d" % [x, z],
-				Vector3(float(x) + 0.5, -thickness * 0.5, float(z) + 0.5),
-				Vector3(1.0, thickness, 1.0),
-				tile_mat
-			)
+			var tile_node := Node3D.new()
+			tile_node.name = "Tile_%02d_%02d" % [x, z]
+			tile_node.position = Vector3(float(x) + 0.5, -thickness * 0.5, float(z) + 0.5)
+			var mesh_inst := MeshInstance3D.new()
+			mesh_inst.name = "Mesh"
+			mesh_inst.layers = 1
+			mesh_inst.gi_mode = GeometryInstance3D.GI_MODE_STATIC
+			var box_mesh := BoxMesh.new()
+			box_mesh.size = Vector3(1.0, thickness, 1.0)
+			box_mesh.material = tile_mat
+			mesh_inst.mesh = box_mesh
+			tile_node.add_child(mesh_inst)
+			floor_group.add_child(tile_node)
+
+	# Merge contiguous walkable cells into maximal BoxShape3D colliders to eliminate tile-seam snags.
+	for z: int in range(depth):
+		for x: int in range(width):
+			var start_idx: int = z * width + x
+			if visited[start_idx] or not walkable[start_idx]:
+				continue
+			var rw: int = 1
+			while x + rw < width:
+				var next_idx: int = z * width + (x + rw)
+				if visited[next_idx] or not walkable[next_idx]:
+					break
+				rw += 1
+			var rd: int = 1
+			while z + rd < depth:
+				var row_ok: bool = true
+				for dx: int in range(rw):
+					var cell_idx: int = (z + rd) * width + (x + dx)
+					if visited[cell_idx] or not walkable[cell_idx]:
+						row_ok = false
+						break
+				if not row_ok:
+					break
+				rd += 1
+			for dz: int in range(rd):
+				for dx: int in range(rw):
+					visited[(z + dz) * width + (x + dx)] = true
+			var col_shape := CollisionShape3D.new()
+			var col_box := BoxShape3D.new()
+			col_box.size = Vector3(float(rw), thickness, float(rd))
+			col_shape.shape = col_box
+			col_shape.position = Vector3(float(x) + float(rw) * 0.5, -thickness * 0.5, float(z) + float(rd) * 0.5)
+			floor_body.add_child(col_shape)
 
 
 func _build_perimeter_walls(
