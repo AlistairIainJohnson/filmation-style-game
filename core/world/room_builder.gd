@@ -63,6 +63,7 @@ func _create_cutaway_material(mat_name: String) -> ShaderMaterial:
 	mat.set_shader_parameter("albedo_color", Color(float(albedo_arr[0]), float(albedo_arr[1]), float(albedo_arr[2]), 1.0))
 	mat.set_shader_parameter("metallic_val", float(cfg.get("metallic", 0.04)))
 	mat.set_shader_parameter("roughness_val", float(cfg.get("roughness", 0.78)))
+	mat.set_shader_parameter("max_cutaway_transparency", 0.75)
 	_cutaway_material_resources[mat_name] = mat
 	return mat
 

@@ -221,6 +221,10 @@ func test_foreground_occluders_only_use_cutaway_shader() -> void:
 			var fg_mesh: MeshInstance3D = fg_child.get_node("Mesh") as MeshInstance3D
 			var fg_box: BoxMesh = fg_mesh.mesh as BoxMesh
 			assert_true(fg_box.material is ShaderMaterial, "%s %s must use cutaway ShaderMaterial" % [room_path, fg_child.name])
+			var fg_shader_mat: ShaderMaterial = fg_box.material as ShaderMaterial
+			var max_trans: float = float(fg_shader_mat.get_shader_parameter("max_cutaway_transparency"))
+			assert_gt(max_trans, 0.0, "Cutaway transparency cap must allow dithering")
+			assert_lt(max_trans, 1.0, "Cutaway transparency cap must leave foreground partially visible")
 			assert_true(fg_child.is_in_group("foreground_occluders"), "%s %s must belong to foreground_occluders group" % [room_path, fg_child.name])
 
 		var arch_root: Node3D = result.get("architecture_root") as Node3D

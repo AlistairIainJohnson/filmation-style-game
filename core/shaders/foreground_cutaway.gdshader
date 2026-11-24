@@ -9,6 +9,7 @@ uniform float roughness_val : hint_range(0.0, 1.0) = 0.78;
 uniform float cutaway_radius : hint_range(0.2, 4.0) = 1.25;
 uniform float cutaway_softness : hint_range(0.05, 1.5) = 0.45;
 uniform float depth_bias : hint_range(0.0, 1.0) = 0.10;
+uniform float max_cutaway_transparency : hint_range(0.0, 0.95) = 0.75;
 instance uniform float cutaway_active : hint_range(0.0, 1.0) = 0.0;
 
 float bayer8(ivec2 p) {
@@ -33,7 +34,7 @@ void fragment() {
 		vec3 player_view = (VIEW_MATRIX * vec4(player_world_pos, 1.0)).xyz;
 		if (VERTEX.z > player_view.z + depth_bias) {
 			float dist_xy = length(VERTEX.xy - player_view.xy);
-			float factor = (1.0 - smoothstep(cutaway_radius - cutaway_softness, cutaway_radius, dist_xy)) * cutaway_active;
+			float factor = (1.0 - smoothstep(cutaway_radius - cutaway_softness, cutaway_radius, dist_xy)) * cutaway_active * max_cutaway_transparency;
 			if (factor > bayer8(ivec2(FRAGCOORD.xy))) {
 				discard;
 			}
