@@ -30,11 +30,6 @@ func _ready() -> void:
 
 	_spawn_player(effective_lighting)
 
-	var lighting: DioramaLighting = build_result.get("lighting") as DioramaLighting
-	var arch_root: Node = build_result.get("architecture_root") as Node
-	if lighting != null and arch_root != null:
-		lighting.call_deferred("bake_gi_if_supported", arch_root)
-
 
 func _spawn_player(effective_lighting: String = "") -> void:
 	player = PlayerController.new()

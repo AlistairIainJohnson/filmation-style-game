@@ -33,6 +33,7 @@ var _transition_cooldown: float = 0.0
 var _cycle_connected: bool = false
 var _fade_layer: CanvasLayer
 var _fade_rect: ColorRect
+var _room_builder: RoomBuilder = RoomBuilder.new()
 
 
 func _ready() -> void:
@@ -244,19 +245,14 @@ func load_room(room_id: Vector2i, spawn_dir: String = "") -> bool:
 	room_container.add_child(active_room_node)
 
 	var lighting_preset: String = _get_lighting_preset_for_room(rmeta)
-	var builder := RoomBuilder.new()
-	current_build = builder.build_room_into(active_room_node, room_data, lighting_preset)
+	var gi_path: String = DioramaLighting.get_room_json_gi_path(json_path)
+	current_build = _room_builder.build_room_into(active_room_node, room_data, lighting_preset, "", gi_path)
 	current_room_id = room_id
 
 	_wire_room_entities(current_build.get("entity_map", {}) as Dictionary)
 	hydrate_room_state(room_id)
 	_wire_doorways(current_build.get("doorways_root") as Node3D)
 	_spawn_player_in_room(spawn_dir)
-
-	var lighting: DioramaLighting = current_build.get("lighting") as DioramaLighting
-	var arch_root: Node = current_build.get("architecture_root") as Node
-	if lighting != null and arch_root != null:
-		lighting.call_deferred("bake_gi_if_supported", arch_root)
 
 	preload_neighbors(room_id)
 	room_loaded.emit(room_id, current_build)
@@ -345,6 +341,9 @@ func transition_to_room(exit_dir: String, target_room: Vector2i, instant: bool =
 	if _transition_lock or not manifest.has(target_room):
 		return
 	_transition_lock = true
+	if active_player != null and is_instance_valid(active_player):
+		active_player.enable_player_input = false
+		active_player.velocity = Vector3.ZERO
 	room_transition_started.emit(current_room_id, target_room, exit_dir)
 
 	var incoming_spawn: String = str(OPPOSITE_DIR.get(exit_dir, ""))
@@ -380,9 +379,6 @@ func _on_cycle_phase_changed(_new_phase: int, _day_count: int) -> void:
 	if lighting != null:
 		var preset: Dictionary = DioramaLighting.load_preset_by_name(preset_name)
 		lighting.apply_preset(preset, room_dims)
-		var arch_root: Node = current_build.get("architecture_root") as Node
-		if arch_root != null:
-			lighting.call_deferred("bake_gi_if_supported", arch_root)
 
 	if active_player != null and is_instance_valid(active_player):
 		var cycle: Node = get_node_or_null("/root/CycleManager")

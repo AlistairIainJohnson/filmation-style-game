@@ -89,3 +89,10 @@ func test_room_builder_builds_room_08_08_from_json() -> void:
 	assert_not_null(rig)
 	assert_eq(rig.camera.projection, Camera3D.PROJECTION_ORTHOGONAL)
 	assert_lte(rig.camera.far, 80.0)
+
+	var lighting: DioramaLighting = result.get("lighting") as DioramaLighting
+	assert_not_null(lighting)
+	assert_not_null(lighting.voxel_gi.data, "Room 08_08 must attach pre-baked VoxelGIData")
+	var pre_gi_data: VoxelGIData = lighting.voxel_gi.data
+	lighting.apply_preset(DioramaLighting.load_preset_by_name("castle_moonlight_night"), Vector3(12.0, 6.0, 12.0))
+	assert_eq(lighting.voxel_gi.data, pre_gi_data, "Preset switch must preserve pre-baked VoxelGIData")

@@ -30,6 +30,7 @@ while IFS= read -r -d '' json_file; do
   echo "  JSON OK: ${json_file#./}"
 done < <(find data schemas -name '*.json' -print0 2>/dev/null)
 uv run --directory tools python validate_world.py
+uv run --directory tools python validate_knight_lore.py
 uv run --directory tools python asset_pipeline/validate_glb.py --manifest ../assets/asset_manifest.json
 uv run --directory tools python -m unittest discover -s . -p "test_*.py" -v
 
@@ -107,6 +108,30 @@ if [[ "$VISUAL" == true ]]; then
 
     FILMATION_LIGHTING_PRESET=castle_stone_skylight FILMATION_PLAYER_POS=5.5,0.0,4.5 FILMATION_PLAYER_FREEZE=1 FILMATION_PLAYER_YAW_DEG=135 FILMATION_PLAYER_ANIM=idle FILMATION_PLAYER_ANIM_TIME=0.0 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/rooms/test_chamber.tscn _verify/stage6_explorer_front.png 24
     verify_png "$ROOT_DIR/_verify/stage6_explorer_front.png"
+
+    FILMATION_KL_ROOM=136 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/tools/room_preview.tscn _verify/kl_phase1_room_136_cauldron.png 24
+    verify_png "$ROOT_DIR/_verify/kl_phase1_room_136_cauldron.png"
+
+    FILMATION_KL_ROOM=8 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/tools/room_preview.tscn _verify/kl_phase1_room_008_forest.png 24
+    verify_png "$ROOT_DIR/_verify/kl_phase1_room_008_forest.png"
+
+    FILMATION_KL_ROOM=16 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/tools/room_preview.tscn _verify/kl_phase1_room_016_high_arch.png 24
+    verify_png "$ROOT_DIR/_verify/kl_phase1_room_016_high_arch.png"
+
+    FILMATION_KL_ROOM=47 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/tools/room_preview.tscn _verify/kl_phase1_room_047_start.png 24
+    verify_png "$ROOT_DIR/_verify/kl_phase1_room_047_start.png"
+
+    FILMATION_KL_ROOM=109 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/tools/room_preview.tscn _verify/kl_phase2_props_charms.png 24
+    verify_png "$ROOT_DIR/_verify/kl_phase2_props_charms.png"
+
+    FILMATION_KL_ROOM=109 FILMATION_PLAYER_POS=3.6,0.0,1.6 FILMATION_PLAYER_FREEZE=1 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/tools/room_preview.tscn _verify/kl_phase2_room_109_cutaway.png 24
+    verify_png "$ROOT_DIR/_verify/kl_phase2_room_109_cutaway.png"
+
+    FILMATION_KL_ROOM=47 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase3_gameplay_hud.png 24
+    verify_png "$ROOT_DIR/_verify/kl_phase3_gameplay_hud.png"
+
+    FILMATION_KL_ROOM=136 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase3_cauldron_hint.png 36
+    verify_png "$ROOT_DIR/_verify/kl_phase3_cauldron_hint.png"
   fi
 fi
 

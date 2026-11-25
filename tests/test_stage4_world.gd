@@ -99,12 +99,18 @@ func test_doorway_area3d_triggers_transition() -> void:
 	assert_true(wm.load_room(Vector2i(8, 8), "north"))
 	await wait_physics_frames(4)
 
-	# Move player into Exit_east Area3D threshold (x=11.72, z=6.0)
+	# Standing near the doorway sill inside the room must NOT prematurely trigger transition
 	wm.active_player.global_position = Vector3(11.72, 0.0, 6.0)
+	wm.active_player.force_update_transform()
+	await wait_physics_frames(6)
+	assert_eq(wm.current_room_id, Vector2i(8, 8), "Standing inside room edge must not prematurely trigger doorway exit")
+
+	# Walking through the East portal (past x=12.0 into Exit_east Area3D) triggers transition to room (9,8)
+	wm.active_player.global_position = Vector3(12.45, 0.0, 6.0)
 	wm.active_player.force_update_transform()
 	await wait_physics_frames(8)
 
-	assert_eq(wm.current_room_id, Vector2i(9, 8), "Entering Exit_east Area3D must transition to room (9,8)")
+	assert_eq(wm.current_room_id, Vector2i(9, 8), "Walking into Exit_east portal Area3D must transition to room (9,8)")
 
 
 func test_cycle_manager_day_night_lighting_and_jump_height() -> void:

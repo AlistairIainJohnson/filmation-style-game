@@ -1,0 +1,1411 @@
+{
+  "room_sizes": {
+    "0": {
+      "half_x": 64,
+      "half_y": 64,
+      "floor_z": 128
+    },
+    "1": {
+      "half_x": 32,
+      "half_y": 64,
+      "floor_z": 128
+    },
+    "2": {
+      "half_x": 64,
+      "half_y": 32,
+      "floor_z": 128
+    }
+  },
+  "backgrounds": {
+    "0": {
+      "id": 0,
+      "name": "arch_n",
+      "objects": [
+        {
+          "sprite_id": 2,
+          "sprite_name": "Sprite_Stone_Arch_Near",
+          "x": 141,
+          "y": 196,
+          "z": 128,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 3,
+          "sprite_name": "Sprite_Stone_Arch_Far",
+          "x": 115,
+          "y": 196,
+          "z": 128,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "1": {
+      "id": 1,
+      "name": "arch_e",
+      "objects": [
+        {
+          "sprite_id": 2,
+          "sprite_name": "Sprite_Stone_Arch_Near",
+          "x": 196,
+          "y": 115,
+          "z": 128,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 3,
+          "sprite_name": "Sprite_Stone_Arch_Far",
+          "x": 196,
+          "y": 141,
+          "z": 128,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "2": {
+      "id": 2,
+      "name": "arch_s",
+      "objects": [
+        {
+          "sprite_id": 2,
+          "sprite_name": "Sprite_Stone_Arch_Near",
+          "x": 141,
+          "y": 59,
+          "z": 128,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 3,
+          "sprite_name": "Sprite_Stone_Arch_Far",
+          "x": 115,
+          "y": 59,
+          "z": 128,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "3": {
+      "id": 3,
+      "name": "arch_w",
+      "objects": [
+        {
+          "sprite_id": 2,
+          "sprite_name": "Sprite_Stone_Arch_Near",
+          "x": 59,
+          "y": 115,
+          "z": 128,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 3,
+          "sprite_name": "Sprite_Stone_Arch_Far",
+          "x": 59,
+          "y": 141,
+          "z": 128,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "4": {
+      "id": 4,
+      "name": "tree_arch_n",
+      "objects": [
+        {
+          "sprite_id": 4,
+          "sprite_name": "Sprite_Tree_Arch_Near",
+          "x": 141,
+          "y": 196,
+          "z": 128,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 5,
+          "sprite_name": "Sprite_Tree_Arch_Far",
+          "x": 115,
+          "y": 196,
+          "z": 128,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "5": {
+      "id": 5,
+      "name": "tree_arch_e",
+      "objects": [
+        {
+          "sprite_id": 4,
+          "sprite_name": "Sprite_Tree_Arch_Near",
+          "x": 196,
+          "y": 115,
+          "z": 128,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 5,
+          "sprite_name": "Sprite_Tree_Arch_Far",
+          "x": 196,
+          "y": 141,
+          "z": 128,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "6": {
+      "id": 6,
+      "name": "tree_arch_s",
+      "objects": [
+        {
+          "sprite_id": 4,
+          "sprite_name": "Sprite_Tree_Arch_Near",
+          "x": 141,
+          "y": 59,
+          "z": 128,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 5,
+          "sprite_name": "Sprite_Tree_Arch_Far",
+          "x": 115,
+          "y": 59,
+          "z": 128,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "7": {
+      "id": 7,
+      "name": "tree_arch_w",
+      "objects": [
+        {
+          "sprite_id": 4,
+          "sprite_name": "Sprite_Tree_Arch_Near",
+          "x": 59,
+          "y": 115,
+          "z": 128,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 5,
+          "sprite_name": "Sprite_Tree_Arch_Far",
+          "x": 59,
+          "y": 141,
+          "z": 128,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "8": {
+      "id": 8,
+      "name": "gate_n",
+      "objects": [
+        {
+          "sprite_id": 8,
+          "sprite_name": "Sprite_Portcullis",
+          "x": 128,
+          "y": 190,
+          "z": 160,
+          "w": 12,
+          "d": 1,
+          "h": 32,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "9": {
+      "id": 9,
+      "name": "gate_e",
+      "objects": [
+        {
+          "sprite_id": 8,
+          "sprite_name": "Sprite_Portcullis",
+          "x": 190,
+          "y": 128,
+          "z": 160,
+          "w": 1,
+          "d": 12,
+          "h": 32,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "10": {
+      "id": 10,
+      "name": "gate_s",
+      "objects": [
+        {
+          "sprite_id": 8,
+          "sprite_name": "Sprite_Portcullis",
+          "x": 128,
+          "y": 65,
+          "z": 160,
+          "w": 12,
+          "d": 1,
+          "h": 32,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "11": {
+      "id": 11,
+      "name": "gate_w",
+      "objects": [
+        {
+          "sprite_id": 8,
+          "sprite_name": "Sprite_Portcullis",
+          "x": 65,
+          "y": 128,
+          "z": 160,
+          "w": 1,
+          "d": 12,
+          "h": 32,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "12": {
+      "id": 12,
+      "name": "wall_size_1",
+      "objects": [
+        {
+          "sprite_id": 13,
+          "sprite_name": "Sprite_Wall_Corner_Left",
+          "x": 63,
+          "y": 184,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 14,
+          "sprite_name": "Sprite_Wall_Corner_Right",
+          "x": 71,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 63,
+          "y": 73,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 184,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 63,
+          "y": 73,
+          "z": 172,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 184,
+          "y": 192,
+          "z": 172,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 10,
+          "sprite_name": "Sprite_Wall_Bricks_Large",
+          "x": 92,
+          "y": 192,
+          "z": 128,
+          "w": 20,
+          "d": 0,
+          "h": 20,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 11,
+          "sprite_name": "Sprite_Wall_Bricks_Medium",
+          "x": 63,
+          "y": 92,
+          "z": 152,
+          "w": 0,
+          "d": 12,
+          "h": 20,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 12,
+          "sprite_name": "Sprite_Wall_Bricks_Small",
+          "x": 63,
+          "y": 160,
+          "z": 152,
+          "w": 0,
+          "d": 12,
+          "h": 12,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 11,
+          "sprite_name": "Sprite_Wall_Bricks_Medium",
+          "x": 164,
+          "y": 192,
+          "z": 152,
+          "w": 12,
+          "d": 0,
+          "h": 20,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 10,
+          "sprite_name": "Sprite_Wall_Bricks_Large",
+          "x": 63,
+          "y": 109,
+          "z": 177,
+          "w": 0,
+          "d": 20,
+          "h": 20,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 12,
+          "sprite_name": "Sprite_Wall_Bricks_Small",
+          "x": 96,
+          "y": 192,
+          "z": 160,
+          "w": 12,
+          "d": 0,
+          "h": 12,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 10,
+          "sprite_name": "Sprite_Wall_Bricks_Large",
+          "x": 144,
+          "y": 192,
+          "z": 176,
+          "w": 20,
+          "d": 0,
+          "h": 20,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "13": {
+      "id": 13,
+      "name": "wall_size_2",
+      "objects": [
+        {
+          "sprite_id": 13,
+          "sprite_name": "Sprite_Wall_Corner_Left",
+          "x": 63,
+          "y": 152,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 14,
+          "sprite_name": "Sprite_Wall_Corner_Right",
+          "x": 71,
+          "y": 160,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 63,
+          "y": 99,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 184,
+          "y": 160,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 63,
+          "y": 99,
+          "z": 172,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 184,
+          "y": 160,
+          "z": 172,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 13,
+          "sprite_name": "Sprite_Wall_Corner_Left",
+          "x": 63,
+          "y": 152,
+          "z": 168,
+          "w": 0,
+          "d": 8,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 14,
+          "sprite_name": "Sprite_Wall_Corner_Right",
+          "x": 71,
+          "y": 160,
+          "z": 168,
+          "w": 8,
+          "d": 0,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 184,
+          "y": 160,
+          "z": 208,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 10,
+          "sprite_name": "Sprite_Wall_Bricks_Large",
+          "x": 128,
+          "y": 160,
+          "z": 128,
+          "w": 20,
+          "d": 0,
+          "h": 20,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 10,
+          "sprite_name": "Sprite_Wall_Bricks_Large",
+          "x": 63,
+          "y": 126,
+          "z": 176,
+          "w": 0,
+          "d": 20,
+          "h": 20,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 11,
+          "sprite_name": "Sprite_Wall_Bricks_Medium",
+          "x": 96,
+          "y": 160,
+          "z": 144,
+          "w": 12,
+          "d": 0,
+          "h": 20,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 10,
+          "sprite_name": "Sprite_Wall_Bricks_Large",
+          "x": 96,
+          "y": 160,
+          "z": 184,
+          "w": 20,
+          "d": 0,
+          "h": 20,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 12,
+          "sprite_name": "Sprite_Wall_Bricks_Small",
+          "x": 160,
+          "y": 160,
+          "z": 176,
+          "w": 12,
+          "d": 0,
+          "h": 12,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "14": {
+      "id": 14,
+      "name": "wall_size_3",
+      "objects": [
+        {
+          "sprite_id": 13,
+          "sprite_name": "Sprite_Wall_Corner_Left",
+          "x": 95,
+          "y": 184,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 14,
+          "sprite_name": "Sprite_Wall_Corner_Right",
+          "x": 103,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 95,
+          "y": 72,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 157,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 13,
+          "sprite_name": "Sprite_Wall_Corner_Left",
+          "x": 95,
+          "y": 184,
+          "z": 168,
+          "w": 0,
+          "d": 8,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 14,
+          "sprite_name": "Sprite_Wall_Corner_Right",
+          "x": 103,
+          "y": 192,
+          "z": 168,
+          "w": 8,
+          "d": 0,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 95,
+          "y": 72,
+          "z": 172,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 157,
+          "y": 192,
+          "z": 172,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 15,
+          "sprite_name": "Sprite_Wall_Column",
+          "x": 95,
+          "y": 72,
+          "z": 208,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 10,
+          "sprite_name": "Sprite_Wall_Bricks_Large",
+          "x": 95,
+          "y": 144,
+          "z": 128,
+          "w": 0,
+          "d": 20,
+          "h": 20,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 10,
+          "sprite_name": "Sprite_Wall_Bricks_Large",
+          "x": 132,
+          "y": 192,
+          "z": 176,
+          "w": 20,
+          "d": 0,
+          "h": 20,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 11,
+          "sprite_name": "Sprite_Wall_Bricks_Medium",
+          "x": 95,
+          "y": 96,
+          "z": 144,
+          "w": 0,
+          "d": 12,
+          "h": 20,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 10,
+          "sprite_name": "Sprite_Wall_Bricks_Large",
+          "x": 95,
+          "y": 104,
+          "z": 184,
+          "w": 0,
+          "d": 20,
+          "h": 20,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 12,
+          "sprite_name": "Sprite_Wall_Bricks_Small",
+          "x": 95,
+          "y": 160,
+          "z": 176,
+          "w": 0,
+          "d": 12,
+          "h": 12,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "15": {
+      "id": 15,
+      "name": "tree_room_size_1",
+      "objects": [
+        {
+          "sprite_id": 128,
+          "sprite_name": "Sprite_Tree_Wall_1",
+          "x": 63,
+          "y": 73,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 129,
+          "sprite_name": "Sprite_Tree_Wall_2",
+          "x": 63,
+          "y": 88,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 130,
+          "sprite_name": "Sprite_Tree_Wall_3",
+          "x": 63,
+          "y": 104,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 128,
+          "sprite_name": "Sprite_Tree_Wall_1",
+          "x": 63,
+          "y": 152,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 129,
+          "sprite_name": "Sprite_Tree_Wall_2",
+          "x": 63,
+          "y": 168,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 130,
+          "sprite_name": "Sprite_Tree_Wall_3",
+          "x": 63,
+          "y": 184,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 128,
+          "sprite_name": "Sprite_Tree_Wall_1",
+          "x": 72,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 129,
+          "sprite_name": "Sprite_Tree_Wall_2",
+          "x": 88,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 130,
+          "sprite_name": "Sprite_Tree_Wall_3",
+          "x": 104,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 128,
+          "sprite_name": "Sprite_Tree_Wall_1",
+          "x": 152,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 129,
+          "sprite_name": "Sprite_Tree_Wall_2",
+          "x": 168,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 130,
+          "sprite_name": "Sprite_Tree_Wall_3",
+          "x": 184,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "16": {
+      "id": 16,
+      "name": "tree_filler_w",
+      "objects": [
+        {
+          "sprite_id": 128,
+          "sprite_name": "Sprite_Tree_Wall_1",
+          "x": 63,
+          "y": 120,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 129,
+          "sprite_name": "Sprite_Tree_Wall_2",
+          "x": 63,
+          "y": 136,
+          "z": 128,
+          "w": 0,
+          "d": 8,
+          "h": 44,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "17": {
+      "id": 17,
+      "name": "tree_filler_n",
+      "objects": [
+        {
+          "sprite_id": 128,
+          "sprite_name": "Sprite_Tree_Wall_1",
+          "x": 120,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 129,
+          "sprite_name": "Sprite_Tree_Wall_2",
+          "x": 136,
+          "y": 192,
+          "z": 128,
+          "w": 8,
+          "d": 0,
+          "h": 44,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "18": {
+      "id": 18,
+      "name": "wizard",
+      "objects": [
+        {
+          "sprite_id": 158,
+          "sprite_name": "Sprite_Wizard_Top_West",
+          "x": 152,
+          "y": 104,
+          "z": 128,
+          "w": 5,
+          "d": 5,
+          "h": 24,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 144,
+          "sprite_name": "Sprite_Human_Legs_West_1",
+          "x": 160,
+          "y": 96,
+          "z": 128,
+          "w": 5,
+          "d": 5,
+          "h": 0,
+          "flags": 18,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": true
+        }
+      ]
+    },
+    "19": {
+      "id": 19,
+      "name": "cauldron",
+      "objects": [
+        {
+          "sprite_id": 141,
+          "sprite_name": "Sprite_Cauldron_Bottom",
+          "x": 128,
+          "y": 128,
+          "z": 128,
+          "w": 10,
+          "d": 10,
+          "h": 24,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 142,
+          "sprite_name": "Sprite_Cauldron_Top",
+          "x": 128,
+          "y": 136,
+          "z": 128,
+          "w": 0,
+          "d": 0,
+          "h": 0,
+          "flags": 18,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": true
+        }
+      ]
+    },
+    "20": {
+      "id": 20,
+      "name": "high_arch_e",
+      "objects": [
+        {
+          "sprite_id": 2,
+          "sprite_name": "Sprite_Stone_Arch_Near",
+          "x": 196,
+          "y": 115,
+          "z": 176,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 3,
+          "sprite_name": "Sprite_Stone_Arch_Far",
+          "x": 196,
+          "y": 141,
+          "z": 176,
+          "w": 5,
+          "d": 3,
+          "h": 40,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "21": {
+      "id": 21,
+      "name": "high_arch_s",
+      "objects": [
+        {
+          "sprite_id": 2,
+          "sprite_name": "Sprite_Stone_Arch_Near",
+          "x": 141,
+          "y": 59,
+          "z": 176,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 3,
+          "sprite_name": "Sprite_Stone_Arch_Far",
+          "x": 115,
+          "y": 59,
+          "z": 176,
+          "w": 3,
+          "d": 5,
+          "h": 40,
+          "flags": 80,
+          "hflip": true,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "22": {
+      "id": 22,
+      "name": "high_arch_e_base",
+      "objects": [
+        {
+          "sprite_id": 7,
+          "sprite_name": "Sprite_Block",
+          "x": 200,
+          "y": 120,
+          "z": 164,
+          "w": 8,
+          "d": 8,
+          "h": 12,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 7,
+          "sprite_name": "Sprite_Block",
+          "x": 200,
+          "y": 136,
+          "z": 164,
+          "w": 8,
+          "d": 8,
+          "h": 12,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    },
+    "23": {
+      "id": 23,
+      "name": "high_arch_s_base",
+      "objects": [
+        {
+          "sprite_id": 7,
+          "sprite_name": "Sprite_Block",
+          "x": 120,
+          "y": 56,
+          "z": 164,
+          "w": 8,
+          "d": 8,
+          "h": 12,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        },
+        {
+          "sprite_id": 7,
+          "sprite_name": "Sprite_Block",
+          "x": 136,
+          "y": 56,
+          "z": 164,
+          "w": 8,
+          "d": 8,
+          "h": 12,
+          "flags": 16,
+          "hflip": false,
+          "vflip": false,
+          "ignore_3d": false
+        }
+      ]
+    }
+  }
+}

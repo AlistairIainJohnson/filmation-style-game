@@ -79,6 +79,11 @@
 3. `01a7c3c` — Added `max_cutaway_transparency = 0.75` to `foreground_cutaway.gdshader` so cut-away pillars remain 25% halftone visible instead of disappearing completely.
 4. `150b0ae` — Added `RoomBuilder._attach_cutaway_shadow_caster()` (`ShadowCaster` `SHADOW_CASTING_SETTING_SHADOWS_ONLY` siblings) so cut-away pillars keep casting full solid shadows on the room and hero.
 5. `27240f1` — Enabled `physics/common/physics_interpolation=true`, `reset_physics_interpolation()` on room transitions, interpolated shadow/shader updates in `_process()`, exponential yaw damping + diagonal-release debounce, ground accel/decel ramps, animation crossfading + `INTERPOLATION_CUBIC` 4-phase walk with `Hips` bounce (`humanoid_core.res` v4), and merged `FloorCollision` rectangles.
+6. *Uncommitted (Knight Lore Phases 1–3)*:
+   - **Phase 1**: Ingested 128-room `data/knight_lore/` JSON pack, added `tools/validate_knight_lore.py`, `core/knight_lore/knight_lore_data.gd`, and `RoomBuilder.build_knight_lore_room()` with Option 2A subtle room tints.
+   - **Phase 2**: Fixed doorway sill/backstop physics & transitions, raised foreground South/East wall colliders to `6.0 m` (splitting `high_arch` clearance at `3.0 m`), extended `0.80 m` visible `SillFloorMesh` into portals, moved `Exit_*` triggers outward (`±0.60 m`), tuned cutaway opacity (`0.58`), added `forest_floor.gdshader`, and expanded asset manifest from `16` to **`41`** normalized `.glb` assets (`meshes/generate_lods=false` on architectural meshes).
+   - **Phase 3**: Added `KnightLoreSession`, `KlSpecialItem`, `KnightLoreHud`, `game/knight_lore_game.tscn`, Rotational + Directional controls + variable jump in `PlayerController`, Room 136 Cauldron hint bubbles / Repel Spells, 40-day cycle, and `tests/test_knight_lore_phase3.gd` (**51/51 GUT tests**, **9/9 Python tests**).
+   - **Pre-baked `VoxelGIData` & Instant Room Transitions**: Added [tools/bake_voxel_gi.gd](tools/bake_voxel_gi.gd) to bake all **132** compressed `VoxelGIData` `.res` files offline (`128` Knight Lore rooms in `data/knight_lore/voxel_gi/` = `22M`, `4` declarative JSON rooms in `data/rooms/voxel_gi/` = `644K`). `DioramaLighting.apply_prebaked_gi()` caches and assigns `voxel_gi.data` at runtime without calling `VoxelGI.bake()`, while `knight_lore_game.gd`, `world_manager.gd`, and `room_preview.gd` persist a single `RoomBuilder` (and `knight_lore_game.gd` reuses `PlayerController`) for instant room swaps.
 
 ---
 
@@ -87,8 +92,10 @@
 - **Mandatory Verification (`./scripts/verify.sh --visual`)**:
   - **Tier 1**: `godot --headless --path . --import` & `--check-only` across all `.gd` files.
   - **Tier 1b**: JSON schema validation (`4` rooms, `2` lighting presets, `4` world nodes), `validate_glb.py --manifest` (`16` `.glb` assets), and Python `unittest` (`8/8` tests).
-  - **Tier 2**: GUT `9.6.1` headless suite (`41/41` tests, `1,720` assertions across 7 test files).
-  - **Tier 3**: Non-headless Metal `4.0` visual captures (`16` `1280×720` PNGs in `_verify/`).
+  - **Tier 2**: GUT `9.6.1` headless suite (`51/51` tests, `3,089` assertions across 9 test files).
+  - **Tier 3**: Non-headless Metal `4.0` visual captures (`22` `1280×720` PNGs in `_verify/`).
+- **Offline GI Pre-bake Command** (re-run only when room geometry/layout changes):
+  `godot --path . --resolution 640x360 -s tools/bake_voxel_gi.gd` (NEVER `--headless`).
 - **Critical Gotchas**:
   - Never run `tools/capture_frame.gd` with `--headless` on macOS Metal.
   - Always commit `.uid` and `.import` sidecars; keep `meshes/generate_lods=false` on architectural `.glb.import` files.

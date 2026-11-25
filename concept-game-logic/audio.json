@@ -1,0 +1,1411 @@
+{
+  "metadata": {
+    "zx_clock_hz": 3500000,
+    "waveform": "square",
+    "description": "Decoded ZX Spectrum beeper music and SFX event hooks from Knight Lore"
+  },
+  "tunes": {
+    "menu": [
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 42,
+        "note_index": 42,
+        "note": "C#5",
+        "freq_hz": 553.1,
+        "duration_mult": 1,
+        "duration_ms": 157.3
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 42,
+        "note_index": 42,
+        "note": "C#5",
+        "freq_hz": 553.1,
+        "duration_mult": 1,
+        "duration_ms": 157.3
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 37,
+        "note_index": 37,
+        "note": "G#4",
+        "freq_hz": 415.18,
+        "duration_mult": 1,
+        "duration_ms": 156.56
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 36,
+        "note_index": 36,
+        "note": "G4",
+        "freq_hz": 393.35,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 37,
+        "note_index": 37,
+        "note": "G#4",
+        "freq_hz": 415.18,
+        "duration_mult": 1,
+        "duration_ms": 156.56
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 36,
+        "note_index": 36,
+        "note": "G4",
+        "freq_hz": 393.35,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 42,
+        "note_index": 42,
+        "note": "C#5",
+        "freq_hz": 553.1,
+        "duration_mult": 1,
+        "duration_ms": 157.3
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 42,
+        "note_index": 42,
+        "note": "C#5",
+        "freq_hz": 553.1,
+        "duration_mult": 1,
+        "duration_ms": 157.3
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 37,
+        "note_index": 37,
+        "note": "G#4",
+        "freq_hz": 415.18,
+        "duration_mult": 1,
+        "duration_ms": 156.56
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 36,
+        "note_index": 36,
+        "note": "G4",
+        "freq_hz": 393.35,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 37,
+        "note_index": 37,
+        "note": "G#4",
+        "freq_hz": 415.18,
+        "duration_mult": 1,
+        "duration_ms": 156.56
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 36,
+        "note_index": 36,
+        "note": "G4",
+        "freq_hz": 393.35,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 22,
+        "note_index": 22,
+        "note": "F3",
+        "freq_hz": 176.18,
+        "duration_mult": 1,
+        "duration_ms": 158.93
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 25,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 1,
+        "duration_ms": 157.65
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 25,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 1,
+        "duration_ms": 157.65
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 25,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 1,
+        "duration_ms": 157.65
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 25,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 1,
+        "duration_ms": 157.65
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      }
+    ],
+    "start_game": [
+      {
+        "raw_byte": 89,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 2,
+        "duration_ms": 315.3
+      },
+      {
+        "raw_byte": 92,
+        "note_index": 28,
+        "note": "B3",
+        "freq_hz": 248.33,
+        "duration_mult": 2,
+        "duration_ms": 314.1
+      },
+      {
+        "raw_byte": 91,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 2,
+        "duration_ms": 315.58
+      },
+      {
+        "raw_byte": 84,
+        "note_index": 20,
+        "note": "D#3",
+        "freq_hz": 157.09,
+        "duration_mult": 2,
+        "duration_ms": 318.28
+      },
+      {
+        "raw_byte": 25,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 1,
+        "duration_ms": 157.65
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 20,
+        "note_index": 20,
+        "note": "D#3",
+        "freq_hz": 157.09,
+        "duration_mult": 1,
+        "duration_ms": 159.14
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 217,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 4,
+        "duration_ms": 630.6
+      }
+    ],
+    "game_over": [
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 46,
+        "note_index": 46,
+        "note": "F5",
+        "freq_hz": 696.1,
+        "duration_mult": 1,
+        "duration_ms": 158.02
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 23,
+        "note_index": 23,
+        "note": "F#3",
+        "freq_hz": 186.69,
+        "duration_mult": 1,
+        "duration_ms": 155.34
+      },
+      {
+        "raw_byte": 44,
+        "note_index": 44,
+        "note": "D#5",
+        "freq_hz": 619.25,
+        "duration_mult": 1,
+        "duration_ms": 158.26
+      },
+      {
+        "raw_byte": 25,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 1,
+        "duration_ms": 157.65
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 25,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 1,
+        "duration_ms": 157.65
+      },
+      {
+        "raw_byte": 44,
+        "note_index": 44,
+        "note": "D#5",
+        "freq_hz": 619.25,
+        "duration_mult": 1,
+        "duration_ms": 158.26
+      },
+      {
+        "raw_byte": 25,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 1,
+        "duration_ms": 157.65
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 25,
+        "note_index": 25,
+        "note": "G#3",
+        "freq_hz": 209.33,
+        "duration_mult": 1,
+        "duration_ms": 157.65
+      },
+      {
+        "raw_byte": 42,
+        "note_index": 42,
+        "note": "C#5",
+        "freq_hz": 553.1,
+        "duration_mult": 1,
+        "duration_ms": 157.3
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 42,
+        "note_index": 42,
+        "note": "C#5",
+        "freq_hz": 553.1,
+        "duration_mult": 1,
+        "duration_ms": 157.3
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 42,
+        "note_index": 42,
+        "note": "C#5",
+        "freq_hz": 553.1,
+        "duration_mult": 1,
+        "duration_ms": 157.3
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 42,
+        "note_index": 42,
+        "note": "C#5",
+        "freq_hz": 553.1,
+        "duration_mult": 1,
+        "duration_ms": 157.3
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 39,
+        "note_index": 39,
+        "note": "A#4",
+        "freq_hz": 465.43,
+        "duration_mult": 1,
+        "duration_ms": 156.85
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      }
+    ],
+    "game_complete": [
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 29,
+        "note_index": 29,
+        "note": "C4",
+        "freq_hz": 263.32,
+        "duration_mult": 1,
+        "duration_ms": 155.71
+      },
+      {
+        "raw_byte": 30,
+        "note_index": 30,
+        "note": "C#4",
+        "freq_hz": 279.15,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 29,
+        "note_index": 29,
+        "note": "C4",
+        "freq_hz": 263.32,
+        "duration_mult": 1,
+        "duration_ms": 155.71
+      },
+      {
+        "raw_byte": 30,
+        "note_index": 30,
+        "note": "C#4",
+        "freq_hz": 279.15,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 32,
+        "note_index": 32,
+        "note": "D#4",
+        "freq_hz": 312.89,
+        "duration_mult": 1,
+        "duration_ms": 156.6
+      },
+      {
+        "raw_byte": 29,
+        "note_index": 29,
+        "note": "C4",
+        "freq_hz": 263.32,
+        "duration_mult": 1,
+        "duration_ms": 155.71
+      },
+      {
+        "raw_byte": 30,
+        "note_index": 30,
+        "note": "C#4",
+        "freq_hz": 279.15,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 32,
+        "note_index": 32,
+        "note": "D#4",
+        "freq_hz": 312.89,
+        "duration_mult": 1,
+        "duration_ms": 156.6
+      },
+      {
+        "raw_byte": 34,
+        "note_index": 34,
+        "note": "F4",
+        "freq_hz": 350.35,
+        "duration_mult": 1,
+        "duration_ms": 156.99
+      },
+      {
+        "raw_byte": 30,
+        "note_index": 30,
+        "note": "C#4",
+        "freq_hz": 279.15,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 29,
+        "note_index": 29,
+        "note": "C4",
+        "freq_hz": 263.32,
+        "duration_mult": 1,
+        "duration_ms": 155.71
+      },
+      {
+        "raw_byte": 30,
+        "note_index": 30,
+        "note": "C#4",
+        "freq_hz": 279.15,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 32,
+        "note_index": 32,
+        "note": "D#4",
+        "freq_hz": 312.89,
+        "duration_mult": 1,
+        "duration_ms": 156.6
+      },
+      {
+        "raw_byte": 29,
+        "note_index": 29,
+        "note": "C4",
+        "freq_hz": 263.32,
+        "duration_mult": 1,
+        "duration_ms": 155.71
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 29,
+        "note_index": 29,
+        "note": "C4",
+        "freq_hz": 263.32,
+        "duration_mult": 1,
+        "duration_ms": 155.71
+      },
+      {
+        "raw_byte": 30,
+        "note_index": 30,
+        "note": "C#4",
+        "freq_hz": 279.15,
+        "duration_mult": 1,
+        "duration_ms": 157.62
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 26,
+        "note_index": 26,
+        "note": "A3",
+        "freq_hz": 221.74,
+        "duration_mult": 1,
+        "duration_ms": 157.84
+      },
+      {
+        "raw_byte": 27,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 1,
+        "duration_ms": 157.79
+      },
+      {
+        "raw_byte": 29,
+        "note_index": 29,
+        "note": "C4",
+        "freq_hz": 263.32,
+        "duration_mult": 1,
+        "duration_ms": 155.71
+      },
+      {
+        "raw_byte": 26,
+        "note_index": 26,
+        "note": "A3",
+        "freq_hz": 221.74,
+        "duration_mult": 1,
+        "duration_ms": 157.84
+      },
+      {
+        "raw_byte": 155,
+        "note_index": 27,
+        "note": "A#3",
+        "freq_hz": 234.49,
+        "duration_mult": 3,
+        "duration_ms": 473.37
+      }
+    ]
+  },
+  "sfx_events": {
+    "sfx_menu_select": {
+      "asm_routine": "toggle_audio_hw_x16",
+      "trigger": "Changing input method on menu or picking up/dropping an item or extra life",
+      "style": "short_click_burst"
+    },
+    "sfx_pause_toggle": {
+      "asm_routine": "toggle_audio_hw_x24",
+      "trigger": "Pausing or unpausing game",
+      "style": "double_click_burst"
+    },
+    "sfx_step_player": {
+      "asm_routine": "audio_B4BB",
+      "trigger": "Player walking (even leg animation frames) or rotating",
+      "style": "pitched_footstep_by_xyz"
+    },
+    "sfx_step_guard_wizard": {
+      "asm_routine": "audio_guard_wizard",
+      "trigger": "Guard or Melkhior walking (even leg frames)",
+      "style": "low_pitched_footstep"
+    },
+    "sfx_jump": {
+      "asm_routine": "audio_B441",
+      "trigger": "Player initiates jump",
+      "style": "rising_chirp"
+    },
+    "sfx_fall_or_drop": {
+      "asm_routine": "audio_B451",
+      "trigger": "Player falling, dropping block, spiked ball falling, ball_ud moving",
+      "style": "pitch_mapped_to_z"
+    },
+    "sfx_rising_blocks": {
+      "asm_routine": "audio_B454",
+      "trigger": "Victory sparkles rising in cauldron room",
+      "style": "pitch_mapped_to_z"
+    },
+    "sfx_move_ew": {
+      "asm_routine": "audio_B45D",
+      "trigger": "EW moving block or EW fire moving",
+      "style": "pitch_mapped_to_x"
+    },
+    "sfx_move_ns": {
+      "asm_routine": "audio_B462",
+      "trigger": "NS moving block or NS fire moving",
+      "style": "pitch_mapped_to_y"
+    },
+    "sfx_move_object": {
+      "asm_routine": "audio_B467",
+      "trigger": "Pushed chest/table, ghost direction change, repel spell, portcullis rising, special object moving",
+      "style": "pitch_mapped_to_x_plus_y_plus_z"
+    },
+    "sfx_push_block": {
+      "asm_routine": "audio_B3E9",
+      "trigger": "Moveable block (0x3E) update",
+      "style": "low_scrape_cycle"
+    },
+    "sfx_bounce": {
+      "asm_routine": "audio_B42E",
+      "trigger": "Bouncing ball hits floor, fire reverses on wall",
+      "style": "short_thud"
+    },
+    "sfx_portcullis_slam": {
+      "asm_routine": "audio_B489",
+      "trigger": "Portcullis slams onto floor",
+      "style": "white_noise_crash"
+    },
+    "sfx_transform": {
+      "asm_routine": "audio_B472",
+      "trigger": "Human <-> Wulf transformation animation tick",
+      "style": "modulated_warble"
+    },
+    "sfx_appear_sparkles": {
+      "asm_routine": "audio_B419",
+      "trigger": "Player spawning / entering room sparkles",
+      "style": "ascending_shimmer"
+    },
+    "sfx_death_sparkles": {
+      "asm_routine": "audio_B403",
+      "trigger": "Player death sparkles or cauldron color-cycle celebration",
+      "style": "descending_noise_shimmer"
+    }
+  }
+}

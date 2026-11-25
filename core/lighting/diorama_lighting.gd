@@ -4,10 +4,46 @@ extends Node3D
 ## Enforces AgX tonemapping, VoxelGI, SSAO, SSIL, AreaLight3D, SHADOW_ORTHOGONAL,
 ## and strictly disables SDFGI to prevent orthographic striping artifacts.
 
+static var _presets_cache: Dictionary = {}
+static var _gi_data_cache: Dictionary = {}
+
 var world_environment: WorldEnvironment
 var key_directional_light: DirectionalLight3D
 var voxel_gi: VoxelGI
 var area_lights: Array[AreaLight3D] = []
+var _active_gi_data: VoxelGIData = null
+var _active_gi_path: String = ""
+
+
+static func get_knight_lore_gi_path(room_id: int) -> String:
+	return "res://data/knight_lore/voxel_gi/room_%03d.res" % room_id
+
+
+static func get_room_json_gi_path(room_json_path: String) -> String:
+	if room_json_path.is_empty():
+		return ""
+	var base_dir: String = room_json_path.get_base_dir()
+	var stem: String = room_json_path.get_file().get_basename()
+	return base_dir.path_join("voxel_gi").path_join(stem + ".res")
+
+
+static func load_prebaked_gi_data(gi_path: String) -> VoxelGIData:
+	if gi_path.is_empty():
+		return null
+	if _gi_data_cache.has(gi_path):
+		return _gi_data_cache[gi_path] as VoxelGIData
+	if not ResourceLoader.exists(gi_path):
+		return null
+	var res: Resource = ResourceLoader.load(gi_path, "VoxelGIData")
+	if res is VoxelGIData:
+		var gi_res: VoxelGIData = res as VoxelGIData
+		_gi_data_cache[gi_path] = gi_res
+		return gi_res
+	return null
+
+
+static func clear_gi_cache() -> void:
+	_gi_data_cache.clear()
 
 
 static func _arr_to_color(rgb: Variant, fallback: Color = Color.WHITE) -> Color:
@@ -26,15 +62,20 @@ static func load_preset_by_name(
 	preset_name: String,
 	presets_path: String = "res://data/lighting_presets.json"
 ) -> Dictionary:
-	var file: FileAccess = FileAccess.open(presets_path, FileAccess.READ)
-	if file == null:
-		push_error("DioramaLighting: Cannot open presets file: " + presets_path)
-		return {}
-	var parsed: Variant = JSON.parse_string(file.get_as_text())
-	if not (parsed is Dictionary):
-		push_error("DioramaLighting: Invalid JSON in presets file: " + presets_path)
-		return {}
-	var presets_dict: Dictionary = parsed as Dictionary
+	var presets_dict: Dictionary = {}
+	if _presets_cache.has(presets_path):
+		presets_dict = _presets_cache[presets_path] as Dictionary
+	else:
+		var file: FileAccess = FileAccess.open(presets_path, FileAccess.READ)
+		if file == null:
+			push_error("DioramaLighting: Cannot open presets file: " + presets_path)
+			return {}
+		var parsed: Variant = JSON.parse_string(file.get_as_text())
+		if not (parsed is Dictionary):
+			push_error("DioramaLighting: Invalid JSON in presets file: " + presets_path)
+			return {}
+		presets_dict = parsed as Dictionary
+		_presets_cache[presets_path] = presets_dict
 	if not presets_dict.has(preset_name):
 		push_error("DioramaLighting: Unknown lighting preset '%s'" % preset_name)
 		return {}
@@ -42,6 +83,7 @@ static func load_preset_by_name(
 
 
 func apply_preset(preset: Dictionary, room_dims: Vector3) -> void:
+	var prev_gi_data: VoxelGIData = voxel_gi.data if (voxel_gi != null and is_instance_valid(voxel_gi) and voxel_gi.data != null) else _active_gi_data
 	for child: Node in get_children():
 		remove_child(child)
 		child.free()
@@ -142,13 +184,38 @@ func apply_preset(preset: Dictionary, room_dims: Vector3) -> void:
 	voxel_gi.subdiv = VoxelGI.SUBDIV_64
 	voxel_gi.size = Vector3(room_dims.x + 2.0, room_dims.y + 2.0, room_dims.z + 2.0)
 	voxel_gi.position = Vector3(room_dims.x * 0.5, room_dims.y * 0.5, room_dims.z * 0.5)
+	if prev_gi_data != null:
+		voxel_gi.data = prev_gi_data
+		_active_gi_data = prev_gi_data
 	add_child(voxel_gi)
 
 
-func bake_gi_if_supported(target_root: Node) -> bool:
-	if DisplayServer.get_name() == "headless":
+func apply_prebaked_gi(gi_path: String) -> bool:
+	_active_gi_path = gi_path
+	var cached_data: VoxelGIData = load_prebaked_gi_data(gi_path)
+	if cached_data == null or voxel_gi == null or not is_instance_valid(voxel_gi):
 		return false
-	if voxel_gi == null or not is_instance_valid(voxel_gi) or target_root == null:
-		return false
-	voxel_gi.bake(target_root, false)
+	voxel_gi.data = cached_data
+	_active_gi_data = cached_data
 	return true
+
+
+func bake_gi_offline(target_root: Node) -> VoxelGIData:
+	if DisplayServer.get_name() == "headless":
+		return null
+	if voxel_gi == null or not is_instance_valid(voxel_gi) or target_root == null:
+		return null
+	voxel_gi.bake(target_root, false)
+	_active_gi_data = voxel_gi.data
+	return voxel_gi.data
+
+
+func bake_gi_if_supported(target_root: Node, gi_path: String = "", allow_runtime_fallback: bool = false) -> bool:
+	var effective_path: String = gi_path if not gi_path.is_empty() else _active_gi_path
+	if not effective_path.is_empty() and apply_prebaked_gi(effective_path):
+		return true
+	if voxel_gi != null and is_instance_valid(voxel_gi) and voxel_gi.data != null:
+		return true
+	if allow_runtime_fallback:
+		return bake_gi_offline(target_root) != null
+	return false

@@ -10,6 +10,7 @@ import unittest
 from pathlib import Path
 
 from import_ldtk import compile_ldtk
+from validate_knight_lore import validate_knight_lore_dir
 from validate_world import validate_data_dir
 
 
@@ -66,6 +67,15 @@ class LevelToolsTests(unittest.TestCase):
             joined = "\n".join(errors)
             self.assertIn("void_cell", joined)
             self.assertIn("reciprocity broken", joined)
+
+    def test_knight_lore_data_pack_validates_cleanly(self) -> None:
+        errors, summary = validate_knight_lore_dir(self.data_dir / "knight_lore")
+        self.assertEqual(errors, [], f"Knight Lore validation errors: {errors}")
+        self.assertEqual(summary["rooms"], 128)
+        self.assertEqual(summary["backgrounds"], 24)
+        self.assertEqual(summary["foreground_types"], 29)
+        self.assertEqual(summary["special_spawns"], 32)
+        self.assertEqual(summary["sfx_events"], 16)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,212 @@
+{
+  "zx_palette": {
+    "0": {
+      "name": "Black",
+      "normal": "#000000",
+      "bright": "#000000"
+    },
+    "1": {
+      "name": "Blue",
+      "normal": "#0000D7",
+      "bright": "#0000FF"
+    },
+    "2": {
+      "name": "Red",
+      "normal": "#D70000",
+      "bright": "#FF0000"
+    },
+    "3": {
+      "name": "Magenta",
+      "normal": "#D700D7",
+      "bright": "#FF00FF"
+    },
+    "4": {
+      "name": "Green",
+      "normal": "#00D700",
+      "bright": "#00FF00"
+    },
+    "5": {
+      "name": "Cyan",
+      "normal": "#00D7D7",
+      "bright": "#00FFFF"
+    },
+    "6": {
+      "name": "Yellow",
+      "normal": "#D7D700",
+      "bright": "#FFFF00"
+    },
+    "7": {
+      "name": "White",
+      "normal": "#D7D7D7",
+      "bright": "#FFFFFF"
+    }
+  },
+  "special_object_colors": {
+    "0": {
+      "name": "Diamond",
+      "color_id": 2,
+      "hex": "#FF0000"
+    },
+    "1": {
+      "name": "Poison",
+      "color_id": 3,
+      "hex": "#FF00FF"
+    },
+    "2": {
+      "name": "Boot",
+      "color_id": 4,
+      "hex": "#00FF00"
+    },
+    "3": {
+      "name": "Chalice",
+      "color_id": 5,
+      "hex": "#00FFFF"
+    },
+    "4": {
+      "name": "Cup",
+      "color_id": 6,
+      "hex": "#FFFF00"
+    },
+    "5": {
+      "name": "Bottle",
+      "color_id": 7,
+      "hex": "#FFFFFF"
+    },
+    "6": {
+      "name": "Crystal Ball",
+      "color_id": 2,
+      "hex": "#FF0000"
+    },
+    "7": {
+      "name": "Extra Life",
+      "color_id": 7,
+      "hex": "#FFFFFF"
+    }
+  },
+  "menu_screen": {
+    "lines": [
+      "KNIGHT LORE",
+      "1 KEYBOARD",
+      "2 KEMPSTON JOYSTICK",
+      "3 CURSOR   JOYSTICK",
+      "4 INTERFACE II",
+      "5 DIRECTIONAL CONTROL",
+      "0 START GAME",
+      "\u00a9 1984 A.C.G."
+    ],
+    "color_ids": [
+      3,
+      4,
+      4,
+      4,
+      4,
+      5,
+      7,
+      7
+    ],
+    "default_control_mode": "rotational",
+    "control_modes": [
+      "rotational",
+      "directional"
+    ]
+  },
+  "hud": {
+    "max_inventory_slots": 3,
+    "starting_lives_total": 5,
+    "starting_lives_displayed": 4,
+    "max_days": 40,
+    "ticks_per_sun_moon_step": 8,
+    "sun_moon_steps_per_half_day": 49,
+    "ticks_per_half_day": 392,
+    "ticks_per_full_day": 784,
+    "total_charms_required": 14
+  },
+  "game_complete_screen": {
+    "lines": [
+      "THE POTION CASTS",
+      "ITS MAGIC STRONG",
+      "ALL EVIL MUST BEWARE",
+      "THE SPELL HAS BROKEN",
+      "YOU ARE FREE",
+      "GO FORTH TO MIREMARE"
+    ],
+    "color_ids": [
+      7,
+      6,
+      5,
+      4,
+      3,
+      2
+    ]
+  },
+  "game_over_screen": {
+    "lines": [
+      "GAME  OVER",
+      "TIME    DAYS",
+      "PERCENTAGE OF QUEST",
+      "COMPLETED     %",
+      "CHARMS COLLECTED   ",
+      "OVERALL RATING"
+    ],
+    "color_ids": [
+      7,
+      6,
+      5,
+      5,
+      3,
+      4
+    ],
+    "percent_formula": "round((rooms_visited + 2 * charms_collected) / 156.0 * 100.0)",
+    "rating_formula": "(((rooms_visited - 1) >> 5) & 0x06) | int(quest_completed)",
+    "ratings": [
+      {
+        "index": 0,
+        "label": "POOR",
+        "min_rooms_visited_uncompleted": 1,
+        "requires_completion": false
+      },
+      {
+        "index": 1,
+        "label": "AVERAGE",
+        "min_rooms_visited_uncompleted": null,
+        "requires_completion": true
+      },
+      {
+        "index": 2,
+        "label": "FAIR",
+        "min_rooms_visited_uncompleted": 33,
+        "requires_completion": false
+      },
+      {
+        "index": 3,
+        "label": "GOOD",
+        "min_rooms_visited_uncompleted": null,
+        "requires_completion": true
+      },
+      {
+        "index": 4,
+        "label": "EXCELLENT",
+        "min_rooms_visited_uncompleted": 65,
+        "requires_completion": false
+      },
+      {
+        "index": 5,
+        "label": "MARVELLOUS",
+        "min_rooms_visited_uncompleted": null,
+        "requires_completion": true
+      },
+      {
+        "index": 6,
+        "label": "HERO",
+        "min_rooms_visited_uncompleted": 97,
+        "requires_completion": false
+      },
+      {
+        "index": 7,
+        "label": "ADVENTURER",
+        "min_rooms_visited_uncompleted": null,
+        "requires_completion": true
+      }
+    ]
+  }
+}

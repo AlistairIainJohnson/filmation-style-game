@@ -4,6 +4,7 @@ into validated, normalized PBR .glb models inside assets/."""
 
 from __future__ import annotations
 
+import argparse
 import json
 import shutil
 import subprocess
@@ -16,7 +17,16 @@ from preprocess_sprite import preprocess_sprite
 from validate_glb import validate_single_glb
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Build and normalize manifest assets.")
+    parser.add_argument(
+        "--only",
+        default="",
+        help="Comma-separated list of asset IDs to build (default: all).",
+    )
+    args = parser.parse_args(argv)
+    only_ids = {s.strip() for s in args.only.split(",") if s.strip()}
+
     root = Path(__file__).resolve().parent.parent.parent
     manifest_path = root / "assets" / "asset_manifest.json"
     sprites_dir = root / "assets" / "source_sprites"
@@ -37,6 +47,8 @@ def main() -> int:
 
     for entry in manifest.get("assets", []):
         aid = entry["id"]
+        if only_ids and aid not in only_ids:
+            continue
         src_sprite = root / entry["source_sprite"]
         conditioned_png = raw_dir / f"{aid}_conditioned.png"
         raw_glb = raw_dir / f"{aid}_raw.glb"

@@ -9,26 +9,13 @@ func _collect_meshes(node: Node, out: Array[MeshInstance3D]) -> void:
 
 
 func test_all_manifest_glb_assets_load_in_godot() -> void:
-	var paths: Array[String] = [
-		"res://assets/props/pushable_chest.glb",
-		"res://assets/props/cauldron.glb",
-		"res://assets/props/collectible_key.glb",
-		"res://assets/props/stone_pillar.glb",
-		"res://assets/props/arch_stone_doorway.glb",
-		"res://assets/props/wall_stone_panel.glb",
-		"res://assets/props/wall_stone_lintel.glb",
-		"res://assets/props/portcullis_gate.glb",
-		"res://assets/props/stone_block.glb",
-		"res://assets/props/moving_platform.glb",
-		"res://assets/props/collapsing_tile.glb",
-		"res://assets/props/pressure_plate.glb",
-		"res://assets/characters/hero_knight.glb",
-		"res://assets/characters/patrol_sentinel.glb",
-		"res://assets/characters/hero_explorer.glb",
-		"res://assets/characters/hero_werewolf.glb"
-	]
+	var manifest: Dictionary = RoomBuilder.load_json_dict("res://assets/asset_manifest.json")
+	var assets_arr: Array = manifest.get("assets", []) as Array
+	assert_eq(assets_arr.size(), 41, "Asset manifest must contain all 41 normalized 3D GLB assets")
 
-	for p: String in paths:
+	for entry_v: Variant in assets_arr:
+		var entry: Dictionary = entry_v as Dictionary
+		var p: String = "res://" + str(entry.get("output_glb", ""))
 		assert_true(ResourceLoader.exists(p), "GLB must be imported in Godot: " + p)
 		var packed: PackedScene = ResourceLoader.load(p) as PackedScene
 		assert_not_null(packed, "Failed to load GLB scene: " + p)
@@ -38,7 +25,7 @@ func test_all_manifest_glb_assets_load_in_godot() -> void:
 		_collect_meshes(inst, meshes)
 		assert_gt(meshes.size(), 0, "GLB must contain at least one MeshInstance3D: " + p)
 
-		if p.contains("/characters/"):
+		if str(entry.get("mode", "static")) == "rigged":
 			var skel: Skeleton3D = HumanoidAnimationLibrary.find_skeleton(inst)
 			assert_not_null(skel, "Character GLB must contain Skeleton3D: " + p)
 			assert_ne(skel.find_bone("Hips"), -1, "Rig must expose SkeletonProfileHumanoid Hips bone")
@@ -146,7 +133,8 @@ func test_humanoid_animations_preserve_anatomical_pose_and_stride() -> void:
 		"res://assets/characters/hero_knight.glb",
 		"res://assets/characters/patrol_sentinel.glb",
 		"res://assets/characters/hero_explorer.glb",
-		"res://assets/characters/hero_werewolf.glb"
+		"res://assets/characters/hero_werewolf.glb",
+		"res://assets/characters/melkhior_wizard.glb"
 	]:
 		var packed: PackedScene = ResourceLoader.load(char_path) as PackedScene
 		assert_not_null(packed, "Failed to load character GLB: " + char_path)

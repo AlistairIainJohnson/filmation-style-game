@@ -1,0 +1,578 @@
+{
+  "simulation_constants": {
+    "tick_rate_hz": 14,
+    "room_center_x": 128,
+    "room_center_y": 128,
+    "room_floor_z": 128,
+    "gravity_default": -1,
+    "max_objects_per_room": 40,
+    "max_special_objects_per_room": 2,
+    "max_special_objects_in_cauldron_room": 1,
+    "cauldron_room_id": 136,
+    "cauldron_drop_min_z": 152,
+    "cauldron_required_base_sequence": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      3,
+      5,
+      0,
+      6,
+      1,
+      2,
+      4
+    ],
+    "cauldron_shuffle_min_rotations": 4,
+    "cauldron_shuffle_max_rotations": 7
+  },
+  "player": {
+    "hitbox": {
+      "w": 5,
+      "d": 5,
+      "h": 23
+    },
+    "top_half_z_offset": 12,
+    "walk_speed": 3,
+    "arch_align_nudge": 1,
+    "jump_initial_dz": 8,
+    "jump_gravity_held_rising": -1,
+    "jump_gravity_released_or_falling": -2,
+    "turn_cooldown_ticks": 2,
+    "entry_walk_ticks": 3,
+    "transform_steps": 8,
+    "transform_ticks_per_step": 4,
+    "drop_lift_z": 12,
+    "pickup_expand": {
+      "w": 4,
+      "d": 4,
+      "h": 4,
+      "z_offset": -4
+    },
+    "forms": {
+      "human": {
+        "legs_sprites": "Sprite_Human_Legs_*",
+        "top_sprites": "Sprite_Human_Top_*",
+        "bouncing_ball_behavior": "flee",
+        "cauldron_bubble_behavior": "reveal_next_item"
+      },
+      "wulf": {
+        "legs_sprites": "Sprite_Wulf_Legs_*",
+        "top_sprites": "Sprite_Wulf_Top_*",
+        "bouncing_ball_behavior": "chase",
+        "cauldron_bubble_behavior": "spawn_repel_spell"
+      }
+    }
+  },
+  "special_objects": {
+    "hitbox": {
+      "w": 5,
+      "d": 5,
+      "h": 12
+    },
+    "moveable": true,
+    "gravity": -1,
+    "types": [
+      {
+        "id": 0,
+        "name": "diamond",
+        "sprite_name": "Sprite_Diamond",
+        "carryable": true
+      },
+      {
+        "id": 1,
+        "name": "poison",
+        "sprite_name": "Sprite_Poison",
+        "carryable": true
+      },
+      {
+        "id": 2,
+        "name": "boot",
+        "sprite_name": "Sprite_Boot",
+        "carryable": true
+      },
+      {
+        "id": 3,
+        "name": "chalice",
+        "sprite_name": "Sprite_Chalice",
+        "carryable": true
+      },
+      {
+        "id": 4,
+        "name": "cup",
+        "sprite_name": "Sprite_Cup",
+        "carryable": true
+      },
+      {
+        "id": 5,
+        "name": "bottle",
+        "sprite_name": "Sprite_Bottle",
+        "carryable": true
+      },
+      {
+        "id": 6,
+        "name": "crystal_ball",
+        "sprite_name": "Sprite_Crystal_Ball",
+        "carryable": true
+      },
+      {
+        "id": 7,
+        "name": "extra_life",
+        "sprite_name": "Sprite_Extra_Life",
+        "carryable": false,
+        "effect": "increment_lives_and_clear_disable_spike_ball_drop"
+      }
+    ]
+  },
+  "foreground_types": {
+    "0": {
+      "name": "block",
+      "sprite_name": "Sprite_Block",
+      "w": 8,
+      "d": 8,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "static_solid"
+    },
+    "1": {
+      "name": "fire",
+      "sprite_name": "Sprite_Fire_1",
+      "w": 6,
+      "d": 6,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "static_fire_unused"
+    },
+    "2": {
+      "name": "ball_ud_y",
+      "sprite_name": "Sprite_Ball_1",
+      "w": 7,
+      "d": 7,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "vertical_bouncer",
+      "params": {
+        "rise_dz": 3,
+        "apex_offset_z": 32
+      }
+    },
+    "3": {
+      "name": "rock",
+      "sprite_name": "Sprite_Rock",
+      "w": 8,
+      "d": 8,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "static_solid"
+    },
+    "4": {
+      "name": "gargoyle",
+      "sprite_name": "Sprite_Gargoyle",
+      "w": 6,
+      "d": 6,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "static_deadly"
+    },
+    "5": {
+      "name": "spike",
+      "sprite_name": "Sprite_Spikes",
+      "w": 6,
+      "d": 6,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "static_deadly"
+    },
+    "6": {
+      "name": "chest",
+      "sprite_name": "Sprite_Chest",
+      "w": 9,
+      "d": 6,
+      "h": 12,
+      "moveable": true,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "pushable_sliding",
+      "params": {
+        "clears_velocity": false
+      }
+    },
+    "7": {
+      "name": "table",
+      "sprite_name": "Sprite_Table",
+      "w": 6,
+      "d": 10,
+      "h": 12,
+      "moveable": true,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "pushable_stop",
+      "params": {
+        "clears_velocity": true
+      }
+    },
+    "8": {
+      "name": "guard_ew",
+      "sprite_name": "Sprite_Guard_Top_West",
+      "w": 6,
+      "d": 6,
+      "h": 24,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "patrol_ew",
+      "params": {
+        "speed": 2
+      }
+    },
+    "9": {
+      "name": "ghost",
+      "sprite_name": "Sprite_Ghost_1",
+      "w": 6,
+      "d": 6,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "random_diagonal",
+      "params": {
+        "speed_choices": [
+          -4,
+          -3,
+          3,
+          4
+        ]
+      }
+    },
+    "10": {
+      "name": "fire_ns",
+      "sprite_name": "Sprite_Fire_1",
+      "w": 6,
+      "d": 6,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "patrol_ns",
+      "params": {
+        "speed": 2,
+        "floating": true
+      }
+    },
+    "11": {
+      "name": "block_high",
+      "sprite_name": "Sprite_Block",
+      "w": 8,
+      "d": 8,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "static_solid"
+    },
+    "12": {
+      "name": "ball_ud_xy",
+      "sprite_name": "Sprite_Ball_1",
+      "w": 7,
+      "d": 7,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "vertical_bouncer",
+      "params": {
+        "rise_dz": 3,
+        "apex_offset_z": 32
+      }
+    },
+    "13": {
+      "name": "guard_square",
+      "sprite_name": "Sprite_Guard_Top_West",
+      "w": 6,
+      "d": 6,
+      "h": 24,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "patrol_square_cw",
+      "params": {
+        "speed": 2,
+        "directions": [
+          "W",
+          "N",
+          "E",
+          "S"
+        ]
+      }
+    },
+    "14": {
+      "name": "block_ew",
+      "sprite_name": "Sprite_Block",
+      "w": 8,
+      "d": 8,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "moving_platform_ew",
+      "params": {
+        "amplitude": 16,
+        "speed": 1
+      }
+    },
+    "15": {
+      "name": "block_ns",
+      "sprite_name": "Sprite_Block",
+      "w": 8,
+      "d": 8,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "moving_platform_ns",
+      "params": {
+        "amplitude": 16,
+        "speed": 1
+      }
+    },
+    "16": {
+      "name": "moveable_block",
+      "sprite_name": "Sprite_Block",
+      "w": 8,
+      "d": 8,
+      "h": 12,
+      "moveable": true,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "pushable_stop",
+      "params": {
+        "clears_velocity": true
+      }
+    },
+    "17": {
+      "name": "spike_high",
+      "sprite_name": "Sprite_Spikes",
+      "w": 6,
+      "d": 6,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "static_deadly"
+    },
+    "18": {
+      "name": "spike_ball_fall",
+      "sprite_name": "Sprite_Spiked_Ball",
+      "w": 6,
+      "d": 6,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "falling_spike_ball",
+      "params": {
+        "trigger_chance": 0.0625,
+        "one_at_a_time": true
+      }
+    },
+    "19": {
+      "name": "spike_ball_high_fall",
+      "sprite_name": "Sprite_Spiked_Ball",
+      "w": 6,
+      "d": 6,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "falling_spike_ball",
+      "params": {
+        "trigger_chance": 0.0625,
+        "one_at_a_time": true
+      }
+    },
+    "20": {
+      "name": "fire_ew",
+      "sprite_name": "Sprite_Fire_1",
+      "w": 6,
+      "d": 6,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "patrol_ew",
+      "params": {
+        "speed": 2,
+        "floating": true
+      }
+    },
+    "21": {
+      "name": "dropping_block",
+      "sprite_name": "Sprite_Block",
+      "w": 8,
+      "d": 8,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "dropping_block",
+      "params": {
+        "drop_on_triggered": true
+      }
+    },
+    "22": {
+      "name": "collapsing_block",
+      "sprite_name": "Sprite_Block",
+      "w": 8,
+      "d": 8,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "collapsing_block",
+      "params": {
+        "vanish_on_triggered": true
+      }
+    },
+    "23": {
+      "name": "ball_bounce",
+      "sprite_name": "Sprite_Ball_1",
+      "w": 7,
+      "d": 7,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "bouncing_ball_ai",
+      "params": {
+        "speed": 2,
+        "base_bounce_dz": 4,
+        "odd_room_extra_dz_max": 3
+      }
+    },
+    "24": {
+      "name": "ball_ud",
+      "sprite_name": "Sprite_Ball_1",
+      "w": 7,
+      "d": 7,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "vertical_bouncer",
+      "params": {
+        "rise_dz": 3,
+        "apex_offset_z": 32
+      }
+    },
+    "25": {
+      "name": "repel_spell",
+      "sprite_name": "Sprite_Sparkle_6",
+      "w": 5,
+      "d": 5,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "chase_player",
+      "params": {
+        "speed": 4,
+        "near_arch_speed": 1
+      }
+    },
+    "26": {
+      "name": "gate_ud_1",
+      "sprite_name": "Sprite_Portcullis",
+      "w": 12,
+      "d": 1,
+      "h": 32,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": false,
+      "behavior": "portcullis",
+      "params": {
+        "raised_z_offset": 32,
+        "rise_net_dz": 1,
+        "drop_accel_dz": -2,
+        "initial_fast_drops": 4,
+        "trigger_chance": 0.03125
+      }
+    },
+    "27": {
+      "name": "gate_ud_2",
+      "sprite_name": "Sprite_Portcullis",
+      "w": 1,
+      "d": 12,
+      "h": 32,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": false,
+      "behavior": "portcullis",
+      "params": {
+        "raised_z_offset": 32,
+        "rise_net_dz": 1,
+        "drop_accel_dz": -2,
+        "initial_fast_drops": 4,
+        "trigger_chance": 0.03125
+      }
+    },
+    "28": {
+      "name": "ball_ud_x",
+      "sprite_name": "Sprite_Ball_1",
+      "w": 7,
+      "d": 7,
+      "h": 12,
+      "moveable": false,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "vertical_bouncer",
+      "params": {
+        "rise_dz": 3,
+        "apex_offset_z": 32
+      }
+    }
+  },
+  "special_background_entities": {
+    "wizard": {
+      "sprite_name": "Sprite_Wizard_Top_West",
+      "w": 5,
+      "d": 5,
+      "h": 24,
+      "deadly_hit": true,
+      "deadly_touched": true,
+      "behavior": "patrol_square_cw",
+      "params": {
+        "speed": 2,
+        "directions": [
+          "W",
+          "N",
+          "E",
+          "S"
+        ]
+      }
+    },
+    "cauldron": {
+      "sprite_name": "Sprite_Cauldron_Bottom",
+      "w": 10,
+      "d": 10,
+      "h": 24,
+      "deadly_hit": false,
+      "deadly_touched": false,
+      "behavior": "cauldron_hub"
+    }
+  }
+}

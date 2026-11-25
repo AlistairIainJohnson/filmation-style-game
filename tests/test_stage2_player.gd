@@ -223,8 +223,8 @@ func test_foreground_occluders_only_use_cutaway_shader() -> void:
 			assert_true(fg_box.material is ShaderMaterial, "%s %s must use cutaway ShaderMaterial" % [room_path, fg_child.name])
 			var fg_shader_mat: ShaderMaterial = fg_box.material as ShaderMaterial
 			var max_trans: float = float(fg_shader_mat.get_shader_parameter("max_cutaway_transparency"))
-			assert_gt(max_trans, 0.0, "Cutaway transparency cap must allow dithering")
-			assert_lt(max_trans, 1.0, "Cutaway transparency cap must leave foreground partially visible")
+			assert_almost_eq(max_trans, RoomBuilder.DEFAULT_MAX_CUTAWAY_TRANSPARENCY, 0.001, "Cutaway transparency cap must match configured partial opacity")
+			assert_lt(max_trans, 0.70, "Cutaway transparency cap must be less transparent than before")
 			assert_true(fg_child.is_in_group("foreground_occluders"), "%s %s must belong to foreground_occluders group" % [room_path, fg_child.name])
 			_assert_cutaway_shadow_caster_valid(fg_child, "%s %s" % [room_path, fg_child.name])
 

@@ -9,7 +9,9 @@ uniform float roughness_val : hint_range(0.0, 1.0) = 0.78;
 uniform float cutaway_radius : hint_range(0.2, 4.0) = 1.25;
 uniform float cutaway_softness : hint_range(0.05, 1.5) = 0.45;
 uniform float depth_bias : hint_range(0.0, 1.0) = 0.10;
-uniform float max_cutaway_transparency : hint_range(0.0, 0.95) = 0.75;
+uniform float max_cutaway_transparency : hint_range(0.0, 0.95) = 0.58;
+uniform vec4 emission_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform float emission_energy : hint_range(0.0, 8.0) = 0.0;
 instance uniform float cutaway_active : hint_range(0.0, 1.0) = 0.0;
 
 float bayer8(ivec2 p) {
@@ -44,4 +46,7 @@ void fragment() {
 	ALBEDO = albedo_color.rgb;
 	METALLIC = metallic_val;
 	ROUGHNESS = roughness_val;
+	if (emission_energy > 0.001) {
+		EMISSION = emission_color.rgb * emission_energy;
+	}
 }

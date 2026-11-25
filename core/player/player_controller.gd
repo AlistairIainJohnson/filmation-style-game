@@ -4,7 +4,7 @@ extends CharacterBody3D
 ## movement, analytically derived asymmetric jump curve, coyote time, jump buffering,
 ## height-tracked Decal drop shadow, and global player_world_pos shader sync.
 
-enum MoveMode { SCREEN_8_WAY, ISO_AXIS_4_WAY }
+enum MoveMode { SCREEN_8_WAY, ISO_AXIS_4_WAY, ROTATIONAL_4_WAY }
 
 const PLAYER_VISUAL_LAYER: int = 2
 const PLAYER_COLLISION_LAYER: int = 2
@@ -15,6 +15,7 @@ const WORLD_COLLISION_MASK: int = 1 | 4
 @export var ground_accel: float = 56.0
 @export var ground_decel: float = 52.0
 @export var turn_speed: float = 18.0
+@export var rotational_turn_cooldown: float = 0.16
 @export var diagonal_release_debounce: float = 0.045
 @export var push_normal_y_threshold: float = 0.25
 @export var jump_height: float = 1.35
@@ -37,11 +38,15 @@ var current_anim_state: StringName = &"idle"
 var active_model_path: String = ""
 var drop_shadow: DropShadowController
 var collision_shape: CollisionShape3D
+var input_locked: bool = false
+var facing_cardinal: int = 3 # 0=West (-X), 1=East (+X), 2=North (-Z), 3=South (+Z)
 
 var _camera_rig: DioramaCameraRig
 var _coyote_timer: float = 0.0
 var _jump_buffer_timer: float = 0.0
+var _rot_turn_timer: float = 0.0
 var _target_yaw: float = 0.0
+var allow_mode_toggle_hotkey: bool = true
 var _has_facing_target: bool = false
 var _prev_input_was_diagonal: bool = false
 var _diag_debounce_timer: float = 0.0
@@ -204,7 +209,41 @@ func toggle_move_mode() -> void:
 		move_mode = MoveMode.SCREEN_8_WAY
 
 
+func set_rotational_mode(enabled: bool) -> void:
+	move_mode = MoveMode.ROTATIONAL_4_WAY if enabled else MoveMode.SCREEN_8_WAY
+	_rot_turn_timer = 0.0
+	if enabled:
+		var fv: Vector3 = get_facing_vector()
+		_target_yaw = atan2(-fv.x, -fv.z)
+		_has_facing_target = true
+
+
+func toggle_control_scheme() -> void:
+	set_rotational_mode(move_mode != MoveMode.ROTATIONAL_4_WAY)
+
+
+func get_facing_vector() -> Vector3:
+	match facing_cardinal:
+		0:
+			return Vector3(-1.0, 0.0, 0.0)
+		1:
+			return Vector3(1.0, 0.0, 0.0)
+		2:
+			return Vector3(0.0, 0.0, -1.0)
+		_:
+			return Vector3(0.0, 0.0, 1.0)
+
+
+func check_headroom_clear(lift_height: float = 0.76) -> bool:
+	return not test_move(global_transform, Vector3(0.0, lift_height, 0.0))
+
+
 func compute_move_direction(input_vec: Vector2) -> Vector3:
+	if move_mode == MoveMode.ROTATIONAL_4_WAY:
+		if input_vec.y < -0.5:
+			return get_facing_vector()
+		return Vector3.ZERO
+
 	if input_vec.length_squared() < 0.0001:
 		return Vector3.ZERO
 
@@ -224,11 +263,12 @@ func compute_move_direction(input_vec: Vector2) -> Vector3:
 
 func _physics_process(delta: float) -> void:
 	if enable_player_input:
-		if Input.is_action_just_pressed("toggle_move_mode"):
+		if allow_mode_toggle_hotkey and Input.is_action_just_pressed("toggle_move_mode"):
 			toggle_move_mode()
 		var input_vec: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		var jump_pressed: bool = Input.is_action_just_pressed("jump")
-		step_movement(input_vec, jump_pressed, delta)
+		var jump_held: bool = Input.is_action_pressed("jump")
+		step_movement(input_vec, jump_pressed, delta, jump_held)
 	else:
 		sync_shader_world_pos()
 
@@ -238,7 +278,19 @@ func _process(_delta: float) -> void:
 		sync_shader_world_pos(true)
 
 
-func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) -> void:
+func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float, jump_held: bool = true) -> void:
+	if input_locked:
+		velocity.x = 0.0
+		velocity.z = 0.0
+		if not is_on_floor() or velocity.y > 0.0:
+			velocity.y -= gravity_down * delta
+		move_and_slide()
+		_update_anim_state(Vector3.ZERO, false)
+		sync_shader_world_pos()
+		if drop_shadow != null:
+			drop_shadow.update_shadow()
+		return
+
 	if is_on_floor():
 		_coyote_timer = coyote_time
 	else:
@@ -249,6 +301,21 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) ->
 	else:
 		_jump_buffer_timer = maxf(0.0, _jump_buffer_timer - delta)
 
+	if _rot_turn_timer > 0.0:
+		_rot_turn_timer = maxf(0.0, _rot_turn_timer - delta)
+
+	if move_mode == MoveMode.ROTATIONAL_4_WAY and is_on_floor() and _rot_turn_timer <= 0.0 and absf(input_vec.x) > 0.5:
+		const CW_ORDER: Array[int] = [0, 2, 1, 3]
+		var cur_idx: int = CW_ORDER.find(facing_cardinal)
+		if cur_idx == -1:
+			cur_idx = 3
+		var step_turn: int = 1 if input_vec.x > 0.0 else -1
+		facing_cardinal = CW_ORDER[posmod(cur_idx + step_turn, 4)]
+		_rot_turn_timer = rotational_turn_cooldown
+		var rot_fv: Vector3 = get_facing_vector()
+		_target_yaw = atan2(-rot_fv.x, -rot_fv.z)
+		_has_facing_target = true
+
 	var dir: Vector3 = compute_move_direction(input_vec)
 	var horiz_vel := Vector2(velocity.x, velocity.z)
 	var target_vel := Vector2(dir.x, dir.z) * move_speed
@@ -258,7 +325,7 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) ->
 	velocity.z = horiz_vel.y
 
 	if dir.length_squared() > 0.001:
-		var is_diag: bool = absf(input_vec.x) > 0.2 and absf(input_vec.y) > 0.2
+		var is_diag: bool = (move_mode != MoveMode.ROTATIONAL_4_WAY) and absf(input_vec.x) > 0.2 and absf(input_vec.y) > 0.2
 		var desired_yaw: float = atan2(-dir.x, -dir.z)
 		if is_diag:
 			_prev_input_was_diagonal = true
@@ -275,6 +342,11 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) ->
 			_diag_debounce_timer = 0.0
 			_target_yaw = desired_yaw
 			_has_facing_target = true
+		if move_mode != MoveMode.ROTATIONAL_4_WAY:
+			if absf(dir.x) >= absf(dir.z):
+				facing_cardinal = 1 if dir.x >= 0.0 else 0
+			else:
+				facing_cardinal = 3 if dir.z >= 0.0 else 2
 	else:
 		_prev_input_was_diagonal = false
 		_diag_debounce_timer = 0.0
@@ -288,7 +360,7 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) ->
 		_jump_buffer_timer = 0.0
 
 	if not is_on_floor() or velocity.y > 0.0:
-		var g: float = gravity_up if velocity.y > 0.0 else gravity_down
+		var g: float = gravity_up if (velocity.y > 0.0 and jump_held) else gravity_down
 		velocity.y -= g * delta
 
 	move_and_slide()
@@ -306,14 +378,14 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float) ->
 			var col: KinematicCollision3D = get_slide_collision(i)
 			var collider: Object = col.get_collider()
 			var normal: Vector3 = col.get_normal()
-			if collider is PushableBlock and absf(normal.y) < push_normal_y_threshold:
+			if collider != null and (collider is PushableBlock or collider.has_method("try_push")) and absf(normal.y) < push_normal_y_threshold:
 				var push_dir := Vector3(-normal.x, 0.0, -normal.z)
 				if push_dir.length_squared() > 0.001:
 					push_dir = push_dir.normalized()
 					if dir.dot(push_dir) > 0.35:
 						is_pushing = true
 						var push_motion: Vector3 = push_dir * push_speed * delta
-						if (collider as PushableBlock).try_push(push_motion):
+						if collider.call("try_push", push_motion):
 							move_and_collide(push_motion)
 						break
 
@@ -386,10 +458,20 @@ func update_occluder_cutaways(world_origin: Vector3 = Vector3.INF) -> void:
 	for occ: Node in get_tree().get_nodes_in_group("foreground_occluders"):
 		if not (occ is Node3D) or not bool(occ.get_meta("cutaway", true)):
 			continue
+		var world_aabb: AABB = AABB()
+		var has_aabb: bool = false
 		var mesh_inst: MeshInstance3D = occ.get_node_or_null("Mesh") as MeshInstance3D
-		if mesh_inst == null:
+		if mesh_inst != null and mesh_inst.mesh != null:
+			world_aabb = (mesh_inst.global_transform * mesh_inst.get_aabb()).grow(-0.01)
+			has_aabb = true
+		else:
+			var col_node: CollisionShape3D = occ.get_node_or_null("CollisionShape3D") as CollisionShape3D
+			if col_node != null and col_node.shape is BoxShape3D:
+				var b_sz: Vector3 = (col_node.shape as BoxShape3D).size
+				world_aabb = (col_node.global_transform * AABB(-b_sz * 0.5, b_sz)).grow(-0.01)
+				has_aabb = true
+		if not has_aabb:
 			continue
-		var world_aabb: AABB = (mesh_inst.global_transform * mesh_inst.get_aabb()).grow(-0.01)
 		var occluded: bool = false
 		for orig: Vector3 in sample_origins:
 			if world_aabb.intersects_segment(orig, orig + cam_dir * 40.0) != null:

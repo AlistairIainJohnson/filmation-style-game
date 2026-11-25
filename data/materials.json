@@ -79,5 +79,10 @@
     "roughness": 0.38,
     "emission": [0.55, 0.08, 0.08],
     "emission_energy": 0.9
+  },
+  "tree_arch": {
+    "albedo": [0.28, 0.36, 0.22],
+    "metallic": 0.02,
+    "roughness": 0.84
   }
 }
