@@ -214,3 +214,40 @@
 
 ### How to resume
 All 6 phases of *Knight Lore Reimagined* are complete and verified (`./scripts/verify.sh --visual` exits `0`). Check `git status` / `git log` for latest state.
+
+---
+
+## 10. Phase 6 Visual & UI Polish (Post-Phase 6 — commit `686af38`)
+
+### SubViewport Background Compositor
+- **Problem**: `CanvasLayer` with any `layer` value ALWAYS renders after the 3D scene in Godot 4, so a `CanvasLayer(layer=-10)` background rect covered the 3D room.
+- **Solution**: 3D scene (room, player, camera, lighting, `RoomBuilder`) lives inside a `SubViewport(transparent_bg=true, own_world_3d=true, handle_input_locally=false, msaa=MSAA_2X)` mounted in a `SubViewportContainer` on `CanvasLayer(layer=-3)`. The parchment background `TextureRect` sits on `CanvasLayer(layer=-5)` — rendered first, then the transparent SubViewport composites the 3D over it. HUD/menus/audio stay on the main viewport (layer 0+).
+- **Files**: `game/knight_lore_game.gd` — `_world_viewport`, `_world_viewport_container`, `_gameplay_bg_layer`, `_gameplay_bg_rect`. `_update_world_viewport_size()` keeps SubViewport size in sync with main viewport on resize.
+- **DioramaLighting**: `static var force_transparent_background: bool = false`. When `true`, sets `env.background_mode = Environment.BG_CLEAR_COLOR` instead of `BG_COLOR`, making the 3D background transparent so the parchment shows through.
+
+### Parchment Splash & Main Menu (Two-Stage Logo Design)
+- **Splash**: `background.webp` fills screen → `knight_lore_reimagined_logo.png` centered on top → "PRESS ANY KEY TO START" label.
+- **Menu transition**: On keypress, logo tweens to left (`0.42 s` cubic ease-out), press-key label fades out, menu panel fades in on right half (`_menu_center` anchored `0.41..0.96` horizontal).
+- **Assets**: `assets/ui/background.webp` (parchment backdrop), `assets/ui/knight_lore_reimagined_logo.png` (defringed logo — PIL defringe applied to remove white semi-transparent edge pixels from `concept-art/knight_lore_reimagined_logo.webp`).
+- **File**: `game/ui/knight_lore_main_menu.gd`.
+
+### Parchment Font Theme (`game/ui/game_theme.gd`)
+- **Autoload** `GameTheme` registered in `project.godot`; runs before first frame.
+- Calls `ThemeDB.get_project_theme()` to obtain the live project theme (already carries `Metamorphous-Regular.ttf` from `project.godot [gui] theme/custom_font`), then mutates it in-place:
+  - Font applied to `Label`, `Button`, `LineEdit`, `RichTextLabel`, `OptionButton`.
+  - Fill: `#2B1108` (deep burnt umber) — `Color(0.1686, 0.0667, 0.0314, 1.0)`.
+  - Shadow: `#E89B3C` at 35% alpha — `Color(0.9098, 0.6078, 0.2353, 0.35)`, 1px offset X+Y.
+- Node-level `add_theme_color_override()` calls (gold HUD labels, toast text, magenta title) are **unaffected** — they win over theme defaults.
+- **Note**: `ThemeDB.set_project_theme()` does NOT exist in Godot 4.7.2. `ThemeDB.project_theme` property also does NOT exist. Only `ThemeDB.get_project_theme()` (read) works; mutate the returned `Theme` object in-place.
+
+### Background Brightness
+- Day modulate: `Color(0.29, 0.28, 0.28, 1.0)` (50% of original `0.58, 0.56, 0.56`).
+- Night modulate: `Color(0.15, 0.16, 0.23, 1.0)` (50% of original `0.30, 0.32, 0.46`).
+- Updated at 4 sites in `game/knight_lore_game.gd`: `_ready()` init + `_refresh_hud()` ×2 + `_load_room()`.
+
+### Doorway Void Meshes
+- North/West doorways (outward_sign < 0) get a `DoorwayVoidMesh` — matte-black `Color(0.015, 0.015, 0.02)` box — so open archways don't show parchment through them when looking into an unloaded room.
+- Added in `core/world/room_builder.gd`.
+
+### HUD Toast Panel
+- Toast label wrapped in `PanelContainer` with dark pill `StyleBoxFlat` backing (`_make_badge_style()` in `core/knight_lore/knight_lore_hud.gd`) for legibility over the parchment background.
