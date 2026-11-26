@@ -152,6 +152,10 @@ func try_push(motion: Vector3) -> bool:
 	return true
 
 
+func try_pull(motion: Vector3) -> bool:
+	return try_push(motion)
+
+
 func _apply_push_recursive(horiz: Vector3, visited: Dictionary, mark_pushed: bool) -> void:
 	var id_key: int = get_instance_id()
 	if visited.has(id_key):

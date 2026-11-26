@@ -4,6 +4,11 @@ extends CharacterBody3D
 ## movement, analytically derived asymmetric jump curve, coyote time, jump buffering,
 ## height-tracked Decal drop shadow, and global player_world_pos shader sync.
 
+signal stepped(step_pos: Vector3)
+signal jumped()
+signal landed()
+signal pushed()
+
 enum MoveMode { SCREEN_8_WAY, ISO_AXIS_4_WAY, ROTATIONAL_4_WAY }
 
 const PLAYER_VISUAL_LAYER: int = 2
@@ -12,6 +17,7 @@ const WORLD_COLLISION_MASK: int = 1 | 4
 
 @export var move_speed: float = 4.2
 @export var push_speed: float = 2.4
+@export var pull_speed: float = 2.2
 @export var ground_accel: float = 56.0
 @export var ground_decel: float = 52.0
 @export var turn_speed: float = 18.0
@@ -40,6 +46,7 @@ var drop_shadow: DropShadowController
 var collision_shape: CollisionShape3D
 var input_locked: bool = false
 var facing_cardinal: int = 3 # 0=West (-X), 1=East (+X), 2=North (-Z), 3=South (+Z)
+var is_pulling: bool = false
 
 var _camera_rig: DioramaCameraRig
 var _coyote_timer: float = 0.0
@@ -53,6 +60,7 @@ var _diag_debounce_timer: float = 0.0
 var _last_diag_yaw: float = 0.0
 var _was_on_floor: bool = true
 var _land_timer: float = 0.0
+var _step_distance_accumulator: float = 0.0
 
 
 func _init() -> void:
@@ -91,7 +99,7 @@ func _build_default_nodes() -> void:
 		collision_shape = CollisionShape3D.new()
 		collision_shape.name = "BodyCollider"
 		var capsule := CapsuleShape3D.new()
-		capsule.radius = 0.28
+		capsule.radius = 0.24
 		capsule.height = 1.36
 		collision_shape.shape = capsule
 		collision_shape.position = Vector3(0.0, 0.68, 0.0)
@@ -268,7 +276,8 @@ func _physics_process(delta: float) -> void:
 		var input_vec: Vector2 = Input.get_vector("move_left", "move_right", "move_up", "move_down")
 		var jump_pressed: bool = Input.is_action_just_pressed("jump")
 		var jump_held: bool = Input.is_action_pressed("jump")
-		step_movement(input_vec, jump_pressed, delta, jump_held)
+		var pull_held: bool = Input.is_action_pressed("grab_pull")
+		step_movement(input_vec, jump_pressed, delta, jump_held, pull_held)
 	else:
 		sync_shader_world_pos()
 
@@ -278,7 +287,7 @@ func _process(_delta: float) -> void:
 		sync_shader_world_pos(true)
 
 
-func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float, jump_held: bool = true) -> void:
+func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float, jump_held: bool = true, pull_held: bool = false) -> void:
 	if input_locked:
 		velocity.x = 0.0
 		velocity.z = 0.0
@@ -317,14 +326,31 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float, ju
 		_has_facing_target = true
 
 	var dir: Vector3 = compute_move_direction(input_vec)
+	var pull_target: Node3D = null
+	var pull_dir := Vector3.ZERO
+	is_pulling = false
+	if pull_held and is_on_floor() and dir.length_squared() > 0.001 and is_inside_tree():
+		pull_target = _find_pull_target(dir)
+		if pull_target != null:
+			pull_dir = Vector3(signf(dir.x), 0.0, 0.0) if absf(dir.x) >= absf(dir.z) else Vector3(0.0, 0.0, signf(dir.z))
+
 	var horiz_vel := Vector2(velocity.x, velocity.z)
-	var target_vel := Vector2(dir.x, dir.z) * move_speed
-	var accel_rate: float = ground_accel if dir.length_squared() > 0.001 else ground_decel
+	var target_vel := Vector2.ZERO if pull_target != null else (Vector2(dir.x, dir.z) * move_speed)
+	var accel_rate: float = ground_accel if (dir.length_squared() > 0.001 and pull_target == null) else ground_decel
 	horiz_vel = horiz_vel.move_toward(target_vel, accel_rate * delta)
+	if pull_target != null:
+		horiz_vel = Vector2.ZERO
 	velocity.x = horiz_vel.x
 	velocity.z = horiz_vel.y
 
-	if dir.length_squared() > 0.001:
+	if pull_target != null:
+		var to_blk := Vector2(pull_target.global_position.x - global_position.x, pull_target.global_position.z - global_position.z)
+		if to_blk.length_squared() > 0.0001:
+			_target_yaw = atan2(-to_blk.x, -to_blk.y)
+			_has_facing_target = true
+		_prev_input_was_diagonal = false
+		_diag_debounce_timer = 0.0
+	elif dir.length_squared() > 0.001:
 		var is_diag: bool = (move_mode != MoveMode.ROTATIONAL_4_WAY) and absf(input_vec.x) > 0.2 and absf(input_vec.y) > 0.2
 		var desired_yaw: float = atan2(-dir.x, -dir.z)
 		if is_diag:
@@ -358,6 +384,7 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float, ju
 		velocity.y = jump_velocity
 		_coyote_timer = 0.0
 		_jump_buffer_timer = 0.0
+		jumped.emit()
 
 	if not is_on_floor() or velocity.y > 0.0:
 		var g: float = gravity_up if (velocity.y > 0.0 and jump_held) else gravity_down
@@ -368,12 +395,37 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float, ju
 	var grounded_now: bool = is_on_floor()
 	if grounded_now and not _was_on_floor:
 		_land_timer = 0.14
+		landed.emit()
 	elif _land_timer > 0.0:
 		_land_timer = maxf(0.0, _land_timer - delta)
 	_was_on_floor = grounded_now
 
+	var h_speed: float = Vector2(velocity.x, velocity.z).length()
+	if grounded_now and (dir.length_squared() > 0.001 or h_speed > 0.35):
+		_step_distance_accumulator += h_speed * delta
+		if _step_distance_accumulator >= 0.72:
+			_step_distance_accumulator -= 0.72
+			stepped.emit(global_position)
+	else:
+		_step_distance_accumulator = 0.0
+
 	var is_pushing: bool = false
-	if dir.length_squared() > 0.001:
+	if pull_target != null and pull_dir != Vector3.ZERO:
+		var pull_motion: Vector3 = pull_dir * pull_speed * delta
+		if not test_move(global_transform, pull_motion):
+			global_position += pull_motion
+			force_update_transform()
+			var pulled_ok: bool = false
+			if pull_target.has_method("try_pull"):
+				pulled_ok = bool(pull_target.call("try_pull", pull_motion))
+			elif pull_target.has_method("try_push"):
+				pulled_ok = bool(pull_target.call("try_push", pull_motion))
+			if pulled_ok:
+				is_pulling = true
+			else:
+				global_position -= pull_motion
+				force_update_transform()
+	elif dir.length_squared() > 0.001:
 		for i: int in range(get_slide_collision_count()):
 			var col: KinematicCollision3D = get_slide_collision(i)
 			var collider: Object = col.get_collider()
@@ -384,15 +436,49 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float, ju
 					push_dir = push_dir.normalized()
 					if dir.dot(push_dir) > 0.35:
 						is_pushing = true
+						pushed.emit()
 						var push_motion: Vector3 = push_dir * push_speed * delta
 						if collider.call("try_push", push_motion):
 							move_and_collide(push_motion)
 						break
 
-	_update_anim_state(dir, is_pushing)
+	_update_anim_state(dir, is_pushing or is_pulling)
 	sync_shader_world_pos()
 	if drop_shadow != null:
 		drop_shadow.update_shadow()
+
+
+func _find_pull_target(move_dir: Vector3) -> Node3D:
+	var space_state: PhysicsDirectSpaceState3D = get_world_3d().direct_space_state
+	if space_state == null:
+		return null
+	var query := PhysicsShapeQueryParameters3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = 0.72
+	query.shape = sphere
+	query.transform = Transform3D(Basis.IDENTITY, global_position + Vector3(0.0, 0.40, 0.0))
+	query.collision_mask = 4
+	query.exclude = [get_rid()]
+	var hits: Array[Dictionary] = space_state.intersect_shape(query, 8)
+	var best_body: Node3D = null
+	var best_dist: float = INF
+	for hit: Dictionary in hits:
+		var collider: Object = hit.get("collider")
+		if not (collider is Node3D):
+			continue
+		if not (collider is PushableBlock or collider.has_method("try_pull") or collider.has_method("try_push")):
+			continue
+		var body: Node3D = collider as Node3D
+		if absf(body.global_position.y - global_position.y) >= 0.65:
+			continue
+		var to_body_xz := Vector3(body.global_position.x - global_position.x, 0.0, body.global_position.z - global_position.z)
+		var d_len: float = to_body_xz.length()
+		if d_len < 0.05:
+			continue
+		if move_dir.dot(to_body_xz / d_len) < -0.25 and d_len < best_dist:
+			best_dist = d_len
+			best_body = body
+	return best_body
 
 
 func _update_anim_state(dir: Vector3, is_pushing: bool) -> void:

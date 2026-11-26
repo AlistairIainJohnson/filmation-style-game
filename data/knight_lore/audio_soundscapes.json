@@ -1,0 +1,206 @@
+{
+  "metadata": {
+    "description": "Biome acoustic profiles (reverb & hard dungeon echoes), ambience loop streams, and config-driven SFX event routing for Knight Lore 3D."
+  },
+  "biome_for_room_type": {
+    "dungeon": "dungeon",
+    "woodland": "woodland"
+  },
+  "biomes": {
+    "dungeon": {
+      "display_name": "Castle Dungeon & Stone Chambers",
+      "reverb": {
+        "room_size": 0.78,
+        "damping": 0.22,
+        "wet": 0.36,
+        "dry": 0.86,
+        "spread": 0.90
+      },
+      "echo": {
+        "enabled": true,
+        "delay_ms": 125.0,
+        "tap2_ms": 255.0,
+        "tap1_db": -11.5,
+        "tap2_db": -17.5,
+        "feedback_ms": 185.0,
+        "feedback_db": -16.0,
+        "dry": 0.90
+      },
+      "ambience_streams": {
+        "day": "res://assets/audio/ambience/ambience_dungeon.ogg",
+        "night": "res://assets/audio/ambience/ambience_dungeon.ogg",
+        "volume_db": -6.0
+      }
+    },
+    "woodland": {
+      "display_name": "Woodland & Ancient Forest",
+      "reverb": {
+        "room_size": 0.14,
+        "damping": 0.85,
+        "wet": 0.04,
+        "dry": 1.0,
+        "spread": 0.30
+      },
+      "echo": {
+        "enabled": false,
+        "delay_ms": 0.0,
+        "tap2_ms": 0.0,
+        "tap1_db": -80.0,
+        "tap2_db": -80.0,
+        "feedback_ms": 0.0,
+        "feedback_db": -80.0,
+        "dry": 1.0
+      },
+      "ambience_streams": {
+        "day": "res://assets/audio/ambience/ambience_woodland_day.ogg",
+        "night": "res://assets/audio/ambience/ambience_woodland_night.ogg",
+        "volume_db": -3.5
+      }
+    }
+  },
+  "sfx_events": {
+    "sfx_step_player": {
+      "biome_streams": {
+        "dungeon": [
+          "res://assets/audio/sfx/step_stone_0.wav",
+          "res://assets/audio/sfx/step_stone_1.wav",
+          "res://assets/audio/sfx/step_stone_2.wav",
+          "res://assets/audio/sfx/step_stone_3.wav"
+        ],
+        "woodland": [
+          "res://assets/audio/sfx/step_woodland_0.wav",
+          "res://assets/audio/sfx/step_woodland_1.wav",
+          "res://assets/audio/sfx/step_woodland_2.wav",
+          "res://assets/audio/sfx/step_woodland_3.wav"
+        ]
+      },
+      "bus": "RoomFX",
+      "volume_db": -12.0,
+      "biome_volume_db": {
+        "dungeon": -15.5,
+        "woodland": -10.5
+      },
+      "pitch_min": 0.94,
+      "pitch_max": 1.06
+    },
+    "sfx_step_guard_wizard": {
+      "streams": [
+        "res://assets/audio/sfx/step_guard_0.wav",
+        "res://assets/audio/sfx/step_guard_1.wav"
+      ],
+      "bus": "RoomFX",
+      "volume_db": -14.5,
+      "pitch_min": 0.95,
+      "pitch_max": 1.05
+    },
+    "sfx_jump": {
+      "streams": ["res://assets/audio/sfx/jump.wav"],
+      "bus": "RoomFX",
+      "volume_db": -7.0,
+      "pitch_min": 0.97,
+      "pitch_max": 1.04
+    },
+    "sfx_bounce": {
+      "biome_streams": {
+        "dungeon": ["res://assets/audio/sfx/land_stone.wav"],
+        "woodland": ["res://assets/audio/sfx/land_woodland.wav"]
+      },
+      "streams": ["res://assets/audio/sfx/bounce_thud.wav"],
+      "bus": "RoomFX",
+      "volume_db": -5.5,
+      "pitch_min": 0.94,
+      "pitch_max": 1.05
+    },
+    "sfx_portcullis_slam": {
+      "streams": ["res://assets/audio/sfx/portcullis_slam.wav"],
+      "bus": "RoomFX",
+      "volume_db": -2.5,
+      "pitch_min": 0.96,
+      "pitch_max": 1.04
+    },
+    "sfx_push_block": {
+      "streams": ["res://assets/audio/sfx/push_stone.wav"],
+      "bus": "RoomFX",
+      "volume_db": -8.0,
+      "pitch_min": 0.94,
+      "pitch_max": 1.06
+    },
+    "sfx_move_object": {
+      "streams": ["res://assets/audio/sfx/push_stone.wav"],
+      "bus": "RoomFX",
+      "volume_db": -9.0,
+      "pitch_min": 0.92,
+      "pitch_max": 1.08
+    },
+    "sfx_fall_or_drop": {
+      "streams": ["res://assets/audio/sfx/bounce_thud.wav"],
+      "bus": "RoomFX",
+      "volume_db": -6.5,
+      "pitch_min": 0.95,
+      "pitch_max": 1.05
+    },
+    "sfx_rising_blocks": {
+      "streams": ["res://assets/audio/sfx/appear_sparkles.wav"],
+      "bus": "RoomFX",
+      "volume_db": -6.0,
+      "pitch_min": 0.98,
+      "pitch_max": 1.04
+    },
+    "sfx_menu_select": {
+      "streams": ["res://assets/audio/sfx/menu_select.wav"],
+      "bus": "SFX_Dry",
+      "volume_db": -5.0,
+      "pitch_min": 0.98,
+      "pitch_max": 1.02
+    },
+    "sfx_pause_toggle": {
+      "streams": ["res://assets/audio/sfx/pause_toggle.wav"],
+      "bus": "SFX_Dry",
+      "volume_db": -5.0,
+      "pitch_min": 1.0,
+      "pitch_max": 1.0
+    },
+    "sfx_pickup_item": {
+      "streams": ["res://assets/audio/sfx/pickup_chime.wav"],
+      "bus": "SFX_Dry",
+      "volume_db": -4.0,
+      "pitch_min": 0.98,
+      "pitch_max": 1.03
+    },
+    "sfx_cauldron_accept": {
+      "streams": ["res://assets/audio/sfx/cauldron_accept.wav"],
+      "bus": "RoomFX",
+      "volume_db": -3.0,
+      "pitch_min": 1.0,
+      "pitch_max": 1.0
+    },
+    "sfx_cauldron_reject": {
+      "streams": ["res://assets/audio/sfx/cauldron_reject.wav"],
+      "bus": "RoomFX",
+      "volume_db": -3.5,
+      "pitch_min": 1.0,
+      "pitch_max": 1.0
+    },
+    "sfx_transform": {
+      "streams": ["res://assets/audio/sfx/transform_swell.wav"],
+      "bus": "RoomFX",
+      "volume_db": -3.0,
+      "pitch_min": 1.0,
+      "pitch_max": 1.0
+    },
+    "sfx_appear_sparkles": {
+      "streams": ["res://assets/audio/sfx/appear_sparkles.wav"],
+      "bus": "RoomFX",
+      "volume_db": -4.5,
+      "pitch_min": 0.97,
+      "pitch_max": 1.03
+    },
+    "sfx_death_sparkles": {
+      "streams": ["res://assets/audio/sfx/death_sting.wav"],
+      "bus": "RoomFX",
+      "volume_db": -3.0,
+      "pitch_min": 1.0,
+      "pitch_max": 1.0
+    }
+  }
+}

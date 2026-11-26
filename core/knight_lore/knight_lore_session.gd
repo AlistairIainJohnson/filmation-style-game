@@ -155,7 +155,7 @@ func start_new_game(data: KnightLoreData, rng_seed: int = -1, override_start_roo
 func enter_room(room_id: int, _from_dir: String = "") -> void:
 	current_room_id = room_id
 	visited_rooms[room_id] = true
-	disable_spike_ball_drop = ((room_id & 1) == 1)
+	disable_spike_ball_drop = false
 
 
 func get_room_items(room_id: int) -> Array[Dictionary]:

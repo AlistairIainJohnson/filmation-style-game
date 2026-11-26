@@ -1,0 +1,55 @@
+{
+  "metadata": {
+    "description": "Orchestral score cue manifest for Knight Lore 3D. Streams are rendered offline from de-interleaved Knight Lore motifs using FluidSynth + GeneralUser GS."
+  },
+  "mix": {
+    "music_bus_db": -2.0,
+    "gameplay_music_db": -10.5
+  },
+  "cues": {
+    "menu": {
+      "source_tune": "menu",
+      "stream": "res://assets/audio/music/score_menu.ogg",
+      "loop": true,
+      "volume_db": -4.0,
+      "fade_s": 0.8
+    },
+    "start_game": {
+      "source_tune": "start_game",
+      "stream": "res://assets/audio/music/score_start_game.ogg",
+      "loop": false,
+      "volume_db": -3.5,
+      "fade_s": 0.25,
+      "next_cue_day": "gameplay_day",
+      "next_cue_night": "gameplay_night"
+    },
+    "gameplay_day": {
+      "source_tune": "menu",
+      "stream": "res://assets/audio/music/score_gameplay_day.ogg",
+      "loop": true,
+      "volume_db": -10.5,
+      "fade_s": 1.6
+    },
+    "gameplay_night": {
+      "source_tune": "menu",
+      "stream": "res://assets/audio/music/score_gameplay_night.ogg",
+      "loop": true,
+      "volume_db": -10.0,
+      "fade_s": 1.6
+    },
+    "game_over": {
+      "source_tune": "game_over",
+      "stream": "res://assets/audio/music/score_game_over.ogg",
+      "loop": false,
+      "volume_db": -4.5,
+      "fade_s": 0.6
+    },
+    "game_complete": {
+      "source_tune": "game_complete",
+      "stream": "res://assets/audio/music/score_game_complete.ogg",
+      "loop": false,
+      "volume_db": -3.0,
+      "fade_s": 0.5
+    }
+  }
+}

@@ -50,6 +50,8 @@ def make_pbr_material(
     if bsdf:
         if "Base Color" in bsdf.inputs:
             bsdf.inputs["Base Color"].default_value = rgba
+        if len(rgba) >= 4 and rgba[3] < 0.999 and "Alpha" in bsdf.inputs:
+            bsdf.inputs["Alpha"].default_value = rgba[3]
         if "Metallic" in bsdf.inputs:
             bsdf.inputs["Metallic"].default_value = metallic
         if "Roughness" in bsdf.inputs:
@@ -1986,20 +1988,43 @@ def clamp01(x: float) -> float:
     return max(0.0, min(1.0, x))
 
 
+MELKHIOR_BONES = [
+    ("Hips", None, (0.0, 0.0, 0.72), (0.0, 0.0, 0.84)),
+    ("Spine", "Hips", (0.0, 0.0, 0.84), (0.0, 0.0, 1.00)),
+    ("Chest", "Spine", (0.0, 0.0, 1.00), (0.0, 0.0, 1.18)),
+    ("Neck", "Chest", (0.0, 0.0, 1.18), (0.0, 0.0, 1.25)),
+    ("Head", "Neck", (0.0, 0.0, 1.25), (0.0, 0.0, 1.50)),
+    ("LeftUpperArm", "Chest", (0.175, 0.0, 1.14), (0.210, -0.015, 0.94)),
+    ("LeftLowerArm", "LeftUpperArm", (0.210, -0.015, 0.94), (0.220, -0.045, 0.76)),
+    ("LeftHand", "LeftLowerArm", (0.220, -0.045, 0.76), (0.222, -0.055, 0.65)),
+    ("RightUpperArm", "Chest", (-0.175, 0.0, 1.14), (-0.210, -0.025, 0.94)),
+    ("RightLowerArm", "RightUpperArm", (-0.210, -0.025, 0.94), (-0.225, -0.085, 0.77)),
+    ("RightHand", "RightLowerArm", (-0.225, -0.085, 0.77), (-0.228, -0.095, 0.66)),
+    ("LeftUpperLeg", "Hips", (0.10, 0.0, 0.72), (0.10, 0.0, 0.40)),
+    ("LeftLowerLeg", "LeftUpperLeg", (0.10, 0.0, 0.40), (0.10, 0.0, 0.11)),
+    ("LeftFoot", "LeftLowerLeg", (0.10, 0.0, 0.11), (0.10, -0.09, 0.0)),
+    ("RightUpperLeg", "Hips", (-0.10, 0.0, 0.72), (-0.10, 0.0, 0.40)),
+    ("RightLowerLeg", "RightUpperLeg", (-0.10, 0.0, 0.40), (-0.10, 0.0, 0.11)),
+    ("RightFoot", "RightLowerLeg", (-0.10, 0.0, 0.11), (-0.10, -0.09, 0.0)),
+]
+
+
 def build_rigged_melkhior(palette: list[tuple[float, float, float]]) -> None:
-    """Anatomically sculpted Melkhior the Wizard with continuous flowing robes, layered beard,
-    curved pointed hat, gnarled crystal staff & grounded boots on 17-bone HUMANOID_BONES."""
+    """Anatomically sculpted humanoid Melkhior the Wizard with tucked natural arms,
+    sculpted hands, tapered flowing robes, contoured face/beard, curved hat,
+    and upright crystal staff on 17-bone MELKHIOR_BONES."""
     robe_mat = make_pbr_material("WizardRobe", (0.30, 0.16, 0.54, 1.0), metallic=0.06, roughness=0.66)
-    robe_deep = make_pbr_material("WizardRobeDeep", (0.22, 0.11, 0.42, 1.0), metallic=0.06, roughness=0.72)
+    robe_deep = make_pbr_material("WizardRobeDeep", (0.21, 0.11, 0.40, 1.0), metallic=0.06, roughness=0.72)
     robe_trim = make_pbr_material("WizardGoldTrim", (0.86, 0.68, 0.24, 1.0), metallic=0.85, roughness=0.30)
     beard_mat = make_pbr_material("WizardBeard", (0.93, 0.92, 0.90, 1.0), metallic=0.0, roughness=0.74)
-    skin_mat = make_pbr_material("WizardSkin", (0.82, 0.66, 0.55, 1.0), metallic=0.0, roughness=0.62)
-    eye_mat = make_pbr_material("WizardEye", (0.98, 0.80, 0.22, 1.0), metallic=0.1, roughness=0.2, emission=(0.98, 0.78, 0.20), emission_strength=1.8)
+    skin_mat = make_pbr_material("WizardSkin", (0.82, 0.66, 0.55, 1.0), metallic=0.0, roughness=0.60)
+    eye_white_mat = make_pbr_material("WizardEyeWhite", (0.95, 0.94, 0.90, 1.0), metallic=0.0, roughness=0.28)
+    eye_mat = make_pbr_material("WizardEye", (0.98, 0.80, 0.22, 1.0), metallic=0.1, roughness=0.2, emission=(0.98, 0.78, 0.20), emission_strength=1.5)
     staff_mat = make_pbr_material("WizardStaffWood", (0.32, 0.20, 0.11, 1.0), metallic=0.05, roughness=0.72)
     orb_mat = make_pbr_material("WizardOrb", (0.22, 0.92, 0.98, 1.0), metallic=0.1, roughness=0.18, emission=(0.22, 0.92, 0.98), emission_strength=2.6)
     boot_mat = make_pbr_material("WizardBoots", (0.18, 0.12, 0.24, 1.0), metallic=0.10, roughness=0.58)
 
-    arm_obj = _create_armature_from_bones(HUMANOID_BONES)
+    arm_obj = _create_armature_from_bones(MELKHIOR_BONES)
 
     def _ell(cx: float, cy: float, cz: float, rx: float, ry: float, sides: int = 12, pleat: float = 0.0) -> list[tuple[float, float, float]]:
         pts: list[tuple[float, float, float]] = []
@@ -2009,155 +2034,208 @@ def build_rigged_melkhior(palette: list[tuple[float, float, float]]) -> None:
             pts.append((cx + rx * r_mod * math.cos(a), cy + ry * r_mod * math.sin(a), cz))
         return pts
 
-    # 1. Continuous flowing wizard robe from ankle hem (z=0.24) up to neck collar (z=1.28)
+    # 1. Humanoid tapered flowing wizard robe from ankle hem (z=0.22) up to neck (z=1.24)
     robe_rings = [
-        _ell(0.0, 0.0, 0.24, 0.28, 0.23, 14, pleat=0.06),  # Flared lower skirt hem
-        _ell(0.0, 0.0, 0.52, 0.24, 0.19, 14, pleat=0.04),  # Mid-thigh drape
-        _ell(0.0, 0.0, 0.78, 0.21, 0.17, 14, pleat=0.02),  # Hip
-        _ell(0.0, 0.0, 0.91, 0.175, 0.145, 14),            # Cinched golden-sashed waist
-        _ell(0.0, -0.01, 1.06, 0.21, 0.165, 14),           # Chest swell
-        _ell(0.0, 0.0, 1.20, 0.235, 0.175, 14),            # Draped shoulder mantle
-        _ell(0.0, 0.0, 1.29, 0.095, 0.090, 14),            # High wizard collar
+        _ell(0.0, 0.0, 0.22, 0.225, 0.185, 14, pleat=0.05),   # Draped lower hem
+        _ell(0.0, 0.0, 0.50, 0.195, 0.160, 14, pleat=0.03),   # Knee/thigh
+        _ell(0.0, 0.0, 0.74, 0.175, 0.145, 14, pleat=0.015),  # Hip
+        _ell(0.0, 0.0, 0.87, 0.148, 0.122, 14),               # Cinched waist
+        _ell(0.0, -0.008, 1.02, 0.178, 0.142, 14),            # Ribcage
+        _ell(0.0, -0.008, 1.13, 0.192, 0.148, 14),            # Humanoid shoulders
+        _ell(0.0, 0.0, 1.19, 0.140, 0.112, 14),               # Trapezius slope
+        _ell(0.0, 0.0, 1.24, 0.072, 0.070, 14),               # Neck collar
     ]
     robe_obj = _loft_rings("WizardRobeMesh", robe_rings, robe_mat, cap_bottom=False, cap_top=True, subsurf_levels=1)
 
     def _robe_weights(co: Vector) -> dict[str, float]:
         z = co.z
-        if z <= 0.76:
-            # Blend lower robe skirt cleanly across Left/Right legs & Hips so walking boots never detach or stretch weirdly
-            t_leg = clamp01((0.76 - z) / 0.48)
-            w_l = clamp01((co.x + 0.08) / 0.16)
+        if z <= 0.72:
+            t_leg = clamp01((0.72 - z) / 0.46)
+            w_l = clamp01((co.x + 0.07) / 0.14)
             w_r = 1.0 - w_l
             return {"Hips": 1.0 - t_leg * 0.75, "LeftUpperLeg": t_leg * 0.75 * w_l, "RightUpperLeg": t_leg * 0.75 * w_r}
-        if z <= 0.92:
-            t = (z - 0.76) / 0.16
+        if z <= 0.88:
+            t = (z - 0.72) / 0.16
             return {"Hips": 1.0 - t, "Spine": t}
-        if z <= 1.14:
-            t = (z - 0.92) / 0.22
+        if z <= 1.12:
+            t = (z - 0.88) / 0.24
             return {"Spine": 1.0 - t, "Chest": t}
-        t = clamp01((z - 1.14) / 0.15)
+        t = clamp01((z - 1.12) / 0.12)
         return {"Chest": 1.0 - t * 0.55, "Neck": t * 0.55}
 
     _assign_smooth_bone_weights(robe_obj, arm_obj, _robe_weights)
 
-    # Golden waist sash & vertical stole panel + rear draped mantle
-    sash = add_cylinder("WizardSash", (0.0, 0.0, 0.91), 0.185, 0.055, robe_trim, verts=16)
+    # Shoulder mantle capelet, golden waist sash & contoured stole
+    mantle_rings = [
+        _ell(0.0, 0.01, 1.07, 0.205, 0.162, 14, pleat=0.04),
+        _ell(0.0, 0.0, 1.15, 0.195, 0.152, 14, pleat=0.02),
+        _ell(0.0, 0.0, 1.21, 0.125, 0.105, 14),
+    ]
+    mantle = _loft_rings("WizardMantle", mantle_rings, robe_deep, cap_bottom=False, cap_top=True, subsurf_levels=1)
+    _assign_bone_weight(mantle, "Chest", arm_obj)
+
+    sash = add_cylinder("WizardSash", (0.0, 0.0, 0.87), 0.155, 0.045, robe_trim, verts=16)
     _set_smooth(sash)
     _assign_bone_weight(sash, "Spine", arm_obj)
     stole = _loft_rings("WizardStole", [
-        [(-0.055, -0.255, 0.26), (0.055, -0.255, 0.26), (0.055, -0.21, 0.26), (-0.055, -0.21, 0.26)],
-        [(-0.050, -0.215, 0.54), (0.050, -0.215, 0.54), (0.050, -0.17, 0.54), (-0.050, -0.17, 0.54)],
-        [(-0.045, -0.172, 0.89), (0.045, -0.172, 0.89), (0.045, -0.135, 0.89), (-0.045, -0.135, 0.89)],
-    ], robe_trim, subsurf_levels=0)
+        [(-0.045, -0.198, 0.24), (0.045, -0.198, 0.24), (0.045, -0.168, 0.24), (-0.045, -0.168, 0.24)],
+        [(-0.042, -0.168, 0.54), (0.042, -0.168, 0.54), (0.042, -0.138, 0.54), (-0.042, -0.138, 0.54)],
+        [(-0.038, -0.145, 0.85), (0.038, -0.145, 0.85), (0.038, -0.115, 0.85), (-0.038, -0.115, 0.85)],
+    ], robe_trim, subsurf_levels=1)
     _assign_bone_weight(stole, "Hips", arm_obj)
 
-    # 2. Anatomical Head, Layered Flowing Beard & Curved Drooping Pointed Hat (Head)
+    # 2. Anatomical Humanoid Head, Contoured Face, Layered Beard & Curved Hat (Head)
     wiz_head_rings = [
-        _ell(0.0, 0.0, 1.24, 0.072, 0.072, 12),
-        _ell(0.0, -0.015, 1.32, 0.115, 0.125, 12),
-        _ell(0.0, -0.015, 1.38, 0.135, 0.142, 12),
-        _ell(0.0, -0.005, 1.44, 0.132, 0.138, 12),
-        _ell(0.0, 0.005, 1.48, 0.080, 0.085, 12),
+        _ell(0.0, 0.0, 1.22, 0.068, 0.068, 12),
+        _ell(0.0, -0.012, 1.28, 0.102, 0.112, 12),
+        _ell(0.0, -0.012, 1.34, 0.122, 0.128, 12),
+        _ell(0.0, -0.005, 1.40, 0.120, 0.124, 12),
+        _ell(0.0, 0.005, 1.44, 0.072, 0.078, 12),
     ]
     w_head = _loft_rings("WizardHead", wiz_head_rings, skin_mat, cap_bottom=True, cap_top=True, subsurf_levels=1)
     _assign_bone_weight(w_head, "Head", arm_obj)
 
-    w_nose = add_beveled_box("WizardNose", (0.0, -0.155, 1.37), (0.032, 0.045, 0.045), skin_mat, bevel_width=0.012)
+    w_nose = add_beveled_box("WizardNose", (0.0, -0.138, 1.335), (0.028, 0.040, 0.042), skin_mat, bevel_width=0.011)
+    _set_smooth(w_nose)
     _assign_bone_weight(w_nose, "Head", arm_obj)
-    for side_tag, sx in (("L", 0.048), ("R", -0.048)):
-        eye = add_uv_sphere(f"WizardEye_{side_tag}", (sx, -0.142, 1.39), 0.021, eye_mat, scale=(1.0, 0.6, 0.9))
+    w_must = add_beveled_box("WizardMustache", (0.0, -0.130, 1.295), (0.105, 0.030, 0.022), beard_mat, bevel_width=0.009)
+    _set_smooth(w_must)
+    _assign_bone_weight(w_must, "Head", arm_obj)
+    for side_tag, sx in (("L", 1.0), ("R", -1.0)):
+        ew = add_uv_sphere(f"WizardEyeWhite_{side_tag}", (sx * 0.044, -0.124, 1.355), 0.022, eye_white_mat, scale=(1.0, 0.55, 1.0))
+        _assign_bone_weight(ew, "Head", arm_obj)
+        eye = add_uv_sphere(f"WizardEye_{side_tag}", (sx * 0.044, -0.133, 1.354), 0.013, eye_mat, scale=(1.0, 0.60, 1.0))
         _assign_bone_weight(eye, "Head", arm_obj)
+        brow = add_beveled_box(f"WizardBrow_{side_tag}", (sx * 0.046, -0.126, 1.384), (0.048, 0.020, 0.014), beard_mat, bevel_width=0.005)
+        _assign_bone_weight(brow, "Head", arm_obj)
+        ear = add_uv_sphere(f"WizardEar_{side_tag}", (sx * 0.124, -0.005, 1.345), 0.026, skin_mat, scale=(0.45, 0.72, 1.0))
+        _assign_bone_weight(ear, "Head", arm_obj)
 
-    # Sculpted flowing layered white beard curving gently down chest
     beard_rings = [
-        [(-0.075, -0.125, 1.335), (0.075, -0.125, 1.335), (0.055, -0.070, 1.335), (-0.055, -0.070, 1.335)],
-        [(-0.082, -0.158, 1.250), (0.082, -0.158, 1.250), (0.050, -0.100, 1.250), (-0.050, -0.100, 1.250)],
-        [(-0.055, -0.175, 1.150), (0.055, -0.175, 1.150), (0.035, -0.125, 1.150), (-0.035, -0.125, 1.150)],
-        [(-0.018, -0.170, 1.060), (0.018, -0.170, 1.060), (0.012, -0.140, 1.060), (-0.012, -0.140, 1.060)],
+        [(-0.068, -0.110, 1.295), (0.068, -0.110, 1.295), (0.048, -0.062, 1.295), (-0.048, -0.062, 1.295)],
+        [(-0.072, -0.138, 1.215), (0.072, -0.138, 1.215), (0.045, -0.090, 1.215), (-0.045, -0.090, 1.215)],
+        [(-0.048, -0.150, 1.120), (0.048, -0.150, 1.120), (0.030, -0.110, 1.120), (-0.030, -0.110, 1.120)],
+        [(-0.015, -0.148, 1.030), (0.015, -0.148, 1.030), (0.010, -0.124, 1.030), (-0.010, -0.124, 1.030)],
     ]
     beard_obj = _loft_rings("WizardBeard", beard_rings, beard_mat, cap_bottom=True, cap_top=True, subsurf_levels=1)
     _assign_bone_weight(beard_obj, "Head", arm_obj)
 
-    # Curved organic pointed hat (no stiff cone!) + draped brim + gold band
     hat_brim_rings = [
-        _ell(0.0, 0.01, 1.435, 0.25, 0.26, 14, pleat=0.04),
-        _ell(0.0, 0.015, 1.460, 0.148, 0.155, 14),
+        _ell(0.0, 0.01, 1.395, 0.22, 0.23, 14, pleat=0.04),
+        _ell(0.0, 0.015, 1.422, 0.132, 0.138, 14),
     ]
     hat_brim = _loft_rings("HatBrim", hat_brim_rings, robe_deep, cap_bottom=False, cap_top=False, subsurf_levels=1)
     _assign_bone_weight(hat_brim, "Head", arm_obj)
-    hat_band = add_cylinder("HatBand", (0.0, 0.015, 1.472), 0.148, 0.032, robe_trim, verts=16)
+    hat_band = add_cylinder("HatBand", (0.0, 0.015, 1.434), 0.132, 0.028, robe_trim, verts=16)
     _assign_bone_weight(hat_band, "Head", arm_obj)
     hat_crown = _build_organic_tube(
         "HatCurvedSpire",
-        [(0.0, 0.015, 1.46), (0.0, 0.03, 1.54), (0.02, 0.07, 1.60), (0.06, 0.13, 1.63)],
-        [0.145, 0.095, 0.048, 0.012],
+        [(0.0, 0.015, 1.425), (0.0, 0.03, 1.505), (0.02, 0.065, 1.565), (0.055, 0.12, 1.595)],
+        [0.128, 0.084, 0.042, 0.010],
         robe_mat,
         sides=12,
     )
     _assign_bone_weight(hat_crown, "Head", arm_obj)
 
-    # 3. Continuous draped Bell Sleeves & Hands + Gnarled Crystal Staff
+    # 3. Natural Tucked Humanoid Sleeves, Forearms & Sculpted Hands + Upright Crystal Staff
     for side_tag, bone_prefix, sign_x in (("L", "Left", 1.0), ("R", "Right", -1.0)):
+        fwd_wrist = -0.085 if side_tag == "R" else -0.045
+        fwd_elbow = -0.025 if side_tag == "R" else -0.015
         sleeve_rings = [
-            _ell(sign_x * 0.21, 0.0, 1.18, 0.075, 0.088, 10),
-            _ell(sign_x * 0.30, 0.0, 1.09, 0.082, 0.088, 10),
-            _ell(sign_x * 0.39, 0.0, 0.98, 0.088, 0.095, 10),
-            _ell(sign_x * 0.46, 0.0, 0.87, 0.100, 0.105, 10),
+            _ell(sign_x * 0.168, 0.0, 1.145, 0.056, 0.062, 10),
+            _ell(sign_x * 0.196, fwd_elbow * 0.5, 1.045, 0.062, 0.066, 10),
+            _ell(sign_x * 0.210, fwd_elbow, 0.945, 0.060, 0.064, 10),
+            _ell(sign_x * 0.220, fwd_wrist * 0.85, 0.805, 0.066, 0.070, 10),
+            _ell(sign_x * 0.223, fwd_wrist, 0.775, 0.052, 0.054, 10),
         ]
-        sleeve_obj = _loft_rings(f"WizardSleeve_{side_tag}", sleeve_rings, robe_mat, cap_bottom=True, cap_top=False, subsurf_levels=1)
+        sleeve_obj = _loft_rings(f"WizardSleeve_{side_tag}", sleeve_rings, robe_mat, cap_bottom=True, cap_top=True, subsurf_levels=1)
 
-        def _make_wiz_arm_w(sx: float, bp: str):
+        cuff = add_cylinder(f"WizardCuff_{side_tag}", (sign_x * 0.222, fwd_wrist, 0.778), 0.055, 0.024, robe_trim, verts=12)
+        _set_smooth(cuff)
+
+        palm_rings = [
+            _ell(sign_x * 0.223, fwd_wrist, 0.772, 0.028, 0.032, 10),
+            _ell(sign_x * 0.226, fwd_wrist - 0.008, 0.735, 0.030, 0.044, 10),
+            _ell(sign_x * 0.225, fwd_wrist - 0.010, 0.702, 0.028, 0.044, 10),
+            _ell(sign_x * 0.222, fwd_wrist - 0.010, 0.690, 0.020, 0.035, 10),
+        ]
+        palm_obj = _loft_rings(f"WizardPalm_{side_tag}", palm_rings, skin_mat, cap_bottom=True, cap_top=True, subsurf_levels=1)
+
+        def _make_wiz_arm_w(bp: str):
             def _fn(co: Vector) -> dict[str, float]:
-                ax = co.x * sx
-                if ax <= 0.33:
+                z = co.z
+                if z >= 0.96:
                     return {f"{bp}UpperArm": 1.0}
-                if ax <= 0.40:
-                    t = (ax - 0.33) / 0.07
+                if z >= 0.91:
+                    t = (0.96 - z) / 0.05
                     return {f"{bp}UpperArm": 1.0 - t, f"{bp}LowerArm": t}
-                return {f"{bp}LowerArm": 1.0}
+                if z >= 0.78:
+                    return {f"{bp}LowerArm": 1.0}
+                if z >= 0.74:
+                    t = (0.78 - z) / 0.04
+                    return {f"{bp}LowerArm": 1.0 - t, f"{bp}Hand": t}
+                return {f"{bp}Hand": 1.0}
             return _fn
 
-        _assign_smooth_bone_weights(sleeve_obj, arm_obj, _make_wiz_arm_w(sign_x, bone_prefix))
-        hand = add_uv_sphere(f"WizardHand_{side_tag}", (sign_x * 0.50, -0.01, 0.81), 0.050, skin_mat, scale=(0.95, 1.0, 1.05))
-        _set_smooth(hand)
-        _assign_bone_weight(hand, f"{bone_prefix}Hand", arm_obj)
+        wiz_arm_w = _make_wiz_arm_w(bone_prefix)
+        _assign_smooth_bone_weights(sleeve_obj, arm_obj, wiz_arm_w)
+        _assign_bone_weight(cuff, f"{bone_prefix}LowerArm", arm_obj)
+        _assign_smooth_bone_weights(palm_obj, arm_obj, wiz_arm_w)
+
+        thumb = _build_organic_tube(
+            f"WizardThumb_{side_tag}",
+            [(sign_x * 0.214, fwd_wrist - 0.030, 0.736), (sign_x * 0.205, fwd_wrist - 0.048, 0.708), (sign_x * 0.202, fwd_wrist - 0.045, 0.684)],
+            [0.016, 0.013, 0.010],
+            skin_mat,
+            sides=7,
+        )
+        _assign_bone_weight(thumb, f"{bone_prefix}Hand", arm_obj)
+        for f_idx, dy_f in enumerate((-0.028, -0.010, 0.008, 0.025)):
+            finger = _build_organic_tube(
+                f"WizardFinger_{side_tag}_{f_idx}",
+                [(sign_x * 0.226, fwd_wrist + dy_f, 0.702), (sign_x * 0.222, fwd_wrist + dy_f, 0.676), (sign_x * 0.214, fwd_wrist + dy_f, 0.654)],
+                [0.011, 0.0095, 0.007],
+                skin_mat,
+                sides=6,
+            )
+            _assign_bone_weight(finger, f"{bone_prefix}Hand", arm_obj)
 
     staff = _build_organic_tube(
         "WizardGnarledStaff",
-        [(-0.52, -0.02, 0.06), (-0.51, -0.03, 0.48), (-0.53, -0.04, 0.90), (-0.50, -0.03, 1.25), (-0.52, -0.05, 1.38)],
-        [0.022, 0.025, 0.024, 0.028, 0.034],
+        [(-0.232, -0.105, 0.02), (-0.234, -0.112, 0.44), (-0.236, -0.105, 0.74), (-0.232, -0.112, 1.15), (-0.235, -0.120, 1.38)],
+        [0.018, 0.020, 0.021, 0.024, 0.028],
         staff_mat,
         sides=8,
-        flute_amp=0.10,
+        flute_amp=0.08,
         flute_freq=5,
-        twist=1.6,
+        twist=1.4,
     )
     _assign_bone_weight(staff, "RightHand", arm_obj)
-    orb = add_uv_sphere("WizardStaffOrb", (-0.52, -0.05, 1.43), 0.068, orb_mat)
+    orb = add_uv_sphere("WizardStaffOrb", (-0.235, -0.120, 1.44), 0.056, orb_mat)
     _set_smooth(orb)
     _assign_bone_weight(orb, "RightHand", arm_obj)
 
     # 4. Sculpted Legs & Boots under skirt (grounded cleanly at z = 0.0)
     for side_tag, bone_prefix, sign_x in (("L", "Left", 1.0), ("R", "Right", -1.0)):
-        cx = sign_x * 0.11
+        cx = sign_x * 0.10
         leg_rings = [
-            _ell(cx, 0.0, 0.42, 0.065, 0.068, 10),
-            _ell(cx, 0.0, 0.24, 0.060, 0.064, 10),
-            _ell(cx, -0.01, 0.11, 0.064, 0.080, 10),
-            _ell(cx, -0.045, 0.04, 0.070, 0.110, 10),
-            _ell(cx, -0.045, 0.00, 0.070, 0.110, 10),
+            _ell(cx, 0.0, 0.38, 0.058, 0.062, 10),
+            _ell(cx, 0.0, 0.22, 0.054, 0.058, 10),
+            _ell(cx, -0.01, 0.10, 0.058, 0.072, 10),
+            _ell(cx, -0.040, 0.04, 0.062, 0.098, 10),
+            _ell(cx, -0.040, 0.00, 0.062, 0.098, 10),
         ]
         leg_mesh = _loft_rings(f"WizardBootLeg_{side_tag}", leg_rings, boot_mat, cap_bottom=True, cap_top=True, subsurf_levels=1)
 
         def _make_wiz_leg_w(bp: str):
             def _fn(co: Vector) -> dict[str, float]:
                 z = co.z
-                if z >= 0.30:
+                if z >= 0.28:
                     return {f"{bp}UpperLeg": 1.0}
-                if z >= 0.14:
+                if z >= 0.13:
                     return {f"{bp}LowerLeg": 1.0}
-                if z >= 0.09:
-                    t = (0.14 - z) / 0.05
+                if z >= 0.08:
+                    t = (0.13 - z) / 0.05
                     return {f"{bp}LowerLeg": 1.0 - t, f"{bp}Foot": t}
                 return {f"{bp}Foot": 1.0}
             return _fn
@@ -2423,16 +2501,105 @@ def build_prop_item_bottle() -> None:
 
 
 def build_prop_item_crystal_ball() -> None:
-    """Glowing ruby Crystal Ball on brass claw stand (#FF0000, 0.55m)."""
-    crystal_mat = make_pbr_material("CrystalOrbRuby", (0.96, 0.14, 0.18, 1.0), metallic=0.10, roughness=0.18, emission=(0.95, 0.14, 0.18), emission_strength=1.4)
-    brass_mat = make_pbr_material("CrystalStandBrass", (0.86, 0.66, 0.24, 1.0), metallic=0.88, roughness=0.26)
+    """Glowing magical arcane Crystal Ball resting on a sculpted bronze pedestal (0.55m)."""
+    bronze_dark = make_pbr_material("CrystalPedestalBronze", (0.34, 0.21, 0.11, 1.0), metallic=0.68, roughness=0.36)
+    bronze_trim = make_pbr_material("CrystalPedestalBronzeTrim", (0.62, 0.42, 0.18, 1.0), metallic=0.78, roughness=0.26)
+    core_heart = make_pbr_material(
+        "CrystalCoreHeart",
+        (1.0, 0.92, 1.0, 1.0),
+        metallic=0.0,
+        roughness=0.10,
+        emission=(1.0, 0.85, 1.0),
+        emission_strength=6.0,
+    )
+    core_aura = make_pbr_material(
+        "CrystalCoreAura",
+        (0.72, 0.22, 1.0, 0.65),
+        metallic=0.0,
+        roughness=0.12,
+        emission=(0.68, 0.22, 1.0),
+        emission_strength=2.8,
+    )
+    mote_mat = make_pbr_material(
+        "CrystalStarMote",
+        (0.55, 0.92, 1.0, 1.0),
+        metallic=0.0,
+        roughness=0.10,
+        emission=(0.45, 0.88, 1.0),
+        emission_strength=4.5,
+    )
+    outer_glass = make_pbr_material(
+        "CrystalOuterGlass",
+        (0.38, 0.12, 0.68, 0.34),
+        metallic=0.06,
+        roughness=0.06,
+        emission=(0.48, 0.16, 0.88),
+        emission_strength=0.75,
+    )
 
-    _add_cone("StandBase", (0.0, 0.0, 0.07), 0.22, 0.14, 0.14, brass_mat, verts=14)
-    for idx in range(3):
-        ang = math.radians(idx * 120.0)
-        add_beveled_box(f"Claw_{idx}", (0.14 * math.cos(ang), 0.14 * math.sin(ang), 0.20), (0.06, 0.06, 0.16), brass_mat, bevel_width=0.01)
-    orb = add_uv_sphere("CrystalOrb", (0.0, 0.0, 0.36), 0.19, crystal_mat)
-    _set_smooth(orb)
+    # Stepped fluted bronze pedestal (z = 0.00 .. 0.23)
+    _add_cone("PedestalPlinth", (0.0, 0.0, 0.025), 0.23, 0.20, 0.05, bronze_dark, verts=16)
+    _add_cone("PedestalBase", (0.0, 0.0, 0.085), 0.18, 0.10, 0.07, bronze_dark, verts=16)
+    add_cylinder("PedestalStem", (0.0, 0.0, 0.15), 0.072, 0.06, bronze_dark, verts=14)
+    bpy.ops.mesh.primitive_torus_add(
+        major_radius=0.088, minor_radius=0.016, major_segments=20, minor_segments=8, location=(0.0, 0.0, 0.155)
+    )
+    collar = bpy.context.active_object
+    collar.name = "PedestalRing"
+    collar.data.materials.append(bronze_trim)
+
+    cup = _add_cone("PedestalCup", (0.0, 0.0, 0.205), 0.085, 0.165, 0.055, bronze_trim, verts=16)
+    _set_smooth(cup)
+
+    # 4 tapered bronze prongs cradling the lower hemisphere of the orb (z = 0.21 .. 0.31)
+    for idx in range(4):
+        ang = math.radians(idx * 90.0 + 45.0)
+        ca, sa = math.cos(ang), math.sin(ang)
+        prong = _add_cone(
+            f"PedestalProng_{idx}",
+            (0.152 * ca, 0.152 * sa, 0.255),
+            0.026,
+            0.012,
+            0.10,
+            bronze_trim,
+            verts=8,
+            rotation=(0.24 * sa, -0.24 * ca, 0.0),
+        )
+        _set_smooth(prong)
+
+    # Glowing multi-layered magical orb centered at z = 0.375 (top = 0.55m)
+    heart = add_uv_sphere("CrystalCoreHeart", (0.0, 0.0, 0.375), 0.055, core_heart)
+    _set_smooth(heart)
+    aura = add_uv_sphere("CrystalCoreAura", (0.0, 0.0, 0.375), 0.105, core_aura)
+    _set_smooth(aura)
+
+    for idx, (mx, my, mz) in enumerate([
+        (0.082, 0.032, 0.405),
+        (-0.074, 0.052, 0.345),
+        (0.036, -0.078, 0.360),
+        (-0.042, -0.055, 0.425),
+    ]):
+        bpy.ops.mesh.primitive_ico_sphere_add(subdivisions=1, radius=0.016, location=(mx, my, mz))
+        mote = bpy.context.active_object
+        mote.name = f"CrystalMote_{idx}"
+        mote.data.materials.append(mote_mat)
+
+    shell = add_uv_sphere("CrystalOuterGlass", (0.0, 0.0, 0.375), 0.175, outer_glass)
+    _set_smooth(shell)
+
+    # Delicate tilted bronze-gold arcane ring orbiting the crystal orb
+    bpy.ops.mesh.primitive_torus_add(
+        major_radius=0.205,
+        minor_radius=0.009,
+        major_segments=28,
+        minor_segments=8,
+        location=(0.0, 0.0, 0.375),
+        rotation=(math.radians(24.0), math.radians(-14.0), 0.0),
+    )
+    ring = bpy.context.active_object
+    ring.name = "ArcaneRunicRing"
+    ring.data.materials.append(bronze_trim)
+    _set_smooth(ring)
 
 
 def build_prop_item_extra_life() -> None:

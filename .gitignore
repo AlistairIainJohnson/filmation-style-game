@@ -16,6 +16,8 @@ tools/.venv/
 tools/__pycache__/
 **/__pycache__/
 *.pyc
+tools/audio_pipeline/.soundfonts/
+tools/audio_pipeline/.midi/
 
 # OS / Editor Junk
 .DS_Store

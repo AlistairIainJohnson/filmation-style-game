@@ -85,24 +85,10 @@
   },
   "menu_screen": {
     "lines": [
-      "KNIGHT LORE",
-      "1 KEYBOARD",
-      "2 KEMPSTON JOYSTICK",
-      "3 CURSOR   JOYSTICK",
-      "4 INTERFACE II",
-      "5 DIRECTIONAL CONTROL",
-      "0 START GAME",
-      "\u00a9 1984 A.C.G."
+      "KNIGHT LORE REIMAGINED"
     ],
     "color_ids": [
-      3,
-      4,
-      4,
-      4,
-      4,
-      5,
-      7,
-      7
+      3
     ],
     "default_control_mode": "rotational",
     "control_modes": [

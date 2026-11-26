@@ -42,6 +42,10 @@ if echo "$gut_out" | grep -qE "Nothing was run|SCRIPT ERROR:|Failed to load scri
   exit 1
 fi
 
+echo "==> Tier 2b: Audio preview & level validation"
+uv run --directory tools python audio_pipeline/validate_audio.py
+godot --headless --path . -s tools/render_audio_preview.gd
+
 verify_png() {
   local png_path="$1"
   uv run --directory tools python - "$png_path" <<'PY'
@@ -132,6 +136,19 @@ if [[ "$VISUAL" == true ]]; then
 
     FILMATION_KL_ROOM=136 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase3_cauldron_hint.png 36
     verify_png "$ROOT_DIR/_verify/kl_phase3_cauldron_hint.png"
+
+    FILMATION_KL_ROOM=136 FILMATION_KL_FORCE_NIGHT=1 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase4_room_136_night_wulf.png 48
+    verify_png "$ROOT_DIR/_verify/kl_phase4_room_136_night_wulf.png"
+
+    FILMATION_KL_ROOM=33 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase4_room_033_entities.png 40
+    verify_png "$ROOT_DIR/_verify/kl_phase4_room_033_entities.png"
+
+    # Phase 5: Title Screen & Pause Menu
+    FILMATION_KL_NO_MENU=0 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase5_title_menu.png 18
+    verify_png "$ROOT_DIR/_verify/kl_phase5_title_menu.png"
+
+    FILMATION_CAPTURE_PAUSE=1 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase5_pause_menu.png 25
+    verify_png "$ROOT_DIR/_verify/kl_phase5_pause_menu.png"
   fi
 fi
 

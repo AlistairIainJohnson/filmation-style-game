@@ -10,6 +10,8 @@ const OPPOSITE_DIR: Dictionary = {
 	"west": "east"
 }
 const CAULDRON_CENTER := Vector3(4.0, 0.95, 4.0)
+const PLAYER_LETHAL_RADIUS: float = 0.16
+const HAZARD_CORE_SCALE: float = 0.72
 
 var kl_data: KnightLoreData
 var session: KnightLoreSession
@@ -18,6 +20,12 @@ var room_container: Node3D
 var current_build: Dictionary = {}
 var player: PlayerController
 
+var room_director: KlRoomDirector
+var audio_manager: ZxAudioManager
+var score_sequencer: KlScoreSequencer
+var ambience_director: KlAmbienceDirector
+var pause_menu: KnightLorePauseMenu
+var main_menu: KnightLoreMainMenu
 var _camera_mode: DioramaCameraRig.ProjectionMode = DioramaCameraRig.ProjectionMode.TRUE_ISOMETRIC
 var _use_rotational: bool = false
 var _transition_lock: bool = false
@@ -28,6 +36,9 @@ var _is_dying: bool = false
 var _death_timer: float = 0.0
 var _invuln_timer: float = 0.0
 var _cauldron_timer: float = 0.4
+var _victory_sequence_active: bool = false
+var _victory_timeout: float = 0.0
+var _victory_sparkles: Array[KlSparkleVfx] = []
 
 var _room_entry_pos: Vector3 = Vector3(4.0, 0.0, 1.25)
 var _room_entry_dir: String = ""
@@ -43,9 +54,39 @@ func _ready() -> void:
 	room_container.name = "RoomContainer"
 	add_child(room_container)
 
+	audio_manager = ZxAudioManager.new()
+	audio_manager.name = "ZxAudioManager"
+	add_child(audio_manager)
+
+	score_sequencer = KlScoreSequencer.new(audio_manager)
+	score_sequencer.name = "KlScoreSequencer"
+	score_sequencer.cue_finished.connect(_on_score_cue_finished)
+	add_child(score_sequencer)
+
+	ambience_director = KlAmbienceDirector.new(audio_manager)
+	ambience_director.name = "KlAmbienceDirector"
+	add_child(ambience_director)
+
 	hud = KnightLoreHud.new()
 	hud.name = "KnightLoreHud"
 	add_child(hud)
+
+	pause_menu = KnightLorePauseMenu.new()
+	pause_menu.name = "KnightLorePauseMenu"
+	pause_menu.resume_requested.connect(_on_pause_resume)
+	pause_menu.restart_requested.connect(_start_session)
+	pause_menu.return_to_menu_requested.connect(_on_return_to_main_menu)
+	pause_menu.control_mode_toggled.connect(_on_pause_control_toggled)
+	pause_menu.camera_mode_toggled.connect(_on_pause_camera_toggled)
+	pause_menu.sound_toggled.connect(_on_pause_sound_toggled)
+	add_child(pause_menu)
+
+	main_menu = KnightLoreMainMenu.new()
+	main_menu.name = "KnightLoreMainMenu"
+	main_menu.bind_audio(audio_manager, score_sequencer)
+	main_menu.start_game_requested.connect(_on_menu_start_game)
+	main_menu.exit_game_requested.connect(_on_menu_exit_game)
+	add_child(main_menu)
 
 	session = KnightLoreSession.new()
 	session.inventory_changed.connect(_on_inventory_changed)
@@ -55,7 +96,87 @@ func _ready() -> void:
 	session.quest_won.connect(_on_quest_won)
 	session.game_over_triggered.connect(_on_game_over)
 
+	# If booted directly with test environment or default run, check whether to show main menu
+	var show_title: bool = OS.get_environment("FILMATION_KL_NO_MENU") != "1" and OS.get_environment("FILMATION_KL_ROOM").is_empty() and OS.get_environment("FILMATION_CAPTURE_PAUSE") != "1"
+	if show_title:
+		_show_main_menu()
+	else:
+		if main_menu != null:
+			main_menu.visible = false
+		if score_sequencer != null:
+			score_sequencer.stop_cue(0.0)
+		_start_session()
+		if OS.get_environment("FILMATION_CAPTURE_PAUSE") == "1" and pause_menu != null:
+			pause_menu.open(_use_rotational, _camera_mode == DioramaCameraRig.ProjectionMode.DIMETRIC_2_1, false)
+
+
+func _show_main_menu() -> void:
+	if pause_menu != null:
+		pause_menu.close()
+	if main_menu != null:
+		main_menu.visible = true
+	if hud != null:
+		hud.visible = false
+	if audio_manager != null:
+		audio_manager.stop_ambience(0.4)
+	if score_sequencer != null and not score_sequencer.is_playing("menu"):
+		score_sequencer.play_cue("menu", true)
+
+
+func _on_menu_start_game(settings: Dictionary) -> void:
+	if main_menu != null:
+		main_menu.visible = false
+	if hud != null:
+		hud.visible = true
+	var c_mode: String = str(settings.get("control_mode", "directional"))
+	_use_rotational = (c_mode == "rotational")
+	var cam_m: String = str(settings.get("camera_mode", "true_isometric"))
+	_camera_mode = DioramaCameraRig.ProjectionMode.DIMETRIC_2_1 if cam_m == "dimetric_2_1" else DioramaCameraRig.ProjectionMode.TRUE_ISOMETRIC
+	var is_muted: bool = bool(settings.get("muted", false))
+	if audio_manager != null:
+		audio_manager.set_mute(is_muted)
+	if score_sequencer != null:
+		score_sequencer.play_cue("start_game", false)
 	_start_session()
+
+
+func _on_menu_exit_game() -> void:
+	if get_tree() != null:
+		get_tree().quit()
+
+
+func _on_pause_resume() -> void:
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_pause_toggle")
+
+
+func _on_pause_control_toggled(is_rot: bool) -> void:
+	_use_rotational = is_rot
+	if player != null:
+		player.set_rotational_mode(_use_rotational)
+	_refresh_hud()
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_menu_select")
+
+
+func _on_pause_camera_toggled(is_dimetric: bool) -> void:
+	_camera_mode = DioramaCameraRig.ProjectionMode.DIMETRIC_2_1 if is_dimetric else DioramaCameraRig.ProjectionMode.TRUE_ISOMETRIC
+	var cam_rig: DioramaCameraRig = current_build.get("camera_rig") as DioramaCameraRig
+	if cam_rig != null:
+		cam_rig.set_projection_mode(_camera_mode)
+		if hud != null:
+			hud.refresh_scroll_layout()
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_menu_select")
+
+
+func _on_pause_sound_toggled(is_muted: bool) -> void:
+	if audio_manager != null:
+		audio_manager.set_mute(is_muted)
+
+
+func _on_return_to_main_menu() -> void:
+	_show_main_menu()
 
 
 func _start_session() -> void:
@@ -71,7 +192,12 @@ func _start_session() -> void:
 
 	_is_transforming = false
 	_is_dying = false
+	_victory_sequence_active = false
+	_victory_timeout = 0.0
+	_victory_sparkles.clear()
 	_invuln_timer = 1.0
+	if score_sequencer != null and not score_sequencer.is_playing("start_game"):
+		score_sequencer.stop_cue(0.0)
 	_load_room(session.current_room_id, "")
 	if hud != null:
 		hud.show_toast("Deliver 14 charms to Melkhior's Cauldron (Room 136) before Day 40!", 3.2)
@@ -81,7 +207,9 @@ func _load_room(room_id: int, spawn_dir: String) -> void:
 	_transition_lock = true
 	_item_nodes.clear()
 	_repel_orbs.clear()
+	_victory_sparkles.clear()
 	_cauldron_fx_root = null
+	room_director = null
 
 	if player != null and is_instance_valid(player) and player.get_parent() != null:
 		player.get_parent().remove_child(player)
@@ -101,6 +229,15 @@ func _load_room(room_id: int, spawn_dir: String) -> void:
 		_transition_lock = false
 		return
 
+	var is_forest: bool = bool(current_build.get("is_forest", false))
+	if audio_manager != null:
+		audio_manager.apply_biome("woodland" if is_forest else "dungeon")
+	if ambience_director != null:
+		ambience_director.set_biome("woodland" if is_forest else "dungeon")
+		ambience_director.set_cycle(session.is_night)
+	if score_sequencer != null and not score_sequencer.is_playing():
+		score_sequencer.play_cue("gameplay_night" if session.is_night else "gameplay_day", true)
+
 	var ent_root: Node3D = current_build.get("entities_root") as Node3D
 	_cauldron_fx_root = Node3D.new()
 	_cauldron_fx_root.name = "CauldronFX"
@@ -113,6 +250,10 @@ func _load_room(room_id: int, spawn_dir: String) -> void:
 	if player == null or not is_instance_valid(player):
 		player = PlayerController.new()
 		player.name = "HeroPlayer"
+		player.stepped.connect(_on_player_stepped)
+		player.jumped.connect(_on_player_jumped)
+		player.landed.connect(_on_player_landed)
+		player.pushed.connect(_on_player_pushed)
 	player.allow_mode_toggle_hotkey = false
 	player.input_locked = false
 	player.velocity = Vector3.ZERO
@@ -125,6 +266,8 @@ func _load_room(room_id: int, spawn_dir: String) -> void:
 
 	var doorways: Node3D = current_build.get("doorways_root") as Node3D
 	var room_dims: Vector3 = current_build.get("room_dims", Vector3(8.0, 6.0, 8.0))
+	if hud != null and cam_rig != null:
+		hud.bind_room_camera(cam_rig.camera, room_dims, 0.5)
 	var spawn_pos: Vector3 = _resolve_spawn_pos(doorways, spawn_dir, room_dims)
 	player.position = spawn_pos
 	player.set_night_form(session.is_wulf)
@@ -140,6 +283,23 @@ func _load_room(room_id: int, spawn_dir: String) -> void:
 	_room_entry_dir = spawn_dir
 
 	_wire_doorways(doorways)
+
+	room_director = KlRoomDirector.new()
+	room_director.name = "KlRoomDirector"
+	room_director.portcullis_slammed.connect(_on_portcullis_slammed)
+	room_director.entity_stepped.connect(_on_entity_stepped)
+	room_node.add_child(room_director)
+	room_director.activate_room(
+		room_id,
+		room_dims,
+		current_build.get("architecture_root") as Node3D,
+		ent_root,
+		doorways,
+		session,
+		player,
+		kl_data.entities_cfg
+	)
+	KlSparkleVfx.spawn_burst(room_node, spawn_pos + Vector3(0.0, 0.55, 0.0), &"appear")
 
 	_refresh_hud()
 	_transition_lock = false
@@ -220,11 +380,27 @@ func _save_active_item_positions() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		var k: InputEventKey = event as InputEventKey
-		if k.keycode == KEY_F1:
+		if k.keycode == KEY_ESCAPE or k.keycode == KEY_P:
+			if pause_menu != null and (main_menu == null or not main_menu.visible):
+				var is_dim: bool = (_camera_mode == DioramaCameraRig.ProjectionMode.DIMETRIC_2_1)
+				var is_mut: bool = audio_manager.muted if audio_manager != null else false
+				pause_menu.toggle(_use_rotational, is_dim, is_mut)
+				if audio_manager != null:
+					audio_manager.play_sfx("sfx_pause_toggle")
+				get_viewport().set_input_as_handled()
+				return
+		elif k.keycode == KEY_M:
+			if audio_manager != null:
+				var m: bool = audio_manager.toggle_mute()
+				if hud != null:
+					hud.show_toast("Sound: %s" % ("OFF" if m else "ON"), 1.2)
+		elif k.keycode == KEY_F1:
 			_camera_mode = DioramaCameraRig.ProjectionMode.DIMETRIC_2_1 if _camera_mode == DioramaCameraRig.ProjectionMode.TRUE_ISOMETRIC else DioramaCameraRig.ProjectionMode.TRUE_ISOMETRIC
 			var cam_rig: DioramaCameraRig = current_build.get("camera_rig") as DioramaCameraRig
 			if cam_rig != null:
 				cam_rig.set_projection_mode(_camera_mode)
+				if hud != null:
+					hud.refresh_scroll_layout()
 		elif k.keycode == KEY_R:
 			_start_session()
 
@@ -234,6 +410,14 @@ func _physics_process(delta: float) -> void:
 		_transition_cooldown = maxf(0.0, _transition_cooldown - delta)
 	if _invuln_timer > 0.0:
 		_invuln_timer = maxf(0.0, _invuln_timer - delta)
+
+	if _victory_sequence_active:
+		if player != null:
+			player.input_locked = true
+		_victory_timeout -= delta
+		if _victory_timeout <= 0.0:
+			_finish_victory_sequence()
+		return
 
 	if session.quest_completed or session.game_over:
 		if player != null:
@@ -287,6 +471,15 @@ func _physics_process(delta: float) -> void:
 
 
 func _handle_interact() -> void:
+	var is_forest: bool = bool(current_build.get("is_forest", false))
+	if audio_manager != null:
+		audio_manager.apply_biome("woodland" if is_forest else "dungeon")
+	if ambience_director != null:
+		ambience_director.set_biome("woodland" if is_forest else "dungeon")
+		ambience_director.set_cycle(session.is_night)
+	if score_sequencer != null and not score_sequencer.is_playing():
+		score_sequencer.play_cue("gameplay_night" if session.is_night else "gameplay_day", true)
+
 	var ent_root: Node3D = current_build.get("entities_root") as Node3D
 	var closest_item: KlSpecialItem = null
 	var best_dist: float = 0.95
@@ -313,6 +506,8 @@ func _handle_interact() -> void:
 					player.position.y += 0.76
 					player.reset_physics_interpolation()
 			hud.show_toast("Picked up %s" % KnightLoreSession.get_charm_name(picked_tid))
+			if audio_manager != null:
+				audio_manager.play_sfx("sfx_pickup_item")
 			_refresh_hud()
 			return
 
@@ -328,13 +523,19 @@ func _handle_interact() -> void:
 				var d_tid: int = int(d_entry.get("type_id", 0))
 				d_node.position = player.position + Vector3(0.0, 0.20, 0.0)
 				d_node.launch_cauldron_arc(CAULDRON_CENTER, Callable(self, "_on_cauldron_arc_done").bind(d_id, d_tid))
+				if audio_manager != null:
+					audio_manager.play_sfx("sfx_fall_or_drop", 4.0)
 			else:
 				player.position.y += 0.76
 				player.velocity.y = maxf(player.velocity.y, 0.0)
 				player.reset_physics_interpolation()
 				hud.show_toast("Dropped %s (Climb!)" % KnightLoreSession.get_charm_name(int(d_entry.get("type_id", 0))))
+				if audio_manager != null:
+					audio_manager.play_sfx("sfx_menu_select")
 		"rotated":
 			hud.show_toast("Cycled Inventory Slots")
+			if audio_manager != null:
+				audio_manager.play_sfx("sfx_menu_select")
 		"room_full":
 			hud.show_toast("Too many charms already placed in this room!")
 		"blocked_headroom":
@@ -354,19 +555,61 @@ func _on_cauldron_arc_done(item_id: int, charm_type: int) -> void:
 	_refresh_hud()
 
 
+func _on_portcullis_slammed() -> void:
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_portcullis_slam")
+
+
+func _on_entity_stepped(pos: Vector3) -> void:
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_step_guard_wizard", pos.x + pos.z)
+
+
+func _on_score_cue_finished(cue_name: String) -> void:
+	if cue_name == "start_game" and (main_menu == null or not main_menu.visible) and not session.game_over and not session.quest_completed:
+		if score_sequencer != null:
+			score_sequencer.play_cue("gameplay_night" if session.is_night else "gameplay_day", true)
+
+
+func _on_player_stepped(pos: Vector3) -> void:
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_step_player", pos.x + pos.z)
+
+
+func _on_player_jumped() -> void:
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_jump")
+
+
+func _on_player_landed() -> void:
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_bounce")
+
+
+func _on_player_pushed() -> void:
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_push_block")
+
+
 func _on_extra_life_touched(item_id: int) -> void:
 	if session.collect_extra_life(item_id) and _item_nodes.has(item_id):
 		var node: KlSpecialItem = _item_nodes[item_id] as KlSpecialItem
 		_item_nodes.erase(item_id)
 		if node != null and is_instance_valid(node):
 			node.queue_free()
+		if audio_manager != null:
+			audio_manager.play_sfx("sfx_appear_sparkles")
 
 
 func _begin_transformation() -> void:
 	_is_transforming = true
 	_transform_timer = 1.4
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_transform")
 	if player != null:
 		player.input_locked = true
+		var fx_parent: Node3D = _cauldron_fx_root if (_cauldron_fx_root != null and is_instance_valid(_cauldron_fx_root)) else room_container
+		KlSparkleVfx.spawn_burst(fx_parent, player.global_position + Vector3(0.0, 0.65, 0.0), &"transform", player)
 	hud.show_toast("THE CURSE TAKES HOLD..." if session.is_night else "DAWN BREAKS — TRANSFORMING!", 1.5)
 
 
@@ -384,11 +627,21 @@ func _finish_transformation() -> void:
 	if lighting != null:
 		var preset_name: String = "castle_moonlight_night" if session.is_night else "castle_stone_skylight"
 		lighting.apply_preset(DioramaLighting.load_preset_by_name(preset_name), current_build.get("room_dims", Vector3(8, 6, 8)))
+	if ambience_director != null:
+		ambience_director.set_cycle(session.is_night)
+	if score_sequencer != null:
+		score_sequencer.play_cue("gameplay_night" if session.is_night else "gameplay_day", true)
 	hud.show_toast("TRANSFORMED INTO WEREWOLF!" if session.is_wulf else "RESTORED TO HUMAN FORM!", 2.0)
 	_refresh_hud()
 
 
 func _update_cauldron_room_spawner(delta: float) -> void:
+	var j: int = _repel_orbs.size() - 1
+	while j >= 0:
+		if _repel_orbs[j] == null or not is_instance_valid(_repel_orbs[j]):
+			_repel_orbs.remove_at(j)
+		j -= 1
+
 	_cauldron_timer -= delta
 	if _cauldron_timer <= 0.0:
 		_cauldron_timer = 2.6
@@ -396,25 +649,6 @@ func _update_cauldron_room_spawner(delta: float) -> void:
 			_spawn_repel_spell()
 		else:
 			_spawn_cauldron_hint_bubble()
-
-	# Move active homing Repel Spell orbs toward Wulf player
-	var i: int = _repel_orbs.size() - 1
-	while i >= 0:
-		var orb: Node3D = _repel_orbs[i]
-		if orb == null or not is_instance_valid(orb):
-			_repel_orbs.remove_at(i)
-		elif player != null:
-			var target: Vector3 = player.global_position + Vector3(0.0, 0.55, 0.0)
-			var to_p: Vector3 = target - orb.global_position
-			var dist: float = to_p.length()
-			if dist < 0.55:
-				orb.queue_free()
-				_repel_orbs.remove_at(i)
-				_trigger_player_death()
-				return
-			elif dist > 0.01:
-				orb.global_position += (to_p / dist) * 2.4 * delta
-		i -= 1
 
 
 func _spawn_cauldron_hint_bubble() -> void:
@@ -462,50 +696,69 @@ func _spawn_cauldron_hint_bubble() -> void:
 func _spawn_repel_spell() -> void:
 	if _cauldron_fx_root == null or not is_instance_valid(_cauldron_fx_root) or _repel_orbs.size() >= 2:
 		return
-	var orb := Node3D.new()
+	var fg_types: Dictionary = kl_data.entities_cfg.get("foreground_types", {}) as Dictionary
+	var spell_cfg: Dictionary = fg_types.get("25", {"behavior": "chase_player", "params": {"speed": 4, "near_arch_speed": 1}}) as Dictionary
+	var sz: Vector3 = KnightLoreData.kl_size_to_meters(float(spell_cfg.get("w", 5)), float(spell_cfg.get("d", 5)), float(spell_cfg.get("h", 12)))
+	var orb := KlHazardEntity.new()
 	orb.name = "CauldronRepelSpell"
-	orb.position = CAULDRON_CENTER + Vector3(0.0, 0.30, 0.0)
+	orb.configure("repel_spell", spell_cfg, sz, Vector3(CAULDRON_CENTER.x, 0.45, CAULDRON_CENTER.z), true)
 	var packed: PackedScene = ResourceLoader.load("res://assets/props/item_crystal_ball.glb") as PackedScene
 	if packed != null:
 		var vis: Node3D = packed.instantiate() as Node3D
+		vis.name = "ModelVisual"
+		RoomBuilder._configure_static_model_recursive(vis)
 		orb.add_child(vis)
 	_cauldron_fx_root.add_child(orb)
+	if room_director != null:
+		orb.bind_director(room_director)
+	orb.simulation_active = true
 	_repel_orbs.append(orb)
 
 
+static func is_player_in_hazard_core(player_pos: Vector3, haz_center: Vector3, haz_box_size: Vector3) -> bool:
+	var p_min_y: float = player_pos.y + 0.08
+	var p_max_y: float = player_pos.y + 1.15
+	var h_half_y: float = haz_box_size.y * 0.44
+	if p_max_y <= (haz_center.y - h_half_y) or p_min_y >= (haz_center.y + h_half_y):
+		return false
+
+	var h_half_x: float = maxf(haz_box_size.x * 0.5 * HAZARD_CORE_SCALE, 0.10)
+	var h_half_z: float = maxf(haz_box_size.z * 0.5 * HAZARD_CORE_SCALE, 0.10)
+	var closest_x: float = clampf(player_pos.x, haz_center.x - h_half_x, haz_center.x + h_half_x)
+	var closest_z: float = clampf(player_pos.z, haz_center.z - h_half_z, haz_center.z + h_half_z)
+	return Vector2(player_pos.x - closest_x, player_pos.z - closest_z).length() < PLAYER_LETHAL_RADIUS
+
+
 func _check_hazards() -> void:
-	if player == null or _is_dying or _invuln_timer > 0.0 or _transition_lock:
+	if player == null or _is_dying or _invuln_timer > 0.0 or _transition_lock or _victory_sequence_active:
 		return
 	if player.position.y < -3.0:
 		_trigger_player_death()
 		return
-	for i: int in range(player.get_slide_collision_count()):
-		var col: KinematicCollision3D = player.get_slide_collision(i)
-		var collider: Object = col.get_collider()
-		if collider is Node and (collider as Node).is_in_group("kl_lethal_hazards"):
-			_trigger_player_death()
-			return
 	for haz: Node in get_tree().get_nodes_in_group("kl_lethal_hazards"):
-		if not (haz is StaticBody3D) or not is_instance_valid(haz):
+		if not (haz is PhysicsBody3D) or not is_instance_valid(haz) or not haz.is_inside_tree():
 			continue
-		var hb: StaticBody3D = haz as StaticBody3D
+		var hb: PhysicsBody3D = haz as PhysicsBody3D
 		var col_shape: CollisionShape3D = hb.get_node_or_null("CollisionShape3D") as CollisionShape3D
 		if col_shape == null or not (col_shape.shape is BoxShape3D):
 			continue
 		var bsz: Vector3 = (col_shape.shape as BoxShape3D).size
-		var diff: Vector3 = player.global_position + Vector3(0.0, 0.45, 0.0) - hb.global_position
-		if absf(diff.x) < (bsz.x * 0.5 + 0.24) and absf(diff.z) < (bsz.z * 0.5 + 0.24) and absf(diff.y) < (bsz.y * 0.5 + 0.48):
+		if is_player_in_hazard_core(player.global_position, col_shape.global_position, bsz):
 			_trigger_player_death()
 			return
 
 
 func _trigger_player_death() -> void:
-	if _is_dying or _invuln_timer > 0.0 or session.game_over or session.quest_completed:
+	if _is_dying or _invuln_timer > 0.0 or session.game_over or session.quest_completed or _victory_sequence_active:
 		return
 	_is_dying = true
 	_death_timer = 0.75
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_death_sparkles")
 	if player != null:
 		player.input_locked = true
+		var fx_parent: Node3D = _cauldron_fx_root if (_cauldron_fx_root != null and is_instance_valid(_cauldron_fx_root)) else room_container
+		KlSparkleVfx.spawn_burst(fx_parent, player.global_position + Vector3(0.0, 0.65, 0.0), &"death")
 	hud.show_toast("STRUCK BY DUNGEON CURSE!", 1.2)
 
 
@@ -524,6 +777,8 @@ func _finish_player_death() -> void:
 		player.set_night_form(session.is_wulf)
 		player.reset_physics_interpolation()
 		player.sync_shader_world_pos()
+		var fx_parent: Node3D = _cauldron_fx_root if (_cauldron_fx_root != null and is_instance_valid(_cauldron_fx_root)) else room_container
+		KlSparkleVfx.spawn_burst(fx_parent, _room_entry_pos + Vector3(0.0, 0.55, 0.0), &"appear")
 	_refresh_hud()
 
 
@@ -551,28 +806,106 @@ func _on_inventory_changed(slots: Array) -> void:
 
 
 func _on_charm_accepted(charm_type: int, collected: int, total: int) -> void:
+	if _cauldron_fx_root != null and is_instance_valid(_cauldron_fx_root):
+		KlSparkleVfx.spawn_burst(_cauldron_fx_root, CAULDRON_CENTER + Vector3(0.0, 0.25, 0.0), &"cauldron_accept")
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_cauldron_accept")
 	if hud != null:
 		hud.show_toast("CAULDRON ACCEPTED %s (%d/%d)!" % [KnightLoreSession.get_charm_name(charm_type).to_upper(), collected, total], 2.5)
 
 
 func _on_charm_rejected(charm_type: int) -> void:
+	if _cauldron_fx_root != null and is_instance_valid(_cauldron_fx_root):
+		KlSparkleVfx.spawn_burst(_cauldron_fx_root, CAULDRON_CENTER + Vector3(0.0, 0.25, 0.0), &"cauldron_reject")
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_cauldron_reject")
 	if hud != null:
 		hud.show_toast("WRONG CHARM (%s)! WATCH THE CAULDRON BUBBLE!" % KnightLoreSession.get_charm_name(charm_type).to_upper(), 2.8)
 
 
 func _on_extra_life_gained(new_lives: int) -> void:
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_appear_sparkles")
 	if hud != null:
 		hud.show_toast("EXTRA LIFE GAINED! (%d)" % new_lives, 2.2)
 	_refresh_hud()
 
 
 func _on_quest_won() -> void:
+	if (
+		session.current_room_id == KnightLoreSession.CAULDRON_ROOM_ID
+		and player != null
+		and is_instance_valid(player)
+		and _cauldron_fx_root != null
+		and is_instance_valid(_cauldron_fx_root)
+	):
+		_start_victory_sequence()
+	else:
+		_finish_victory_sequence()
+	_refresh_hud()
+
+
+func _start_victory_sequence() -> void:
+	_victory_sequence_active = true
+	_victory_timeout = 2.6
+	_victory_sparkles.clear()
+	_invuln_timer = 99.0
+	if player != null:
+		player.input_locked = true
+	if room_director != null:
+		room_director.deactivate_hazards()
+	for orb: Node3D in _repel_orbs:
+		if orb != null and is_instance_valid(orb):
+			orb.queue_free()
+	_repel_orbs.clear()
+
+	if hud != null:
+		hud.show_toast("THE CURSE IS LIFTED!", 2.5)
+
+	var arch_root: Node3D = current_build.get("architecture_root") as Node3D
+	if arch_root != null:
+		for child: Node in arch_root.get_children():
+			if child is Node3D and bool(child.get_meta("kl_victory_block", false)):
+				var blk: Node3D = child as Node3D
+				var spos: Vector3 = blk.global_position
+				blk.visible = false
+				var vs: KlSparkleVfx = KlSparkleVfx.spawn_victory_sparkle(_cauldron_fx_root, spos, player, 2.25)
+				if vs != null:
+					vs.converged.connect(_on_victory_sparkle_converged)
+					_victory_sparkles.append(vs)
+
+	if _victory_sparkles.is_empty():
+		for i: int in range(6):
+			var ang: float = TAU * float(i) / 6.0
+			var rpos: Vector3 = CAULDRON_CENTER + Vector3(cos(ang) * 1.1, 0.25, sin(ang) * 1.1)
+			var vs: KlSparkleVfx = KlSparkleVfx.spawn_victory_sparkle(_cauldron_fx_root, rpos, player, 2.25)
+			if vs != null:
+				vs.converged.connect(_on_victory_sparkle_converged)
+				_victory_sparkles.append(vs)
+
+
+func _on_victory_sparkle_converged(_sparkle: KlSparkleVfx) -> void:
+	if _victory_sequence_active:
+		_finish_victory_sequence()
+
+
+func _finish_victory_sequence() -> void:
+	_victory_sequence_active = false
+	_victory_sparkles.clear()
+	if score_sequencer != null:
+		score_sequencer.play_cue("game_complete", false)
+	elif audio_manager != null:
+		audio_manager.play_tune("game_complete", false)
 	if hud != null:
 		hud.show_end_screen(true, session)
 	_refresh_hud()
 
 
 func _on_game_over(reason: String) -> void:
+	if score_sequencer != null:
+		score_sequencer.play_cue("game_over", false)
+	elif audio_manager != null:
+		audio_manager.play_tune("game_over", false)
 	if hud != null:
 		hud.show_end_screen(false, session, reason)
 	_refresh_hud()

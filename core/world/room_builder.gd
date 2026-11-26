@@ -12,9 +12,11 @@ var _tinted_model_materials: Dictionary = {}
 var _cutaway_material_resources: Dictionary = {}
 var _surface_cutaway_materials: Dictionary = {}
 var _forest_floor_materials: Dictionary = {}
+var _dungeon_floor_materials: Dictionary = {}
 var _scene_cache: Dictionary = {}
 var _cutaway_shader: Shader
 var _forest_floor_shader: Shader
+var _dungeon_floor_shader: Shader
 
 
 static func load_json_dict(path: String) -> Dictionary:
@@ -148,7 +150,7 @@ static func _collect_mesh_instances_recursive(node: Node, out: Array[MeshInstanc
 		_collect_mesh_instances_recursive(child, out)
 
 
-static func _attach_cutaway_shadow_caster(body: StaticBody3D, opaque_mat: Material) -> void:
+static func _attach_cutaway_shadow_caster(body: Node3D, opaque_mat: Material) -> void:
 	if body.get_node_or_null("ShadowCaster") != null:
 		return
 	var sources: Array[MeshInstance3D] = []
@@ -1084,15 +1086,14 @@ func build_knight_lore_room(
 	entities_root.name = "Entities"
 	parent.add_child(entities_root)
 
-	# 1. Floor Tiles or Organic Forest Floor + Merged FloorCollision (Option 2A subtle room tint)
+	# 1. Organic Forest Floor or Weathered Dungeon Flagstones + Merged FloorCollision (Option 2A subtle room tint)
 	var sill_floor_mat: Material = null
 	if is_forest:
 		sill_floor_mat = _build_kl_forest_floor(arch_root, int(roundf(width_m)), int(roundf(depth_m)), 0.5, floor_tint)
 	else:
-		var floor_mat: StandardMaterial3D = _get_tinted_material("stone_floor", wall_tag + "_floor", floor_tint)
-		var checker_mat: StandardMaterial3D = _get_tinted_material("stone_floor_alt", wall_tag + "_floor", floor_tint)
-		_build_kl_floor(arch_root, int(roundf(width_m)), int(roundf(depth_m)), 0.5, floor_mat, checker_mat)
-		sill_floor_mat = floor_mat
+		var dung_mat: ShaderMaterial = _get_dungeon_floor_material(floor_tint)
+		_build_kl_floor(arch_root, int(roundf(width_m)), int(roundf(depth_m)), 0.5, dung_mat)
+		sill_floor_mat = dung_mat
 
 	# 2. Perimeter Walls, Corner Caps & Doorways
 	var t: float = 0.5
@@ -1159,7 +1160,7 @@ func build_knight_lore_room(
 	_build_kl_background_features(arch_root, fg_root, doorways_root, kl_data, room, exits_meta, half_x, half_y, floor_z, wall_tag, backdrop_tint, ink_tint, is_forest, sill_floor_mat)
 
 	# 4. Foreground Room Obstacles, Pushables, Enemies, Hazards & Collectible Previews
-	_build_kl_foreground_objects(arch_root, entities_root, room, half_x, half_y, floor_z, ink_name, ink_tint)
+	_build_kl_foreground_objects(arch_root, entities_root, room, kl_data.entities_cfg, half_x, half_y, floor_z, ink_name, ink_tint)
 	if not skip_special_previews:
 		_build_kl_special_spawn_previews(entities_root, kl_data, room_id, half_x, half_y, floor_z)
 
@@ -1200,8 +1201,7 @@ func _build_kl_floor(
 	width: int,
 	depth: int,
 	thickness: float,
-	mat_primary: StandardMaterial3D,
-	mat_checker: StandardMaterial3D
+	mat_floor: Material
 ) -> void:
 	var floor_group := Node3D.new()
 	floor_group.name = "FloorTiles"
@@ -1209,7 +1209,6 @@ func _build_kl_floor(
 
 	for x: int in range(width):
 		for z: int in range(depth):
-			var tile_mat: StandardMaterial3D = mat_primary if ((x + z) % 2 == 0) else mat_checker
 			var tile_node := Node3D.new()
 			tile_node.name = "Tile_%02d_%02d" % [x, z]
 			tile_node.position = Vector3(float(x) + 0.5, -thickness * 0.5, float(z) + 0.5)
@@ -1219,7 +1218,7 @@ func _build_kl_floor(
 			mesh_inst.gi_mode = GeometryInstance3D.GI_MODE_STATIC
 			var box_mesh := BoxMesh.new()
 			box_mesh.size = Vector3(1.0, thickness, 1.0)
-			box_mesh.material = tile_mat
+			box_mesh.material = mat_floor
 			mesh_inst.mesh = box_mesh
 			tile_node.add_child(mesh_inst)
 			floor_group.add_child(tile_node)
@@ -1235,6 +1234,19 @@ func _build_kl_floor(
 	col_shape.position = Vector3(float(width) * 0.5, -thickness * 0.5, float(depth) * 0.5)
 	floor_body.add_child(col_shape)
 	arch_root.add_child(floor_body)
+
+
+func _get_dungeon_floor_material(tint: Color) -> ShaderMaterial:
+	var key: String = "%.2f_%.2f_%.2f" % [tint.r, tint.g, tint.b]
+	if _dungeon_floor_materials.has(key):
+		return _dungeon_floor_materials[key] as ShaderMaterial
+	if _dungeon_floor_shader == null:
+		_dungeon_floor_shader = load("res://core/shaders/dungeon_floor.gdshader") as Shader
+	var mat := ShaderMaterial.new()
+	mat.shader = _dungeon_floor_shader
+	mat.set_shader_parameter("room_tint", tint)
+	_dungeon_floor_materials[key] = mat
+	return mat
 
 
 func _get_forest_floor_material(tint: Color) -> ShaderMaterial:
@@ -1330,7 +1342,7 @@ func _apply_cutaway_materials_recursive(node: Node, fallback_mat_name: String) -
 		_apply_cutaway_materials_recursive(child, fallback_mat_name)
 
 
-func _enable_cutaway_on_body(body: StaticBody3D, fallback_mat_name: String) -> void:
+func _enable_cutaway_on_body(body: Node3D, fallback_mat_name: String) -> void:
 	_attach_cutaway_shadow_caster(body, get_material(fallback_mat_name))
 	_apply_cutaway_materials_recursive(body, fallback_mat_name)
 	if not body.is_in_group("foreground_occluders"):
@@ -1441,13 +1453,19 @@ func _build_kl_background_features(
 				if (pos.y + sz.y) > HERO_CUTAWAY_HEIGHT_M:
 					_enable_cutaway_on_body(ledge, "stone_ledge")
 		elif bg_name.begins_with("gate_"):
+			var bg_fg_types: Dictionary = kl_data.entities_cfg.get("foreground_types", {}) as Dictionary
+			var gate_tid: String = "27" if (bg_name == "gate_e" or bg_name == "gate_w") else "26"
+			var gate_cfg: Dictionary = bg_fg_types.get(gate_tid, {"behavior": "portcullis"}) as Dictionary
 			for o_idx: int in range(objs.size()):
 				var obj: Dictionary = objs[o_idx] as Dictionary
 				var pos: Vector3 = KnightLoreData.kl_to_room_pos(float(obj.get("x", 128)), float(obj.get("y", 128)), float(obj.get("z", 160)), half_x, half_y, floor_z)
 				var sz: Vector3 = KnightLoreData.kl_size_to_meters(float(obj.get("w", 12)), float(obj.get("d", 1)), float(obj.get("h", 32)))
-				var gate_body: StaticBody3D = _create_static_box(arch_root, "BG_Gate_%s_%d" % [bg_name, o_idx], pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("iron_portcullis"))
+				var gate_body := KlPortcullisGate.new()
+				gate_body.name = "BG_Gate_%s_%d" % [bg_name, o_idx]
+				gate_body.configure(bg_name, gate_cfg, sz, pos)
+				arch_root.add_child(gate_body)
 				var rot_y: float = 90.0 if (bg_name == "gate_e" or bg_name == "gate_w") else 0.0
-				_spawn_glb_visual_on_node(gate_body, "res://assets/props/portcullis_gate.glb", sz, Vector3(1.9, 2.6, 0.24), Vector3(0.0, -sz.y * 0.5, 0.0), rot_y, "", Color.WHITE)
+				_spawn_glb_visual_on_node(gate_body, "res://assets/props/portcullis_gate.glb", sz, Vector3(1.9, 2.6, 0.24), Vector3.ZERO, rot_y, "", Color.WHITE)
 				if (pos.y + sz.y) > HERO_CUTAWAY_HEIGHT_M:
 					_enable_cutaway_on_body(gate_body, "iron_portcullis")
 		elif bg_name == "cauldron":
@@ -1458,13 +1476,15 @@ func _build_kl_background_features(
 		elif bg_name == "wizard" and objs.size() > 0:
 			var wobj: Dictionary = objs[0] as Dictionary
 			var wpos: Vector3 = KnightLoreData.kl_to_room_pos(float(wobj.get("x", 152)), float(wobj.get("y", 104)), float(wobj.get("z", 128)), half_x, half_y, floor_z)
-			_spawn_melkhior_wizard(arch_root, wpos)
+			var wsz: Vector3 = KnightLoreData.kl_size_to_meters(float(wobj.get("w", 5)), float(wobj.get("d", 5)), float(wobj.get("h", 24)))
+			_spawn_melkhior_wizard(arch_root, wpos, wsz, kl_data.entities_cfg)
 
 
 func _build_kl_foreground_objects(
 	arch_root: Node3D,
 	entities_root: Node3D,
 	room: Dictionary,
+	entities_cfg: Dictionary,
 	half_x: float,
 	half_y: float,
 	floor_z: float,
@@ -1472,6 +1492,7 @@ func _build_kl_foreground_objects(
 	ink_tint: Color
 ) -> void:
 	var fgs: Array = room.get("foregrounds", []) as Array
+	var fg_types: Dictionary = entities_cfg.get("foreground_types", {}) as Dictionary
 	var count: int = fgs.size()
 	var fg_pos: Array[Vector3] = []
 	var fg_sz: Array[Vector3] = []
@@ -1493,7 +1514,10 @@ func _build_kl_foreground_objects(
 		if not fg_valid[idx]:
 			continue
 		var fg: Dictionary = fgs[idx] as Dictionary
-		var type_name: String = str(fg.get("type_name", "block"))
+		var type_id_str: String = str(int(fg.get("type_id", 0)))
+		var type_cfg: Dictionary = fg_types.get(type_id_str, {}) as Dictionary
+		var type_name: String = str(fg.get("type_name", type_cfg.get("name", "block")))
+		var behavior: String = str(type_cfg.get("behavior", ""))
 		var pos: Vector3 = fg_pos[idx]
 		var sz: Vector3 = fg_sz[idx]
 		var node_name: String = "FG_%02d_%s" % [idx, type_name]
@@ -1506,57 +1530,91 @@ func _build_kl_foreground_objects(
 			if absf(other_p.x - pos.x) <= 0.45 and absf(other_p.z - pos.z) <= 0.45:
 				col_top_y = maxf(col_top_y, other_p.y + fg_sz[j].y)
 
-		var created_body: StaticBody3D = null
+		var created_body: Node3D = null
 		var fallback_mat: String = "stone_ledge"
-		match type_name:
-			"block", "block_high":
-				var mat_blk: StandardMaterial3D = _get_tinted_material("stone_ledge", ink_name + "_blk", ink_tint)
-				created_body = _create_static_box(arch_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, mat_blk)
-				_spawn_glb_visual_on_node(created_body, "res://assets/props/stone_block.glb", sz, Vector3(1.0, 1.0, 1.0), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, ink_name, ink_tint)
-				fallback_mat = "stone_ledge"
-			"rock":
-				var rock_mat: StandardMaterial3D = _get_tinted_material("stone_pillar", "rock", Color(0.75, 0.72, 0.70))
-				created_body = _create_static_box(arch_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, rock_mat)
-				_spawn_glb_visual_on_node(created_body, "res://assets/props/rock_obstacle.glb", sz, Vector3(0.9, 0.75, 0.9), Vector3(0.0, -sz.y * 0.5, 0.0), 25.0, "", Color.WHITE)
-				fallback_mat = "stone_pillar"
-			"moveable_block":
-				created_body = _create_static_box(entities_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("platform_stone"))
-				_spawn_glb_visual_on_node(created_body, "res://assets/props/stone_block.glb", sz, Vector3(1.0, 1.0, 1.0), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, "moveable", Color(0.84, 0.92, 1.05))
-				fallback_mat = "platform_stone"
-			"dropping_block":
-				created_body = _create_static_box(entities_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("stone_ledge"))
-				_spawn_glb_visual_on_node(created_body, "res://assets/props/dropping_block.glb", sz, Vector3(0.95, 0.75, 0.95), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, "", Color.WHITE)
-				fallback_mat = "stone_ledge"
-			"collapsing_block":
-				created_body = _create_static_box(entities_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("cracked_tile"))
-				_spawn_glb_visual_on_node(created_body, "res://assets/props/collapsing_tile.glb", sz, Vector3(0.98, 0.25, 0.98), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, "", Color.WHITE)
-				fallback_mat = "cracked_tile"
-			"block_ew", "block_ns":
-				created_body = _create_static_box(entities_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("platform_stone"))
-				_spawn_glb_visual_on_node(created_body, "res://assets/props/moving_platform.glb", sz, Vector3(1.9, 0.35, 1.9), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, "", Color.WHITE)
-				fallback_mat = "platform_stone"
-			"chest":
-				created_body = _create_static_box(entities_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("oak_chest"))
-				_spawn_glb_visual_on_node(created_body, "res://assets/props/pushable_chest.glb", sz, Vector3(0.98, 1.0, 0.98), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, "", Color.WHITE)
-				fallback_mat = "oak_chest"
-			"table":
-				created_body = _create_static_box(entities_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("oak_chest"))
-				_spawn_glb_visual_on_node(created_body, "res://assets/props/pushable_table.glb", sz, Vector3(0.95, 0.75, 0.95), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, "", Color.WHITE)
-				fallback_mat = "oak_chest"
-			"gate_ud_1", "gate_ud_2":
-				created_body = _create_static_box(entities_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("iron_portcullis"))
-				var g_rot: float = 90.0 if type_name == "gate_ud_2" else 0.0
-				_spawn_glb_visual_on_node(created_body, "res://assets/props/portcullis_gate.glb", sz, Vector3(1.9, 2.6, 0.24), Vector3(0.0, -sz.y * 0.5, 0.0), g_rot, "", Color.WHITE)
-				fallback_mat = "iron_portcullis"
-			"guard_ew", "guard_square":
-				created_body = _create_static_box(entities_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("hazard_crimson"))
-				created_body.set_meta("kl_type", type_name)
-				created_body.set_meta("kl_lethal", true)
-				created_body.add_to_group("kl_lethal_hazards")
-				_spawn_glb_visual_on_node(created_body, "res://assets/characters/patrol_sentinel.glb", sz, Vector3(0.75, 1.45, 0.75), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, "", Color.WHITE)
-				fallback_mat = "hazard_crimson"
-			"spike", "spike_high", "gargoyle", "spike_ball_fall", "spike_ball_high_fall", "ball_ud", "ball_ud_x", "ball_ud_y", "ball_ud_xy", "ball_bounce", "fire_ew", "fire_ns", "ghost", "repel_spell":
+		match behavior:
+			"static_solid":
+				if type_name == "rock":
+					var rock_mat: StandardMaterial3D = _get_tinted_material("stone_pillar", "rock", Color(0.75, 0.72, 0.70))
+					created_body = _create_static_box(arch_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, rock_mat)
+					_spawn_glb_visual_on_node(created_body, "res://assets/props/rock_obstacle.glb", sz, Vector3(0.9, 0.75, 0.9), Vector3(0.0, -sz.y * 0.5, 0.0), 25.0, "", Color.WHITE)
+					fallback_mat = "stone_pillar"
+				else:
+					var mat_blk: StandardMaterial3D = _get_tinted_material("stone_ledge", ink_name + "_blk", ink_tint)
+					created_body = _create_static_box(arch_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, mat_blk)
+					created_body.set_meta("kl_victory_block", true)
+					_spawn_glb_visual_on_node(created_body, "res://assets/props/stone_block.glb", sz, Vector3(1.0, 1.0, 1.0), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, ink_name, ink_tint)
+					fallback_mat = "stone_ledge"
+			"static_deadly", "static_fire_unused":
 				created_body = _spawn_kl_hazard_prop(entities_root, node_name, type_name, pos, sz)
+				fallback_mat = "hazard_crimson"
+			"pushable_sliding", "pushable_stop":
+				var push_ent := KlPushableEntity.new()
+				push_ent.name = node_name
+				push_ent.configure(type_name, type_cfg, sz, pos)
+				entities_root.add_child(push_ent)
+				var push_vis: Dictionary = _get_kl_entity_visual_spec(type_name)
+				_spawn_glb_visual_on_node(
+					push_ent,
+					str(push_vis["glb"]),
+					sz,
+					push_vis["dims"] as Vector3,
+					Vector3.ZERO,
+					0.0,
+					str(push_vis["tint_tag"]),
+					push_vis["tint"] as Color
+				)
+				created_body = push_ent
+				fallback_mat = "oak_chest" if type_name != "moveable_block" else "platform_stone"
+			"moving_platform_ew", "moving_platform_ns", "dropping_block", "collapsing_block":
+				var dyn_blk := KlDynamicBlock.new()
+				dyn_blk.name = node_name
+				dyn_blk.configure(type_name, type_cfg, sz, pos, idx)
+				entities_root.add_child(dyn_blk)
+				var dyn_vis: Dictionary = _get_kl_entity_visual_spec(type_name)
+				_spawn_glb_visual_on_node(
+					dyn_blk,
+					str(dyn_vis["glb"]),
+					sz,
+					dyn_vis["dims"] as Vector3,
+					Vector3.ZERO,
+					0.0,
+					str(dyn_vis["tint_tag"]),
+					dyn_vis["tint"] as Color
+				)
+				created_body = dyn_blk
+				fallback_mat = "cracked_tile" if behavior == "collapsing_block" else "platform_stone"
+			"portcullis":
+				var gate_ent := KlPortcullisGate.new()
+				gate_ent.name = node_name
+				gate_ent.configure(type_name, type_cfg, sz, pos)
+				entities_root.add_child(gate_ent)
+				var g_rot: float = 90.0 if type_name == "gate_ud_2" else 0.0
+				_spawn_glb_visual_on_node(gate_ent, "res://assets/props/portcullis_gate.glb", sz, Vector3(1.9, 2.6, 0.24), Vector3.ZERO, g_rot, "", Color.WHITE)
+				created_body = gate_ent
+				fallback_mat = "iron_portcullis"
+			"falling_spike_ball", "patrol_ew", "patrol_ns", "patrol_square_cw", "vertical_bouncer", "bouncing_ball_ai", "random_diagonal", "chase_player":
+				var haz_ent := KlHazardEntity.new()
+				haz_ent.name = node_name
+				haz_ent.configure(type_name, type_cfg, sz, pos)
+				entities_root.add_child(haz_ent)
+				var haz_vis: Dictionary = _get_kl_entity_visual_spec(type_name)
+				_spawn_glb_visual_on_node(
+					haz_ent,
+					str(haz_vis["glb"]),
+					sz,
+					haz_vis["dims"] as Vector3,
+					Vector3.ZERO,
+					0.0,
+					str(haz_vis["tint_tag"]),
+					haz_vis["tint"] as Color
+				)
+				haz_ent.attach_visual_support()
+				if type_name == "guard_ew" or type_name == "guard_square":
+					var guard_vis: Node = haz_ent.get_node_or_null("ModelVisual")
+					if guard_vis != null:
+						haz_ent.set_animation_player(HumanoidAnimationLibrary.attach_to_character(guard_vis))
+				created_body = haz_ent
 				fallback_mat = "hazard_crimson"
 			_:
 				created_body = _create_static_box(entities_root, node_name, pos + Vector3(0.0, sz.y * 0.5, 0.0), sz, get_material("stone_ledge"))
@@ -1564,6 +1622,38 @@ func _build_kl_foreground_objects(
 
 		if created_body != null and col_top_y > HERO_CUTAWAY_HEIGHT_M:
 			_enable_cutaway_on_body(created_body, fallback_mat)
+
+
+static func _get_kl_entity_visual_spec(type_name: String) -> Dictionary:
+	match type_name:
+		"chest":
+			return {"glb": "res://assets/props/pushable_chest.glb", "dims": Vector3(0.98, 1.0, 0.98), "tint_tag": "", "tint": Color.WHITE}
+		"table":
+			return {"glb": "res://assets/props/pushable_table.glb", "dims": Vector3(0.95, 0.75, 0.95), "tint_tag": "", "tint": Color.WHITE}
+		"moveable_block":
+			return {"glb": "res://assets/props/stone_block.glb", "dims": Vector3(1.0, 1.0, 1.0), "tint_tag": "moveable", "tint": Color(0.84, 0.92, 1.05)}
+		"dropping_block":
+			return {"glb": "res://assets/props/dropping_block.glb", "dims": Vector3(0.95, 0.75, 0.95), "tint_tag": "", "tint": Color.WHITE}
+		"collapsing_block":
+			return {"glb": "res://assets/props/collapsing_tile.glb", "dims": Vector3(0.98, 0.25, 0.98), "tint_tag": "", "tint": Color.WHITE}
+		"block_ew", "block_ns":
+			return {"glb": "res://assets/props/moving_platform.glb", "dims": Vector3(1.9, 0.35, 1.9), "tint_tag": "", "tint": Color.WHITE}
+		"guard_ew", "guard_square":
+			return {"glb": "res://assets/characters/patrol_sentinel.glb", "dims": Vector3(0.75, 1.45, 0.75), "tint_tag": "", "tint": Color.WHITE}
+		"gargoyle":
+			return {"glb": "res://assets/props/hazard_gargoyle.glb", "dims": Vector3(0.75, 0.85, 0.75), "tint_tag": "", "tint": Color.WHITE}
+		"spike", "spike_high":
+			return {"glb": "res://assets/props/hazard_spikes.glb", "dims": Vector3(0.80, 0.65, 0.80), "tint_tag": "", "tint": Color.WHITE}
+		"spike_ball_fall", "spike_ball_high_fall":
+			return {"glb": "res://assets/props/hazard_spiked_ball.glb", "dims": Vector3(0.75, 0.75, 0.75), "tint_tag": "", "tint": Color.WHITE}
+		"fire_ew", "fire_ns":
+			return {"glb": "res://assets/props/hazard_fire.glb", "dims": Vector3(0.70, 0.80, 0.70), "tint_tag": "", "tint": Color.WHITE}
+		"ghost":
+			return {"glb": "res://assets/props/enemy_ghost.glb", "dims": Vector3(0.70, 0.90, 0.70), "tint_tag": "", "tint": Color.WHITE}
+		"repel_spell":
+			return {"glb": "res://assets/props/item_crystal_ball.glb", "dims": Vector3(0.50, 0.55, 0.50), "tint_tag": "repel_emerald", "tint": Color(0.28, 1.0, 0.55, 1.0)}
+		_:
+			return {"glb": "res://assets/props/hazard_ball.glb", "dims": Vector3(0.75, 0.75, 0.75), "tint_tag": "", "tint": Color.WHITE}
 
 
 func _spawn_glb_visual_on_node(
@@ -1602,12 +1692,12 @@ func _spawn_glb_visual_on_node(
 		proxy.visible = false
 
 
-func _spawn_melkhior_wizard(parent: Node3D, pos: Vector3) -> void:
-	var wiz := Node3D.new()
+func _spawn_melkhior_wizard(parent: Node3D, pos: Vector3, sz: Vector3, entities_cfg: Dictionary) -> void:
+	var bg_specs: Dictionary = entities_cfg.get("special_background_entities", {}) as Dictionary
+	var wiz_cfg: Dictionary = bg_specs.get("wizard", {"behavior": "patrol_square_cw", "params": {"speed": 2, "directions": ["W", "N", "E", "S"]}}) as Dictionary
+	var wiz := KlHazardEntity.new()
 	wiz.name = "MelkhiorWizard"
-	wiz.position = pos
-	wiz.rotation_degrees.y = 15.0
-	wiz.set_meta("kl_type", "wizard")
+	wiz.configure("wizard", wiz_cfg, sz, pos)
 	parent.add_child(wiz)
 
 	var wiz_scene: PackedScene = _load_prop_scene("res://assets/characters/melkhior_wizard.glb")
@@ -1616,9 +1706,8 @@ func _spawn_melkhior_wizard(parent: Node3D, pos: Vector3) -> void:
 		inst.name = "ModelVisual"
 		_configure_static_model_recursive(inst)
 		wiz.add_child(inst)
-		var anim_p: AnimationPlayer = HumanoidAnimationLibrary.attach_to_character(inst)
-		if anim_p != null and anim_p.has_animation(&"idle"):
-			anim_p.play(&"idle")
+		wiz.attach_visual_support()
+		wiz.set_animation_player(HumanoidAnimationLibrary.attach_to_character(inst))
 		return
 
 	var robe_mat := StandardMaterial3D.new()
@@ -1640,14 +1729,19 @@ func _spawn_kl_hazard_prop(
 ) -> StaticBody3D:
 	var body := StaticBody3D.new()
 	body.name = node_name
+	# Non-solid lethal trigger geometry matching KlHazardEntity so the player
+	# cannot stand atop spikes or get pushed outside is_player_in_hazard_core().
+	body.collision_layer = 0
+	body.collision_mask = 0
 	body.position = pos + Vector3(0.0, sz.y * 0.5, 0.0)
 	body.set_meta("kl_type", type_name)
 	body.set_meta("kl_lethal", true)
+	body.set_meta("kl_visual_size", sz)
 	body.add_to_group("kl_lethal_hazards")
 	var col := CollisionShape3D.new()
 	col.name = "CollisionShape3D"
 	var cbox := BoxShape3D.new()
-	cbox.size = sz
+	cbox.size = Vector3(sz.x * 0.76, sz.y * 0.88, sz.z * 0.76)
 	col.shape = cbox
 	body.add_child(col)
 

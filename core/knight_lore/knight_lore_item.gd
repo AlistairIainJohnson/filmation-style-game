@@ -16,6 +16,7 @@ var is_arcing: bool = false
 var collision_shape: CollisionShape3D
 var pickup_area: Area3D
 var visual_node: Node3D
+var glow_light: OmniLight3D
 var _spin_phase: float = 0.0
 
 
@@ -72,6 +73,17 @@ func configure(id: int, charm_type: int, start_pos: Vector3) -> void:
 			add_child(inst)
 			visual_node = inst
 
+	glow_light = null
+	if type_id == 6:
+		glow_light = OmniLight3D.new()
+		glow_light.name = "OrbGlowLight"
+		glow_light.position = Vector3(0.0, 0.38, 0.0)
+		glow_light.light_color = Color(0.72, 0.38, 1.0)
+		glow_light.light_energy = 1.15
+		glow_light.omni_range = 2.4
+		glow_light.shadow_enabled = false
+		add_child(glow_light)
+
 
 static func _set_layer_recursive(node: Node) -> void:
 	if node is MeshInstance3D:
@@ -118,8 +130,11 @@ func launch_cauldron_arc(target_pos: Vector3, on_finished: Callable) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if visual_node != null and (is_extra_life or is_arcing):
+	if glow_light != null or (visual_node != null and (is_extra_life or is_arcing)):
 		_spin_phase += delta
+	if glow_light != null and is_instance_valid(glow_light):
+		glow_light.light_energy = 1.0 + 0.25 * sin(_spin_phase * 2.5)
+	if visual_node != null and (is_extra_life or is_arcing):
 		visual_node.rotation.y = _spin_phase * 2.2
 	if is_extra_life or is_arcing:
 		return
