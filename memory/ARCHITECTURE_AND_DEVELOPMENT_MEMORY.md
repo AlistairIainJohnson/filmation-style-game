@@ -128,9 +128,34 @@
 | **3** | Core gameplay loop: `KnightLoreSession` (lives, 14-charm sequence, 32 spawns, 3-slot FIFO inventory, drop-lift, 40-day Sun/Moon cycle, quest %/rating), `KlSpecialItem`, `KnightLoreHud`, playable `game/knight_lore_game.tscn`, Rotational/Directional controls, variable jump, Room 136 hint bubbles / homing Repel Spells | **DONE** |
 | **4** | All 29 config-driven entity behaviors (`core/knight_lore/{kl_room_director,kl_pushable_entity,kl_dynamic_block,kl_portcullis_gate,kl_hazard_entity,sparkle_vfx}.gd` driven by `data/knight_lore/entities.json`), Cauldron Hub 14/14 victory sparkle convergence, appear/death/transform/collapse/cauldron sparkle VFX, `Shift+Move` pull mechanics, tight cylindrical trap hitboxes, humanoid `melkhior_wizard.glb`, `DayNightDial` sky arch HUD, and `tests/test_knight_lore_phase4.gd` (**60/60 GUT tests**) | **DONE** |
 | **5** | Genuine offline-rendered orchestral score (FluidSynth + `GeneralUser GS` -> `.ogg` loops/cues), natural woodland/dungeon ambience (`KlAmbienceDirector`), `RoomFX` dungeon slapback/reverb, full UI (`KnightLoreMainMenu`, centered `KnightLorePauseMenu` on layer 30, aligned corner-scroll `KnightLoreHud`, end screen), procedural dungeon flagstone shader (`dungeon_floor.gdshader`), glowing Crystal Ball on bronze pedestal, static spike & Room 79 quirk fixes (`tests/test_knight_lore_phase5.gd`, `tests/test_knight_lore_audio_orchestral.gd`, **77/77 GUT tests**) | **DONE** |
-| **6** | Full automated verification & docs: new GUT suites (`test_knight_lore_data.gd`, `test_knight_lore_gameplay.gd`, `test_knight_lore_audio_ui.gd`), Metal captures (Room 136 Day/Night, forest room, high-arch room, Title/HUD/Victory/Game Over), memory update, push | NOT STARTED — next |
+| **6** | Full automated verification, boot scene switch & docs: set `run/main_scene` to `res://game/knight_lore_game.tscn`, Victory & Game Over Metal visual captures, `README.md` documentation polish, GUT suite consolidation/verification, memory signoff, push | NOT STARTED — next |
 
 *(Note: Phases 1–5 tests currently live in `tests/test_knight_lore_phase1.gd`, `tests/test_knight_lore_phase3.gd`, `tests/test_knight_lore_phase4.gd`, `tests/test_knight_lore_phase5.gd`, and `tests/test_knight_lore_audio_orchestral.gd`; the plan's Phase 6 suite names are the intended consolidation targets.)*
+
+### Phase 6 Outstanding Actions (Work Breakdown)
+1. **Default Boot Scene (`project.godot`)**:
+   - Change `application/run/main_scene` from `"res://game/main_game.tscn"` to `"res://game/knight_lore_game.tscn"`.
+   - **Requirement**: Starting the game directly (running `godot`, launching from the editor, or launching standalone builds) must boot straight into *Knight Lore Reimagined* (`KnightLoreMainMenu` -> `KnightLoreGame` session).
+   - The original 4-room foundation tech demo remains accessible at `res://game/main_game.tscn`.
+2. **Automated Visual Verification Captures (`game/knight_lore_game.gd` & `scripts/verify.sh`)**:
+   - Add end-game capture modes to `game/knight_lore_game.gd` triggered via environment variables:
+     - `FILMATION_CAPTURE_END=victory`: Boots session into completed quest state (14/14 charms, Melkhior wizard active, victory sparkles, congratulatory banner) and captures `_verify/kl_phase6_victory.png`.
+     - `FILMATION_CAPTURE_END=game_over`: Boots session into game-over state (0 lives, game over banner) and captures `_verify/kl_phase6_game_over.png`.
+   - Wire both captures into `scripts/verify.sh` Tier 3 visual verification suite.
+3. **Documentation Polish (`README.md`)**:
+   - Update `README.md` to document *Knight Lore Reimagined* as the primary game experience:
+     - Overview of the 128-room 3D isometric tribute to Ultimate Play the Game's 1984 classic.
+     - Controls: Directional 8-way (default) vs Rotational tank controls (`[Tab]`), Jump, Drop/Carry (`[Shift]`), Pause (`[Esc]` / `[P]`), Sound toggle (`[M]`), Camera angle toggle (`[F1]`).
+     - Developer / Debug Cheats: Room hopping (`[F4]`/`[F5]`, env `FILMATION_KL_ROOM=<id>`), werewolf toggle (`FILMATION_KL_FORCE_NIGHT=1`).
+     - Tooling and Pipelines: Offline Blender normalization (`tools/asset_pipeline/`), FluidSynth orchestral score generation (`tools/audio_pipeline/compose_score.py`), soundscape rendering (`render_soundscapes.py`), and pre-baked VoxelGI (`tools/bake_voxel_gi.gd`).
+     - Unified verification commands (`./scripts/verify.sh --visual`).
+4. **Test Suite Verification & Consolidation**:
+   - Verify that all test suites pass with 100% success (77/77 GUT tests, 9/9 Python validation tests, 41/41 GLBs, audio assets).
+   - Consolidate or cross-verify test suites into clean groupings if needed (`test_knight_lore_data.gd`, `test_knight_lore_gameplay.gd`, `test_knight_lore_audio_ui.gd`).
+5. **Git & GitHub Delivery**:
+   - Run full verification (`./scripts/verify.sh --visual`).
+   - Commit all changes (including any generated capture artifacts or `.uid` sidecars).
+   - Push to GitHub `origin/main`.
 
 ### Phase 5 & 5b implementation highlights (done)
 - **Genuine Offline-Rendered Orchestral Score & Natural Soundscapes (`tools/audio_pipeline/`, `core/audio/`)**:
@@ -158,7 +183,7 @@
 2. **Room colors = Option 2A**: subtle modern PBR tint per ZX `ink_color` (`KnightLoreData.get_subtle_room_tint()`), not the classic ZX palette. Forest rooms use a fixed mossy tint (`backdrop (0.32,0.44,0.26)`, `floor (0.76,0.86,0.70)`).
 3. **Default controls = Directional** (camera-relative 8-way), with classic **Rotational** (Left/Right 90°, Up walks) toggleable via `[Tab]` (menu toggle planned in Phase 5).
 4. **Audio (Phase 5 / 5b)** = Genuine offline-rendered orchestral score (FluidSynth + `GeneralUser GS` SoundFont from de-interleaved Knight Lore motifs into `.ogg` stems) + offline natural biome ambience loops + real-time Godot `RoomFX` dungeon slapback echo, all config-driven via `data/knight_lore/audio_score.json` & `audio_soundscapes.json`.
-5. Foundation 4-room demo (`data/world_graph.json`, `game/main_game.tscn`) and its tests stay intact; Knight Lore boots from `game/knight_lore_game.tscn` (env `FILMATION_KL_ROOM=<id>`, `FILMATION_KL_FORCE_NIGHT=1`; room browser `FILMATION_KL_ROOM` + `[F4]`/`[F5]` in `room_preview`).
+5. **Default boot scene = Knight Lore (`res://game/knight_lore_game.tscn`)**: In Phase 6, `application/run/main_scene` in `project.godot` is switched to `"res://game/knight_lore_game.tscn"`. Starting the game in the Godot editor or via standalone launch boots directly into *Knight Lore Reimagined* (Title Screen -> Main Gameplay session). Debug environment variables (`FILMATION_KL_ROOM=<id>`, `FILMATION_KL_FORCE_NIGHT=1`, `FILMATION_CAPTURE_END=<mode>`) and in-game shortcuts (`[F4]`/`[F5]` room stepping, `[Tab]` controls, `[F1]` camera) remain active. The foundation 4-room demo (`data/world_graph.json`, `game/main_game.tscn`) and its tests stay preserved intact at `res://game/main_game.tscn`.
 
 ### Geometry / scale conventions
 - Room sizes: Type 0 `8×8 m`, Type 1 `4×8 m`, Type 2 `8×4 m`; wall thickness `0.5 m`; walls `6.0 m` tall; doorway `2.0 m` wide × `3.0 m` high; high arches at `Z=176` → `3.0 m` elevation on South/East with `HighArchBase` ledges.
@@ -188,5 +213,10 @@
 - Latest verified baseline (after Phase 5 / 5b polish): GUT `77/77` tests (`3,244` assertions) across `12` scripts, Python `9/9`, `41/41` GLBs, `9` `.ogg` + `24` `.wav`, `26` Metal captures.
 
 ### How to resume
-1. Read this file and check Section 8 (`Phase 6`).
-2. Confirm any final manual playtest notes, then execute **Phase 6** (GUT suite consolidation if desired, docs/README polish, final verification) and push.
+1. Read this file and review Section 8 (`Phase 6 Outstanding Actions (Work Breakdown)`).
+2. Execute **Phase 6**:
+   - Update `project.godot`: set `run/main_scene="res://game/knight_lore_game.tscn"`.
+   - Update `game/knight_lore_game.gd` & `scripts/verify.sh` to add automated end-game visual captures (`kl_phase6_victory.png` and `kl_phase6_game_over.png`).
+   - Update `README.md` to document *Knight Lore Reimagined* as the primary game, controls, tools, and launch instructions.
+   - Run full verification (`./scripts/verify.sh --visual`) and ensure exit code `0`.
+   - Commit all changes and push to GitHub `origin/main`.
