@@ -672,6 +672,22 @@ func _create_doorway_sill(
 	vis_floor.position = Vector3(0.0, -0.25, outward_sign * vis_depth * 0.5) if along_x else Vector3(outward_sign * vis_depth * 0.5, -0.25, 0.0)
 	sill.add_child(vis_floor)
 
+	# Back-wall doorways (North/West, outward_sign < 0) get a solid dark void backing
+	# so transparent 3D backgrounds do not leak through open archways.
+	if outward_sign < 0.0:
+		var void_mesh := MeshInstance3D.new()
+		void_mesh.name = "DoorwayVoidMesh"
+		void_mesh.layers = 1
+		var void_box := BoxMesh.new()
+		void_box.size = Vector3(door_w, 3.0, 0.06) if along_x else Vector3(0.06, 3.0, door_w)
+		var void_mat := StandardMaterial3D.new()
+		void_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		void_mat.albedo_color = Color(0.015, 0.015, 0.02, 1.0)
+		void_box.material = void_mat
+		void_mesh.mesh = void_box
+		void_mesh.position = Vector3(0.0, 1.5, outward_sign * (vis_depth + 0.02)) if along_x else Vector3(outward_sign * (vis_depth + 0.02), 1.5, 0.0)
+		sill.add_child(void_mesh)
+
 	var floor_col := CollisionShape3D.new()
 	floor_col.name = "SillFloor"
 	var floor_box := BoxShape3D.new()

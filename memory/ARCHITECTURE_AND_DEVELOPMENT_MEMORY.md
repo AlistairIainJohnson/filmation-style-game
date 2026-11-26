@@ -128,7 +128,7 @@
 | **3** | Core gameplay loop: `KnightLoreSession` (lives, 14-charm sequence, 32 spawns, 3-slot FIFO inventory, drop-lift, 40-day Sun/Moon cycle, quest %/rating), `KlSpecialItem`, `KnightLoreHud`, playable `game/knight_lore_game.tscn`, Rotational/Directional controls, variable jump, Room 136 hint bubbles / homing Repel Spells | **DONE** |
 | **4** | All 29 config-driven entity behaviors (`core/knight_lore/{kl_room_director,kl_pushable_entity,kl_dynamic_block,kl_portcullis_gate,kl_hazard_entity,sparkle_vfx}.gd` driven by `data/knight_lore/entities.json`), Cauldron Hub 14/14 victory sparkle convergence, appear/death/transform/collapse/cauldron sparkle VFX, `Shift+Move` pull mechanics, tight cylindrical trap hitboxes, humanoid `melkhior_wizard.glb`, `DayNightDial` sky arch HUD, and `tests/test_knight_lore_phase4.gd` (**60/60 GUT tests**) | **DONE** |
 | **5** | Genuine offline-rendered orchestral score (FluidSynth + `GeneralUser GS` -> `.ogg` loops/cues), natural woodland/dungeon ambience (`KlAmbienceDirector`), `RoomFX` dungeon slapback/reverb, full UI (`KnightLoreMainMenu`, centered `KnightLorePauseMenu` on layer 30, aligned corner-scroll `KnightLoreHud`, end screen), procedural dungeon flagstone shader (`dungeon_floor.gdshader`), glowing Crystal Ball on bronze pedestal, static spike & Room 79 quirk fixes (`tests/test_knight_lore_phase5.gd`, `tests/test_knight_lore_audio_orchestral.gd`, **77/77 GUT tests**) | **DONE** |
-| **6** | Full automated verification, boot scene switch & docs: set `run/main_scene` to `res://game/knight_lore_game.tscn`, Victory & Game Over Metal visual captures, `README.md` documentation polish, GUT suite consolidation/verification, memory signoff, push | NOT STARTED — next |
+| **6** | Full automated verification, boot scene switch, loading splash & docs: switched `run/main_scene` to `res://game/knight_lore_game.tscn`, integrated `assets/ui/loading_screen.webp` splash + options backdrop in `KnightLoreMainMenu`, added Victory & Game Over Metal visual captures, updated `README.md`, verified **77/77 GUT tests** (`3,249` assertions) & **29 Metal captures** | **DONE** |
 
 *(Note: Phases 1–5 tests currently live in `tests/test_knight_lore_phase1.gd`, `tests/test_knight_lore_phase3.gd`, `tests/test_knight_lore_phase4.gd`, `tests/test_knight_lore_phase5.gd`, and `tests/test_knight_lore_audio_orchestral.gd`; the plan's Phase 6 suite names are the intended consolidation targets.)*
 
@@ -210,13 +210,7 @@
 ### Process rules
 - Follow `AGENTS.md` and the user rule: **no hardcoded business/domain field names, endpoints, or workflows in core engine code; prefer config-driven primitives** (data in `data/knight_lore/*.json`, `data/materials.json`, etc.).
 - Run `./scripts/verify.sh --visual` (must exit `0`) before reporting; handoff = (1) modified files, (2) commands & exit codes, (3) screenshot findings, (4) remaining risks.
-- Latest verified baseline (after Phase 5 / 5b polish): GUT `77/77` tests (`3,244` assertions) across `12` scripts, Python `9/9`, `41/41` GLBs, `9` `.ogg` + `24` `.wav`, `26` Metal captures.
+- Latest verified baseline (after Phase 6): GUT `77/77` tests (`3,249` assertions) across `12` scripts, Python `9/9`, `41/41` GLBs, `9` `.ogg` + `24` `.wav`, `29` Metal captures (`kl_phase6_loading_screen.png`, `kl_phase6_victory.png`, `kl_phase6_game_over.png`, etc.).
 
 ### How to resume
-1. Read this file and review Section 8 (`Phase 6 Outstanding Actions (Work Breakdown)`).
-2. Execute **Phase 6**:
-   - Update `project.godot`: set `run/main_scene="res://game/knight_lore_game.tscn"`.
-   - Update `game/knight_lore_game.gd` & `scripts/verify.sh` to add automated end-game visual captures (`kl_phase6_victory.png` and `kl_phase6_game_over.png`).
-   - Update `README.md` to document *Knight Lore Reimagined* as the primary game, controls, tools, and launch instructions.
-   - Run full verification (`./scripts/verify.sh --visual`) and ensure exit code `0`.
-   - Commit all changes and push to GitHub `origin/main`.
+All 6 phases of *Knight Lore Reimagined* are complete and verified (`./scripts/verify.sh --visual` exits `0`). Check `git status` / `git log` for latest state.

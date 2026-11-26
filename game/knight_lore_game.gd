@@ -46,13 +46,55 @@ var _item_nodes: Dictionary = {}
 var _cauldron_fx_root: Node3D
 var _repel_orbs: Array[Node3D] = []
 var _room_builder: RoomBuilder = RoomBuilder.new()
+var _gameplay_bg_layer: CanvasLayer
+var _gameplay_bg_rect: TextureRect
+var _world_viewport_container: SubViewportContainer
+var _world_viewport: SubViewport
 
 
 func _ready() -> void:
+	DioramaLighting.force_transparent_background = true
+
+	_gameplay_bg_layer = CanvasLayer.new()
+	_gameplay_bg_layer.name = "GameplayBackgroundLayer"
+	_gameplay_bg_layer.layer = -10
+	add_child(_gameplay_bg_layer)
+
+	_gameplay_bg_rect = TextureRect.new()
+	_gameplay_bg_rect.name = "GameplayBackgroundArt"
+	_gameplay_bg_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_gameplay_bg_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_gameplay_bg_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	_gameplay_bg_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_gameplay_bg_rect.modulate = Color(0.29, 0.28, 0.28, 1.0)
+	if ResourceLoader.exists("res://assets/ui/background.webp"):
+		_gameplay_bg_rect.texture = load("res://assets/ui/background.webp") as Texture2D
+	_gameplay_bg_layer.add_child(_gameplay_bg_rect)
+
+	var world_layer := CanvasLayer.new()
+	world_layer.name = "World3DLayer"
+	world_layer.layer = 0
+	add_child(world_layer)
+
+	_world_viewport_container = SubViewportContainer.new()
+	_world_viewport_container.name = "WorldViewportContainer"
+	_world_viewport_container.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_world_viewport_container.stretch = true
+	_world_viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	world_layer.add_child(_world_viewport_container)
+
+	_world_viewport = SubViewport.new()
+	_world_viewport.name = "WorldSubViewport"
+	_world_viewport.transparent_bg = true
+	_world_viewport.own_world_3d = true
+	_world_viewport.msaa_3d = Viewport.MSAA_2X
+	_world_viewport.handle_input_locally = false
+	_world_viewport_container.add_child(_world_viewport)
+
 	kl_data = KnightLoreData.load_default()
 	room_container = Node3D.new()
 	room_container.name = "RoomContainer"
-	add_child(room_container)
+	_world_viewport.add_child(room_container)
 
 	audio_manager = ZxAudioManager.new()
 	audio_manager.name = "ZxAudioManager"
@@ -97,7 +139,8 @@ func _ready() -> void:
 	session.game_over_triggered.connect(_on_game_over)
 
 	# If booted directly with test environment or default run, check whether to show main menu
-	var show_title: bool = OS.get_environment("FILMATION_KL_NO_MENU") != "1" and OS.get_environment("FILMATION_KL_ROOM").is_empty() and OS.get_environment("FILMATION_CAPTURE_PAUSE") != "1"
+	var capture_end: String = OS.get_environment("FILMATION_CAPTURE_END")
+	var show_title: bool = OS.get_environment("FILMATION_KL_NO_MENU") != "1" and OS.get_environment("FILMATION_KL_ROOM").is_empty() and OS.get_environment("FILMATION_CAPTURE_PAUSE") != "1" and capture_end.is_empty()
 	if show_title:
 		_show_main_menu()
 	else:
@@ -108,12 +151,24 @@ func _ready() -> void:
 		_start_session()
 		if OS.get_environment("FILMATION_CAPTURE_PAUSE") == "1" and pause_menu != null:
 			pause_menu.open(_use_rotational, _camera_mode == DioramaCameraRig.ProjectionMode.DIMETRIC_2_1, false)
+		elif capture_end == "victory":
+			session.charms_collected = KnightLoreSession.TOTAL_CHARMS_REQUIRED
+			session.day_count = 12
+			session.quest_completed = true
+			_finish_victory_sequence()
+		elif capture_end == "game_over":
+			session.lives = 0
+			session.day_count = 40
+			session.game_over = true
+			_on_game_over("OUT OF TIME")
 
 
-func _show_main_menu() -> void:
+func _show_main_menu(show_splash: bool = true) -> void:
 	if pause_menu != null:
 		pause_menu.close()
 	if main_menu != null:
+		if not show_splash:
+			main_menu.set_splash_active(false)
 		main_menu.visible = true
 	if hud != null:
 		hud.visible = false
@@ -176,7 +231,7 @@ func _on_pause_sound_toggled(is_muted: bool) -> void:
 
 
 func _on_return_to_main_menu() -> void:
-	_show_main_menu()
+	_show_main_menu(false)
 
 
 func _start_session() -> void:
@@ -229,6 +284,8 @@ func _load_room(room_id: int, spawn_dir: String) -> void:
 		_transition_lock = false
 		return
 
+	if _gameplay_bg_rect != null:
+		_gameplay_bg_rect.modulate = Color(0.15, 0.16, 0.23, 1.0) if session.is_night else Color(0.29, 0.28, 0.28, 1.0)
 	var is_forest: bool = bool(current_build.get("is_forest", false))
 	if audio_manager != null:
 		audio_manager.apply_biome("woodland" if is_forest else "dungeon")
@@ -471,6 +528,8 @@ func _physics_process(delta: float) -> void:
 
 
 func _handle_interact() -> void:
+	if _gameplay_bg_rect != null:
+		_gameplay_bg_rect.modulate = Color(0.15, 0.16, 0.23, 1.0) if session.is_night else Color(0.29, 0.28, 0.28, 1.0)
 	var is_forest: bool = bool(current_build.get("is_forest", false))
 	if audio_manager != null:
 		audio_manager.apply_biome("woodland" if is_forest else "dungeon")
@@ -785,6 +844,8 @@ func _finish_player_death() -> void:
 func _refresh_hud() -> void:
 	if hud == null or session == null:
 		return
+	if _gameplay_bg_rect != null:
+		_gameplay_bg_rect.modulate = Color(0.15, 0.16, 0.23, 1.0) if session.is_night else Color(0.29, 0.28, 0.28, 1.0)
 	var is_forest: bool = bool(current_build.get("is_forest", false))
 	hud.update_status(
 		session.current_room_id,

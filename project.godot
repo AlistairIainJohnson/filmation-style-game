@@ -12,17 +12,22 @@ config_version=5
 
 config/name="Filmation 3D Foundation"
 config/features=PackedStringArray("4.7", "Forward Plus")
-run/main_scene="res://game/main_game.tscn"
+run/main_scene="res://game/knight_lore_game.tscn"
 
 [autoload]
 
 CycleManager="*res://core/world/cycle_manager.gd"
 WorldManager="*res://core/world/world_manager.gd"
+GameTheme="*res://game/ui/game_theme.gd"
 
 [display]
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+
+[gui]
+
+theme/custom_font="res://assets/ui/Metamorphous-Regular.ttf"
 
 [input]
 

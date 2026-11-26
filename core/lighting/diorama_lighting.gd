@@ -6,6 +6,7 @@ extends Node3D
 
 static var _presets_cache: Dictionary = {}
 static var _gi_data_cache: Dictionary = {}
+static var force_transparent_background: bool = false
 
 var world_environment: WorldEnvironment
 var key_directional_light: DirectionalLight3D
@@ -91,8 +92,11 @@ func apply_preset(preset: Dictionary, room_dims: Vector3) -> void:
 
 	# 1. WorldEnvironment (AgX, SSAO, SSIL, Volumetric Fog, strictly NO SDFGI)
 	var env := Environment.new()
-	env.background_mode = Environment.BG_COLOR
-	env.background_color = _arr_to_color(preset.get("background_color"), Color(0.06, 0.07, 0.10))
+	if force_transparent_background:
+		env.background_mode = Environment.BG_CLEAR_COLOR
+	else:
+		env.background_mode = Environment.BG_COLOR
+		env.background_color = _arr_to_color(preset.get("background_color"), Color(0.06, 0.07, 0.10))
 
 	var ambient_cfg: Dictionary = preset.get("ambient", {}) as Dictionary
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR

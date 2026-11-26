@@ -219,6 +219,7 @@ var _slot_panels: Array[PanelContainer] = []
 var _slot_swatches: Array[ColorRect] = []
 var _slot_names: Array[Label] = []
 
+var _toast_panel: PanelContainer
 var _toast_label: Label
 var _toast_timer: float = 0.0
 
@@ -307,18 +308,26 @@ func _build_ui() -> void:
 	_top_right_panel.add_child(trm)
 	_root.add_child(_top_right_panel)
 
-	# 2. Top-Center toast banner above room apex
-	_toast_label = _make_label("", 15, Color(1.0, 0.94, 0.60))
+	# 2. Top-Center toast banner above room apex (pill-backed for contrast over parchment frame)
+	_toast_panel = PanelContainer.new()
+	_toast_panel.name = "ToastPanel"
+	_toast_panel.anchor_left = 0.5
+	_toast_panel.anchor_right = 0.5
+	_toast_panel.anchor_top = 0.0
+	_toast_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
+	_toast_panel.offset_top = 12.0
+	_toast_panel.add_theme_stylebox_override("panel", _make_badge_style())
+	_toast_panel.visible = false
+	var tm := MarginContainer.new()
+	tm.add_theme_constant_override("margin_left", 14)
+	tm.add_theme_constant_override("margin_right", 14)
+	tm.add_theme_constant_override("margin_top", 5)
+	tm.add_theme_constant_override("margin_bottom", 5)
+	_toast_label = _make_label("", 14, Color(1.0, 0.94, 0.60))
 	_toast_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_toast_label.anchor_left = 0.5
-	_toast_label.anchor_right = 0.5
-	_toast_label.anchor_top = 0.0
-	_toast_label.offset_left = -360.0
-	_toast_label.offset_right = 360.0
-	_toast_label.offset_top = 14.0
-	_toast_label.offset_bottom = 44.0
-	_toast_label.visible = false
-	_root.add_child(_toast_label)
+	tm.add_child(_toast_label)
+	_toast_panel.add_child(tm)
+	_root.add_child(_toast_panel)
 
 	# 3. Bottom-Left Scroll Triangle (Top-Left anchor preset so layout scales via position/size/scale without warnings)
 	_left_scroll_host = Control.new()
@@ -622,8 +631,8 @@ func _make_label(text: String, font_size: int, col: Color) -> Label:
 func _process(delta: float) -> void:
 	if _toast_timer > 0.0:
 		_toast_timer = maxf(0.0, _toast_timer - delta)
-		if _toast_timer <= 0.0 and _toast_label != null:
-			_toast_label.visible = false
+		if _toast_timer <= 0.0 and _toast_panel != null:
+			_toast_panel.visible = false
 
 	var vp: Viewport = get_viewport()
 	if vp != null:
@@ -637,10 +646,10 @@ func _process(delta: float) -> void:
 
 
 func show_toast(msg: String, duration: float = 2.2) -> void:
-	if _toast_label == null:
+	if _toast_label == null or _toast_panel == null:
 		return
 	_toast_label.text = msg
-	_toast_label.visible = not msg.is_empty()
+	_toast_panel.visible = not msg.is_empty()
 	_toast_timer = duration
 
 

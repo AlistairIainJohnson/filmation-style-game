@@ -144,11 +144,22 @@ if [[ "$VISUAL" == true ]]; then
     verify_png "$ROOT_DIR/_verify/kl_phase4_room_033_entities.png"
 
     # Phase 5: Title Screen & Pause Menu
-    FILMATION_KL_NO_MENU=0 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase5_title_menu.png 18
+    FILMATION_KL_NO_MENU=0 FILMATION_MENU_STAGE=options godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase5_title_menu.png 18
     verify_png "$ROOT_DIR/_verify/kl_phase5_title_menu.png"
 
     FILMATION_CAPTURE_PAUSE=1 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase5_pause_menu.png 25
     verify_png "$ROOT_DIR/_verify/kl_phase5_pause_menu.png"
+
+    # Phase 6: Loading Splash, Victory & Game Over screens
+    FILMATION_KL_NO_MENU=0 godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase6_loading_screen.png 18
+    verify_png "$ROOT_DIR/_verify/kl_phase6_loading_screen.png"
+
+    # Phase 6: Victory & Game Over screens
+    FILMATION_KL_ROOM=136 FILMATION_CAPTURE_END=victory godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase6_victory.png 25
+    verify_png "$ROOT_DIR/_verify/kl_phase6_victory.png"
+
+    FILMATION_KL_ROOM=47 FILMATION_CAPTURE_END=game_over godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase6_game_over.png 25
+    verify_png "$ROOT_DIR/_verify/kl_phase6_game_over.png"
   fi
 fi
 

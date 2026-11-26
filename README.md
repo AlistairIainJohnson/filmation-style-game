@@ -1,55 +1,86 @@
-# Filmation 3D Foundation (Godot 4.7.2)
+# Knight Lore Reimagined — Modern 3D Filmation Engine (Godot 4.7.2)
 
-A reusable, data-driven modern 3D interpretation of classic ZX Spectrum **Filmation** isometric adventures (*Knight Lore* / *Alien 8* / *Head Over Heels*) built for **Godot 4.7.2 Standard (`Forward+` / `Jolt Physics 3D`)** on macOS Apple Silicon (`Metal 4.0`) and cross-platform desktops.
+A modern 3D reimagining of Ultimate Play the Game's 1984 ZX Spectrum isometric classic ***Knight Lore***, built on a reusable, data-driven **Filmation 3D Foundation** for **Godot 4.7.2 Standard (`Forward+` / `Jolt Physics 3D`)** on macOS Apple Silicon (`Metal 4.0`) and cross-platform desktops.
+
+Launching the project boots directly into **Knight Lore Reimagined** (`game/knight_lore_game.tscn`), featuring all 128 interconnected chambers, a 40-day Sun/Moon Sabreman/Werewolf transformation cycle, 14-charm cauldron quest, 29 config-driven entity behaviors, genuine offline-rendered orchestral music & biome soundscapes, and a dynamic parchment-scroll HUD.
+
+*(The original 4-room foundation tech demo remains preserved at `game/main_game.tscn`.)*
 
 ---
 
 ## Core Architecture & Features
 
-- **Authentic Orthographic Camera Rig (`core/camera/diorama_camera_rig.gd`)**:
-  - Default **True Isometric** (`yaw = 45°`, `pitch = -35.2644°`) with live toggle to **2:1 Dimetric** (`pitch = -30.0°`), auto-framed per chamber.
-- **Modern PBR Diorama Lighting (`core/lighting/diorama_lighting.gd`)**:
-  - `VoxelGI` + `SSAO` + `SSIL` + `AgX` tonemapping + `DirectionalLight3D` orthogonal shadows (`SDFGI` explicitly disabled to prevent orthographic striping).
-  - Switchable Day (`castle_stone_skylight`) and Moonlight Night (`castle_moonlight_night`) presets.
-- **Deterministic Player Controller & Readability Aids (`core/player/`)**:
-  - Kinematic `CharacterBody3D` (`physics_interpolation=true`) supporting camera-relative 8-way and isometric grid-aligned 4-way movement with smooth ground acceleration/deceleration ramps, exponential facing damping + diagonal-release debounce, animation crossfades, and `INTERPOLATION_CUBIC` humanoid motion (`core/characters/humanoid_animation_library.gd`).
-  - Analytical asymmetric jump curve (`jump_height = 1.35 m`, `time_to_apex = 0.28 s`, `time_to_descent = 0.22 s`) with coyote time & jump input buffering.
-  - Height-reactive `ShapeCast3D` + interpolated `Decal` drop shadow (`cull_mask = 1`, isolated from player visual layer `2`).
-  - Camera-ray AABB gated 8×8 Bayer cutaway dithering (`core/shaders/foreground_cutaway.gdshader`) capped to preserve partial foreground visibility (`25%` halftone silhouette) paired with opaque `ShadowCaster` siblings so pillars keep casting solid shadows while transparent.
-- **Hybrid Kinematic Puzzle Entities (`core/entities/`)**:
-  - `PushableBlock` (`CharacterBody3D` + 0.5 m half-grid snap + multi-block stack carry), `Portcullis` (`AnimatableBody3D`), `MovingPlatform` (`sync_to_physics`), `CollapsingTile`, `TriggerSwitch`, `CollectibleItem`, and `PatrolHazard`.
-- **Multi-Room World Graph & Day/Night Meta-Loop (`core/world/`)**:
-  - Cooperative `WorldManager` (`ResourceLoader.load_threaded_request`) seamlessly loading LDtk-compiled room JSONs across a 4-room interconnected loop with persistent room state hydration and JSON save/load.
-  - `CycleManager` driving Day → Night atmospheric shifts, jump height boost (`1.22×`), and Explorer → Werewolf morphing.
-- **100% Local Sprite-to-3D Pipeline (`tools/asset_pipeline/`)**:
-  - `extract_spritesheet.py` pairs 1-bit ink & mask passes from `concept-art/knight-lore-sprites.jpg` into clean transparent `RGBA` sprites (`187` extracted cells across 12 rows + `28` full-body Explorer/Werewolf composites).
-  - Headless **Blender 5.3.0** (`blender_sculpt_generator.py` + `normalize_glb.py`) generates & normalizes 16 PBR `.glb` props, gothic architecture (including continuous doorway lintel masonry), and 17-bone `SkeletonProfileHumanoid` characters validated by `validate_glb.py`.
+- **128-Room World & Cauldron Hub (`core/knight_lore/`)**:
+  - Pre-decoded 128-room layout (`data/knight_lore/rooms.json`) with 3 chamber sizes (`8×8 m`, `4×8 m`, `8×4 m`), elevated high-arch doorways, forest & dungeon biomes, and biome-transition door trims.
+  - **40-Day Day/Night Meta-Loop (`KnightLoreSession`)**: Smooth Sun/Moon cycle (`DayNightDial` sky-arch HUD) transforming Sabreman between Explorer (human) and Werewolf (night jump boost, tracked by Room 136 Melkhior's homing Repel Spells).
+  - **3-Slot Rotating Inventory & Quest Progression**: Collect and drop charms (`E` / `Enter`) into Melkhior's Cauldron (Room 136) in the sequence revealed by rising cauldron hint bubbles.
+  - **29 Config-Driven Entity Behaviors (`KlRoomDirector`)**: Pushable/pullable blocks & tables, dropping blocks, collapsing spikes, portcullis gates, patrolling guards, bouncing/falling spiked balls, gargoyles, fire, and ghosts driven by `data/knight_lore/entities.json`.
+- **Authentic Orthographic Camera & Diorama Lighting (`core/camera/`, `core/lighting/`)**:
+  - Default **True Isometric** (`yaw = 45°`, `pitch = -35.2644°`) with live toggle (`F1`) to **2:1 Dimetric** (`pitch = -30.0°`), auto-framed per chamber.
+  - Pre-baked `VoxelGI` (`data/knight_lore/voxel_gi/*.res`) + `SSAO` + `SSIL` + `AgX` tonemapping + `DirectionalLight3D` orthogonal shadows (`SDFGI` disabled).
+  - Camera-ray AABB gated 8×8 Bayer cutaway dithering (`core/shaders/foreground_cutaway.gdshader`) on foreground arches and tall props with opaque `ShadowCaster` siblings, plus procedural running-bond flagstones (`dungeon_floor.gdshader`) and organic woodland floors (`forest_floor.gdshader`).
+- **Genuine Offline-Rendered Orchestral Score & Natural Soundscapes (`core/audio/`, `tools/audio_pipeline/`)**:
+  - De-interleaved Knight Lore motifs arranged for symphony orchestra, rendered offline via **FluidSynth** + `GeneralUser GS` into normalized `.ogg` cues (`assets/audio/music/`).
+  - Synthesized 30 s woodland & dungeon ambience loops (`KlAmbienceDirector`) and 24 `.wav` SFX routed through biome-aware `RoomFX` dungeon slapback/reverb buses (`data/knight_lore/audio_score.json`, `audio_soundscapes.json`).
+- **100% Local 3D Asset Pipeline (`tools/asset_pipeline/`)**:
+  - Headless **Blender 5.3.0** (`blender_sculpt_generator.py` + `normalize_glb.py`) generates & normalizes **41** PBR `.glb` assets (characters, woodland/dungeon walls, arches, trims, props, charms, glowing Crystal Ball) validated by `validate_glb.py`.
 - **Architecture & Development Memory (`memory/ARCHITECTURE_AND_DEVELOPMENT_MEMORY.md`)**:
-  - Captures verified rendering/cutaway invariants, physics smoothing & animation architecture, the 16-asset manifest, git milestone history, and test baseline.
+  - Captures verified rendering/cutaway invariants, physics smoothing & animation architecture, the 41-asset manifest, audio pipeline, git milestone history, and test baseline.
 
 ---
 
 ## Controls
 
-| Action | Default Keys |
+| Action | Keys |
 |---|---|
-| Move (8-way / 4-way toggle) | `WASD` / Arrow Keys |
+| Move (Directional 8-way / Classic Rotational) | `WASD` / Arrow Keys |
 | Jump | `Space` |
-| Toggle Camera Projection (Isometric / 2:1 Dimetric) | `Tab` / `C` |
-| Toggle Movement Mode (8-way / 4-way) | `M` |
+| Drop / Pick Up Item (or Restart on End Screen) | `E` / `Enter` |
+| Grab & Pull Pushable Blocks |Hold `Shift` + Move |
+| Toggle Control Mode (Directional / Rotational) | `Tab` |
+| Toggle Camera Projection (Isometric / 2:1 Dimetric) | `F1` |
+| Pause Menu | `Esc` / `P` |
+| Mute / Unmute Audio | `M` |
+| Quick Restart Session | `R` |
+
+### Developer & Debug Launch Options
+
+Run from the project root with environment variables to jump straight into a specific room or state (bypassing the title screen):
+
+```bash
+# Boot directly into Room 136 (Cauldron Hub) at Night as Werewolf
+FILMATION_KL_ROOM=136 FILMATION_KL_FORCE_NIGHT=1 godot --path .
+
+# Boot into the room browser (step rooms with F4 / F5)
+FILMATION_KL_ROOM=47 godot --path . res://game/tools/room_preview.tscn
+
+# Capture Victory / Game Over screens
+FILMATION_KL_ROOM=136 FILMATION_CAPTURE_END=victory godot --path . --resolution 1280x720 -s tools/capture_frame.gd -- res://game/knight_lore_game.tscn _verify/kl_phase6_victory.png 25
+```
 
 ---
 
 ## Verification & Local Tooling
 
-All scripts, JSON schemas, LDtk compilation, 16 `.glb` assets, GUT unit/physics tests, and Metal screenshots are validated by:
+All GDScript static checks, JSON/data schemas, 41 `.glb` assets, audio assets, GUT unit/physics tests, and Metal screenshots are validated by:
 
 ```bash
 ./scripts/verify.sh --visual
+```
+
+Offline regeneration commands (run only when modifying assets, audio, or room geometry):
+
+```bash
+# Re-bake offline VoxelGI light probes (never pass --headless)
+godot --path . --resolution 640x360 -s tools/bake_voxel_gi.gd
+
+# Re-render orchestral score & soundscapes
+uv run --directory tools python audio_pipeline/compose_score.py
+uv run --directory tools python audio_pipeline/render_soundscapes.py
 ```
 
 Prerequisites on macOS Apple Silicon:
 - **Godot 4.7.2+** on `PATH`
 - **Blender 5.3.0+** on `PATH`
 - **Python 3.13+** with `uv` (`uv sync` inside `tools/`)
-- **LDtk v1.5.3+** (optional, for editing `levels/filmation_world.ldtk`)
+- **FluidSynth** (optional, for regenerating `.ogg` orchestral stems)
