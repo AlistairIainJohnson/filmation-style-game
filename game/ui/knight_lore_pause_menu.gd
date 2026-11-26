@@ -13,12 +13,16 @@ signal sound_toggled(muted: bool)
 signal settings_requested()
 signal save_game_requested()
 signal load_game_requested()
+signal map_requested()
+signal hint_requested()
 
 var _is_rotational: bool = false
 var _is_dimetric: bool = false
 var _is_muted: bool = false
 
 var _resume_btn: Button
+var _map_btn: Button
+var _hint_btn: Button
 var _control_btn: Button
 var _camera_btn: Button
 var _sound_btn: Button
@@ -51,7 +55,7 @@ func _build_ui() -> void:
 
 	var panel := PanelContainer.new()
 	panel.name = "PausePanel"
-	panel.custom_minimum_size = Vector2(440, 540)
+	panel.custom_minimum_size = Vector2(440, 620)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.08, 0.12, 0.96)
@@ -95,6 +99,18 @@ func _build_ui() -> void:
 	_resume_btn.pressed.connect(_on_resume_pressed)
 	vbox.add_child(_resume_btn)
 
+	_map_btn = Button.new()
+	_map_btn.text = "View World Map [M]"
+	_map_btn.custom_minimum_size = Vector2(280, 36)
+	_map_btn.pressed.connect(_on_map_pressed)
+	vbox.add_child(_map_btn)
+
+	_hint_btn = Button.new()
+	_hint_btn.text = "Room Puzzle Hint [H]"
+	_hint_btn.custom_minimum_size = Vector2(280, 36)
+	_hint_btn.pressed.connect(_on_hint_pressed)
+	vbox.add_child(_hint_btn)
+
 	_control_btn = Button.new()
 	_control_btn.text = "Controls: 8-Way Directional [Tab]"
 	_control_btn.custom_minimum_size = Vector2(280, 36)
@@ -108,7 +124,7 @@ func _build_ui() -> void:
 	vbox.add_child(_camera_btn)
 
 	_sound_btn = Button.new()
-	_sound_btn.text = "Sound: ON [M]"
+	_sound_btn.text = "Sound: ON [N]"
 	_sound_btn.custom_minimum_size = Vector2(280, 36)
 	_sound_btn.pressed.connect(_on_sound_pressed)
 	vbox.add_child(_sound_btn)
@@ -169,12 +185,22 @@ func toggle(p_rotational: bool, p_dimetric: bool, p_muted: bool) -> void:
 func _update_labels() -> void:
 	_control_btn.text = "Controls: %s [Tab]" % ("Rotational" if _is_rotational else "Directional")
 	_camera_btn.text = "Camera: %s" % ("2:1 Dimetric" if _is_dimetric else "True Isometric")
-	_sound_btn.text = "Sound: %s [M]" % ("OFF" if _is_muted else "ON")
+	_sound_btn.text = "Sound: %s [N]" % ("OFF" if _is_muted else "ON")
 
 
 func _on_resume_pressed() -> void:
 	close()
 	resume_requested.emit()
+
+
+func _on_map_pressed() -> void:
+	close()
+	map_requested.emit()
+
+
+func _on_hint_pressed() -> void:
+	close()
+	hint_requested.emit()
 
 
 func _on_control_pressed() -> void:

@@ -1078,9 +1078,20 @@ func build_knight_lore_room(
 	var is_forest: bool = kl_data.is_forest_room(room_id)
 	var ink_tint: Color = KnightLoreData.get_subtle_room_tint(ink_name)
 	var wall_tint: Color = ink_tint
-	var backdrop_tint: Color = Color(0.32, 0.44, 0.26, 1.0) if is_forest else ink_tint
-	var wall_tag: String = "forest" if is_forest else ink_name
-	var floor_tint: Color = Color(0.76, 0.86, 0.70, 1.0) if is_forest else ink_tint
+	var backdrop_tint: Color = ink_tint
+	var wall_tag: String = ink_name
+	var floor_tint: Color = ink_tint
+	if is_forest:
+		wall_tag = "forest_" + ink_name
+		if ink_name == "Yellow":
+			backdrop_tint = Color(0.42, 0.38, 0.20, 1.0)  # Autumn amber / golden canopy
+			floor_tint = Color(0.82, 0.82, 0.58, 1.0)     # Golden-dappled moss
+		elif ink_name == "Magenta":
+			backdrop_tint = Color(0.34, 0.24, 0.36, 1.0)  # Eldritch twilight violet / magenta
+			floor_tint = Color(0.72, 0.64, 0.76, 1.0)     # Twilight purple-dappled moss
+		else:
+			backdrop_tint = Color(0.32, 0.44, 0.26, 1.0)
+			floor_tint = Color(0.76, 0.86, 0.70, 1.0)
 	var exits_meta: Dictionary = kl_data.get_room_exits(room_id)
 	var panel_glb: String = "res://assets/props/tree_wall_panel.glb" if is_forest else "res://assets/props/wall_stone_panel.glb"
 	var lintel_glb: String = "res://assets/props/tree_wall_lintel.glb" if is_forest else "res://assets/props/wall_stone_lintel.glb"

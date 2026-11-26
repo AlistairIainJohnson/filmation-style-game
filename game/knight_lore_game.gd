@@ -28,6 +28,8 @@ var pause_menu: KnightLorePauseMenu
 var main_menu: KnightLoreMainMenu
 var _settings_dialog: KnightLoreSettingsDialog
 var _save_load_dialog: KnightLoreSaveLoadDialog
+var _map_dialog: KnightLoreMapDialog
+var _hint_dialog: KnightLoreHintDialog
 var _current_settings: Dictionary = {
 	"lives_mode": "normal",
 	"music_volume": 0.85,
@@ -135,6 +137,8 @@ func _ready() -> void:
 	pause_menu.settings_requested.connect(_on_open_settings)
 	pause_menu.save_game_requested.connect(_on_open_save_dialog)
 	pause_menu.load_game_requested.connect(_on_open_load_dialog)
+	pause_menu.map_requested.connect(_on_pause_map_requested)
+	pause_menu.hint_requested.connect(_on_pause_hint_requested)
 	add_child(pause_menu)
 
 	main_menu = KnightLoreMainMenu.new()
@@ -156,6 +160,15 @@ func _ready() -> void:
 	_save_load_dialog.save_selected.connect(_on_save_game_selected)
 	_save_load_dialog.load_selected.connect(_on_load_game_selected)
 	add_child(_save_load_dialog)
+
+	_map_dialog = KnightLoreMapDialog.new()
+	_map_dialog.closed.connect(_on_map_closed)
+	_map_dialog.hint_requested_for_room.connect(_on_map_hint_requested)
+	add_child(_map_dialog)
+
+	_hint_dialog = KnightLoreHintDialog.new()
+	_hint_dialog.closed.connect(_on_hint_closed)
+	add_child(_hint_dialog)
 
 	_load_settings_from_disk()
 
@@ -188,6 +201,10 @@ func _ready() -> void:
 			_save_load_dialog.open(true)
 		elif capture_dialog == "load" and _save_load_dialog != null:
 			_save_load_dialog.open(false)
+		elif capture_dialog == "map" and _map_dialog != null:
+			_open_map()
+		elif capture_dialog == "hint" and _hint_dialog != null:
+			_open_hint(session.current_room_id)
 		elif OS.get_environment("FILMATION_CAPTURE_PAUSE") == "1" and pause_menu != null:
 			pause_menu.open(_use_rotational, _camera_mode == DioramaCameraRig.ProjectionMode.DIMETRIC_2_1, false)
 		elif capture_end == "victory":
@@ -483,6 +500,14 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		var k: InputEventKey = event as InputEventKey
 		if k.keycode == KEY_ESCAPE or k.keycode == KEY_P:
+			if _hint_dialog != null and _hint_dialog.visible:
+				_hint_dialog.close()
+				get_viewport().set_input_as_handled()
+				return
+			if _map_dialog != null and _map_dialog.visible:
+				_map_dialog.close()
+				get_viewport().set_input_as_handled()
+				return
 			if pause_menu != null and (main_menu == null or not main_menu.visible):
 				var is_dim: bool = (_camera_mode == DioramaCameraRig.ProjectionMode.DIMETRIC_2_1)
 				var is_mut: bool = audio_manager.muted if audio_manager != null else false
@@ -492,6 +517,16 @@ func _unhandled_input(event: InputEvent) -> void:
 				get_viewport().set_input_as_handled()
 				return
 		elif k.keycode == KEY_M:
+			if main_menu == null or not main_menu.visible:
+				_toggle_map()
+				get_viewport().set_input_as_handled()
+				return
+		elif k.keycode == KEY_H:
+			if main_menu == null or not main_menu.visible:
+				_toggle_hint(session.current_room_id if session != null else 136)
+				get_viewport().set_input_as_handled()
+				return
+		elif k.keycode == KEY_N:
 			if audio_manager != null:
 				var m: bool = audio_manager.toggle_mute()
 				if hud != null:
@@ -1093,6 +1128,75 @@ func _on_open_save_dialog() -> void:
 func _on_open_load_dialog() -> void:
 	if _save_load_dialog != null:
 		_save_load_dialog.open(false)
+
+
+func _toggle_map() -> void:
+	if _map_dialog == null:
+		return
+	if _map_dialog.visible:
+		_map_dialog.close()
+	else:
+		_open_map()
+
+
+func _open_map() -> void:
+	if _map_dialog == null:
+		return
+	if pause_menu != null and pause_menu.visible:
+		pause_menu.close()
+	if _hint_dialog != null and _hint_dialog.visible:
+		_hint_dialog.close()
+	get_tree().paused = true
+	var cur_rid: int = session.current_room_id if session != null else 136
+	var visited: Dictionary = session.visited_rooms if session != null else {}
+	var charms: int = session.charms_collected if session != null else 0
+	var req_charm: int = session.get_next_required_charm() if session != null else 0
+	_map_dialog.open(cur_rid, visited, charms, req_charm)
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_menu_select")
+
+
+func _on_map_closed() -> void:
+	if (_hint_dialog == null or not _hint_dialog.visible) and (pause_menu == null or not pause_menu.visible):
+		get_tree().paused = false
+
+
+func _toggle_hint(room_id: int) -> void:
+	if _hint_dialog == null:
+		return
+	if _hint_dialog.visible:
+		_hint_dialog.close()
+	else:
+		_open_hint(room_id)
+
+
+func _open_hint(room_id: int) -> void:
+	if _hint_dialog == null:
+		return
+	if pause_menu != null and pause_menu.visible:
+		pause_menu.close()
+	get_tree().paused = true
+	_hint_dialog.open(room_id, session)
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_menu_select")
+
+
+func _on_hint_closed() -> void:
+	if (_map_dialog == null or not _map_dialog.visible) and (pause_menu == null or not pause_menu.visible):
+		get_tree().paused = false
+
+
+func _on_map_hint_requested(room_id: int) -> void:
+	_open_hint(room_id)
+
+
+func _on_pause_map_requested() -> void:
+	_open_map()
+
+
+func _on_pause_hint_requested() -> void:
+	var rid: int = session.current_room_id if session != null else 136
+	_open_hint(rid)
 
 
 func _on_save_game_selected(slot_idx: int, slot_path: String) -> void:

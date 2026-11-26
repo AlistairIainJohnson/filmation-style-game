@@ -1,0 +1,53 @@
+{
+  "hints": {
+    "136": {
+      "title": "Melkhior's Cauldron Hub",
+      "challenge": "The central nexus of the castle where Melkhior's great cauldron bubbles with eldritch energy.",
+      "solution": "Observe the rising spirit bubbles to discern which charm Melkhior demands. Collect the matching item from across the castle and drop it directly into the cauldron ([Shift] to drop) to advance the ritual.",
+      "warning": "Werewolf form cannot safely approach Melkhior; green repel spells guard the chamber at night. Return in Human form by day to deliver charms.",
+      "form_synergy": "Human form is welcomed by the wizard. If night falls while carrying an item, seek shelter until dawn."
+    },
+    "79": {
+      "title": "Chamber of Spikes",
+      "challenge": "A deadly hall lined with rows of razor-sharp iron spikes and high pillars.",
+      "solution": "Keep strictly to the raised masonry blocks and stone tables. Line up each jump carefully along the isometric diagonals, utilizing full jump apex clearance.",
+      "warning": "Touching any spike row is instantly lethal. Do not attempt ground-level shortcuts.",
+      "form_synergy": "Werewolf form possesses greater jump arc (+22%), making clearing multiple spike gaps significantly easier."
+    },
+    "47": {
+      "title": "The South-West Archway",
+      "challenge": "One of the castle's primary gateways, connecting dungeon chambers with woodland portals.",
+      "solution": "Take stock of your starting surroundings. Standard archways can be walked through freely, but watch for elevated lintels requiring jumping assistance.",
+      "warning": "Bouncing mines and patrol sentinels may wander through neighboring corridors.",
+      "form_synergy": "Both Human and Werewolf forms can traverse this room with ease."
+    },
+    "68": {
+      "title": "The Eastern Vestibule",
+      "challenge": "A junction chamber flanked by stone pillars and high archways.",
+      "solution": "Check all four doorway portals. If an archway is elevated 3 meters above the floor, push adjacent wooden tables or stone blocks beneath the lintel to build a step.",
+      "warning": "Watch for falling weights from high ceilings when passing beneath stone lintels.",
+      "form_synergy": "Werewolf form can leap directly into some low-to-mid elevation archways without pushing blocks."
+    },
+    "143": {
+      "title": "The Northern Gatehouse",
+      "challenge": "A heavily fortified northern corridor opening into the dense woodland fringe.",
+      "solution": "Navigate past perimeter pillars. Use moveable blocks as mobile stepping stones to reach elevated ledges.",
+      "warning": "Woodland tree doorways connect directly into wild forest rooms where mossy low walls obstruct quick escapes.",
+      "form_synergy": "Werewolf form gains enhanced ground speed across open woodland terrain."
+    },
+    "179": {
+      "title": "The Western Portcullis Hall",
+      "challenge": "A narrow fortified corridor guarded by rhythmic iron portcullises.",
+      "solution": "Observe the rise and fall of the portcullis gates. Time your passage so you cross the threshold right as the iron grate reaches its highest apex.",
+      "warning": "Never linger directly beneath a falling portcullis; the descending iron gate will crush anything caught beneath it.",
+      "form_synergy": "Sprint through the gate opening immediately after it begins its upward stroke."
+    },
+    "109": {
+      "title": "Gargoyle Bastion",
+      "challenge": "A multi-tiered chamber with stone gargoyles perched high atop stone blocks.",
+      "solution": "Gargoyles are stationary guardians. Path around their direct sightlines and scale the stone blocks on the opposite wall.",
+      "warning": "Physical contact with a gargoyle causes instant death. Maintain safe spacing when jumping from block to block.",
+      "form_synergy": "Jump diagonally past gargoyle perches rather than leaping directly across their positions."
+    }
+  }
+}
