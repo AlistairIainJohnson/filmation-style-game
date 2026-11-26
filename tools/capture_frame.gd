@@ -31,6 +31,7 @@ func _initialize() -> void:
 		quit(1)
 		return
 
+	root.process_mode = Node.PROCESS_MODE_ALWAYS
 	var instance: Node = packed.instantiate()
 	root.add_child(instance)
 

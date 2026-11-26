@@ -26,6 +26,16 @@ var score_sequencer: KlScoreSequencer
 var ambience_director: KlAmbienceDirector
 var pause_menu: KnightLorePauseMenu
 var main_menu: KnightLoreMainMenu
+var _settings_dialog: KnightLoreSettingsDialog
+var _save_load_dialog: KnightLoreSaveLoadDialog
+var _current_settings: Dictionary = {
+	"lives_mode": "normal",
+	"music_volume": 0.85,
+	"sfx_volume": 0.90,
+	"invulnerable": false,
+	"jump_boost": false
+}
+const SETTINGS_PATH := "user://settings.json"
 var _camera_mode: DioramaCameraRig.ProjectionMode = DioramaCameraRig.ProjectionMode.TRUE_ISOMETRIC
 var _use_rotational: bool = false
 var _transition_lock: bool = false
@@ -122,6 +132,9 @@ func _ready() -> void:
 	pause_menu.control_mode_toggled.connect(_on_pause_control_toggled)
 	pause_menu.camera_mode_toggled.connect(_on_pause_camera_toggled)
 	pause_menu.sound_toggled.connect(_on_pause_sound_toggled)
+	pause_menu.settings_requested.connect(_on_open_settings)
+	pause_menu.save_game_requested.connect(_on_open_save_dialog)
+	pause_menu.load_game_requested.connect(_on_open_load_dialog)
 	add_child(pause_menu)
 
 	main_menu = KnightLoreMainMenu.new()
@@ -129,7 +142,22 @@ func _ready() -> void:
 	main_menu.bind_audio(audio_manager, score_sequencer)
 	main_menu.start_game_requested.connect(_on_menu_start_game)
 	main_menu.exit_game_requested.connect(_on_menu_exit_game)
+	main_menu.settings_requested.connect(_on_open_settings)
+	main_menu.load_game_requested.connect(_on_open_load_dialog)
 	add_child(main_menu)
+
+	_settings_dialog = KnightLoreSettingsDialog.new()
+	_settings_dialog.set_audio_manager(audio_manager)
+	_settings_dialog.settings_saved.connect(_apply_settings)
+	add_child(_settings_dialog)
+
+	_save_load_dialog = KnightLoreSaveLoadDialog.new()
+	_save_load_dialog.set_audio_manager(audio_manager)
+	_save_load_dialog.save_selected.connect(_on_save_game_selected)
+	_save_load_dialog.load_selected.connect(_on_load_game_selected)
+	add_child(_save_load_dialog)
+
+	_load_settings_from_disk()
 
 	session = KnightLoreSession.new()
 	session.inventory_changed.connect(_on_inventory_changed)
@@ -141,7 +169,8 @@ func _ready() -> void:
 
 	# If booted directly with test environment or default run, check whether to show main menu
 	var capture_end: String = OS.get_environment("FILMATION_CAPTURE_END")
-	var show_title: bool = OS.get_environment("FILMATION_KL_NO_MENU") != "1" and OS.get_environment("FILMATION_KL_ROOM").is_empty() and OS.get_environment("FILMATION_CAPTURE_PAUSE") != "1" and capture_end.is_empty()
+	var capture_dialog: String = OS.get_environment("FILMATION_CAPTURE_DIALOG")
+	var show_title: bool = OS.get_environment("FILMATION_KL_NO_MENU") != "1" and OS.get_environment("FILMATION_KL_ROOM").is_empty() and OS.get_environment("FILMATION_CAPTURE_PAUSE") != "1" and capture_end.is_empty() and capture_dialog.is_empty()
 	if show_title:
 		_show_main_menu()
 	else:
@@ -153,7 +182,13 @@ func _ready() -> void:
 		if score_sequencer != null:
 			score_sequencer.stop_cue(0.0)
 		_start_session()
-		if OS.get_environment("FILMATION_CAPTURE_PAUSE") == "1" and pause_menu != null:
+		if capture_dialog == "settings" and _settings_dialog != null:
+			_settings_dialog.open(_current_settings)
+		elif capture_dialog == "save" and _save_load_dialog != null:
+			_save_load_dialog.open(true)
+		elif capture_dialog == "load" and _save_load_dialog != null:
+			_save_load_dialog.open(false)
+		elif OS.get_environment("FILMATION_CAPTURE_PAUSE") == "1" and pause_menu != null:
 			pause_menu.open(_use_rotational, _camera_mode == DioramaCameraRig.ProjectionMode.DIMETRIC_2_1, false)
 		elif capture_end == "victory":
 			session.charms_collected = KnightLoreSession.TOTAL_CHARMS_REQUIRED
@@ -250,6 +285,7 @@ func _start_session() -> void:
 	var env_room_str: String = OS.get_environment("FILMATION_KL_ROOM")
 	var override_rid: int = int(env_room_str) if not env_room_str.is_empty() else -1
 	session.start_new_game(kl_data, -1, override_rid)
+	_apply_settings_to_session_and_player()
 
 	if OS.get_environment("FILMATION_KL_FORCE_NIGHT") == "1":
 		session.is_night = true
@@ -338,8 +374,7 @@ func _load_room(room_id: int, spawn_dir: String) -> void:
 	var spawn_pos: Vector3 = _resolve_spawn_pos(doorways, spawn_dir, room_dims)
 	player.position = spawn_pos
 	player.set_night_form(session.is_wulf)
-	player.jump_height = 1.35 * (1.22 if session.is_wulf else 1.0)
-	player.recompute_jump_constants()
+	_sync_player_jump_params()
 	room_node.add_child(player)
 	player.reset_physics_interpolation()
 	player.sync_shader_world_pos()
@@ -690,8 +725,7 @@ func _finish_transformation() -> void:
 		if player.visual_root != null:
 			player.visual_root.scale = Vector3.ONE
 		player.set_night_form(session.is_wulf)
-		player.jump_height = 1.35 * (1.22 if session.is_wulf else 1.0)
-		player.recompute_jump_constants()
+		_sync_player_jump_params()
 	var lighting: DioramaLighting = current_build.get("lighting") as DioramaLighting
 	if lighting != null:
 		var preset_name: String = "castle_moonlight_night" if session.is_night else "castle_stone_skylight"
@@ -799,7 +833,7 @@ static func is_player_in_hazard_core(player_pos: Vector3, haz_center: Vector3, h
 
 
 func _check_hazards() -> void:
-	if player == null or _is_dying or _invuln_timer > 0.0 or _transition_lock or _victory_sequence_active:
+	if player == null or _is_dying or _invuln_timer > 0.0 or _transition_lock or _victory_sequence_active or (session != null and session.invulnerable):
 		return
 	if player.position.y < -3.0:
 		_trigger_player_death()
@@ -818,7 +852,7 @@ func _check_hazards() -> void:
 
 
 func _trigger_player_death() -> void:
-	if _is_dying or _invuln_timer > 0.0 or session.game_over or session.quest_completed or _victory_sequence_active:
+	if (session != null and session.invulnerable) or _is_dying or _invuln_timer > 0.0 or session.game_over or session.quest_completed or _victory_sequence_active:
 		return
 	_is_dying = true
 	_death_timer = 0.75
@@ -980,3 +1014,213 @@ func _on_game_over(reason: String) -> void:
 	if hud != null:
 		hud.show_end_screen(false, session, reason)
 	_refresh_hud()
+
+
+func _sync_player_jump_params() -> void:
+	if player == null or not is_instance_valid(player):
+		return
+	var boost: bool = bool(_current_settings.get("jump_boost", false))
+	player.jump_boost = boost
+	var boost_mult: float = 1.45 if boost else 1.0
+	player.jump_height = 1.35 * boost_mult * (1.22 if (session != null and session.is_wulf) else 1.0)
+	player.recompute_jump_constants()
+
+
+func _load_settings_from_disk() -> void:
+	if OS.get_environment("FILMATION_KL_NO_MENU") == "1" or not OS.get_environment("FILMATION_KL_ROOM").is_empty() or not OS.get_environment("FILMATION_CAPTURE_END").is_empty():
+		return
+	if not FileAccess.file_exists(SETTINGS_PATH):
+		return
+	var f := FileAccess.open(SETTINGS_PATH, FileAccess.READ)
+	if f == null:
+		return
+	var parsed: Variant = JSON.parse_string(f.get_as_text())
+	f.close()
+	if parsed is Dictionary:
+		var d: Dictionary = parsed as Dictionary
+		for k: String in d:
+			_current_settings[k] = d[k]
+
+
+func _save_settings_to_disk() -> void:
+	var f := FileAccess.open(SETTINGS_PATH, FileAccess.WRITE)
+	if f != null:
+		f.store_string(JSON.stringify(_current_settings, "\t"))
+		f.close()
+
+
+func _apply_settings(dict: Dictionary) -> void:
+	for k: String in dict:
+		_current_settings[k] = dict[k]
+	_apply_settings_to_session_and_player()
+	_save_settings_to_disk()
+
+
+func _apply_settings_to_session_and_player() -> void:
+	if session != null:
+		var mode: String = str(_current_settings.get("lives_mode", "normal"))
+		match mode:
+			"99":
+				session.lives = 99
+				session.infinite_lives = false
+			"infinite":
+				session.lives = KnightLoreSession.INFINITE_LIVES
+				session.infinite_lives = true
+			_:
+				if session.lives == 99 or session.lives >= KnightLoreSession.INFINITE_LIVES:
+					session.lives = KnightLoreSession.STARTING_LIVES
+				session.infinite_lives = false
+		session.invulnerable = bool(_current_settings.get("invulnerable", false))
+		_refresh_hud()
+
+	_sync_player_jump_params()
+
+	if audio_manager != null:
+		audio_manager.set_music_volume(float(_current_settings.get("music_volume", 0.85)))
+		audio_manager.set_sfx_volume(float(_current_settings.get("sfx_volume", 0.90)))
+
+
+func _on_open_settings() -> void:
+	if _settings_dialog != null:
+		_settings_dialog.open(_current_settings)
+
+
+func _on_open_save_dialog() -> void:
+	if _save_load_dialog != null:
+		_save_load_dialog.open(true)
+
+
+func _on_open_load_dialog() -> void:
+	if _save_load_dialog != null:
+		_save_load_dialog.open(false)
+
+
+func _on_save_game_selected(slot_idx: int, slot_path: String) -> void:
+	var err: Error = save_game_to_slot(slot_idx, slot_path)
+	if err == OK:
+		if hud != null:
+			hud.show_toast("Game Saved to Slot %d!" % slot_idx, 2.0)
+		if audio_manager != null:
+			audio_manager.play_sfx("sfx_potion_pickup")
+	else:
+		if hud != null:
+			hud.show_toast("Failed to Save Game!", 2.0)
+
+
+func _on_load_game_selected(slot_idx: int, slot_path: String) -> void:
+	var err: Error = load_game_from_slot(slot_idx, slot_path)
+	if err == OK:
+		if main_menu != null and main_menu.visible:
+			main_menu.visible = false
+		if _world_viewport_container != null:
+			_world_viewport_container.visible = true
+		if hud != null:
+			hud.visible = true
+			hud.show_toast("Game Loaded from Slot %d!" % slot_idx, 2.5)
+		if pause_menu != null and pause_menu.visible:
+			pause_menu.close()
+		if audio_manager != null:
+			audio_manager.play_sfx("sfx_potion_pickup")
+	else:
+		if hud != null:
+			hud.show_toast("Failed to Load Game!", 2.0)
+
+
+func save_game_to_slot(slot_idx: int, path: String) -> Error:
+	var dir_path: String = path.get_base_dir()
+	DirAccess.make_dir_recursive_absolute(dir_path)
+
+	var now_dict: Dictionary = Time.get_datetime_dict_from_system()
+	var time_str: String = "%04d-%02d-%02d %02d:%02d" % [
+		now_dict.get("year", 2026),
+		now_dict.get("month", 1),
+		now_dict.get("day", 1),
+		now_dict.get("hour", 0),
+		now_dict.get("minute", 0)
+	]
+
+	var p_pos: Array = [0.0, 0.0, 0.0]
+	var p_rot: float = 0.0
+	if player != null and is_instance_valid(player):
+		p_pos = [player.position.x, player.position.y, player.position.z]
+		p_rot = player.rotation.y
+
+	var save_data := {
+		"version": 1,
+		"metadata": {
+			"slot": slot_idx,
+			"room_id": session.current_room_id,
+			"day": session.day_count,
+			"is_night": session.is_night,
+			"charms": session.charms_collected,
+			"lives": session.lives,
+			"saved_at": time_str
+		},
+		"settings": _current_settings.duplicate(),
+		"game_state": {
+			"camera_mode": "dimetric_2_1" if _camera_mode == DioramaCameraRig.ProjectionMode.DIMETRIC_2_1 else "true_isometric",
+			"use_rotational": _use_rotational,
+			"player_pos": p_pos,
+			"player_rot_y": p_rot
+		},
+		"session": session.serialize_state()
+	}
+
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		return FileAccess.get_open_error()
+	file.store_string(JSON.stringify(save_data, "\t"))
+	file.close()
+	return OK
+
+
+func load_game_from_slot(_slot_idx: int, path: String) -> Error:
+	if not FileAccess.file_exists(path):
+		return ERR_FILE_NOT_FOUND
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return FileAccess.get_open_error()
+	var json_str: String = file.get_as_text()
+	file.close()
+
+	var parsed: Variant = JSON.parse_string(json_str)
+	if not (parsed is Dictionary):
+		return ERR_PARSE_ERROR
+	var data: Dictionary = parsed as Dictionary
+
+	var loaded_settings: Dictionary = data.get("settings", {}) as Dictionary
+	if not loaded_settings.is_empty():
+		_apply_settings(loaded_settings)
+
+	var gs: Dictionary = data.get("game_state", {}) as Dictionary
+	_use_rotational = bool(gs.get("use_rotational", false))
+	var cam_str: String = str(gs.get("camera_mode", "true_isometric"))
+	_camera_mode = DioramaCameraRig.ProjectionMode.DIMETRIC_2_1 if cam_str == "dimetric_2_1" else DioramaCameraRig.ProjectionMode.TRUE_ISOMETRIC
+
+	var sess_data: Dictionary = data.get("session", {}) as Dictionary
+	session.hydrate_state(sess_data)
+
+	_is_transforming = false
+	_is_dying = false
+	_victory_sequence_active = false
+	_victory_timeout = 0.0
+	_invuln_timer = 1.0
+
+	_load_room(session.current_room_id, "")
+
+	var cam_rig: DioramaCameraRig = current_build.get("camera_rig") as DioramaCameraRig
+	if cam_rig != null:
+		cam_rig.set_projection_mode(_camera_mode)
+
+	if player != null and is_instance_valid(player):
+		var p_arr: Array = gs.get("player_pos", []) as Array
+		if p_arr.size() >= 3:
+			player.position = Vector3(float(p_arr[0]), float(p_arr[1]), float(p_arr[2]))
+			player.reset_physics_interpolation()
+			player.sync_shader_world_pos()
+		player.rotation.y = float(gs.get("player_rot_y", 0.0))
+		player.set_night_form(session.is_wulf)
+		_sync_player_jump_params()
+
+	_refresh_hud()
+	return OK

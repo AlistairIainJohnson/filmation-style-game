@@ -25,6 +25,7 @@ const WORLD_COLLISION_MASK: int = 1 | 4
 @export var diagonal_release_debounce: float = 0.045
 @export var push_normal_y_threshold: float = 0.25
 @export var jump_height: float = 1.35
+@export var jump_boost: bool = false
 @export var time_to_apex: float = 0.28
 @export var time_to_descent: float = 0.22
 @export var coyote_time: float = 0.10
@@ -335,7 +336,8 @@ func step_movement(input_vec: Vector2, jump_just_pressed: bool, delta: float, ju
 			pull_dir = Vector3(signf(dir.x), 0.0, 0.0) if absf(dir.x) >= absf(dir.z) else Vector3(0.0, 0.0, signf(dir.z))
 
 	var horiz_vel := Vector2(velocity.x, velocity.z)
-	var target_vel := Vector2.ZERO if pull_target != null else (Vector2(dir.x, dir.z) * move_speed)
+	var eff_speed: float = move_speed * (1.35 if (jump_boost and not is_on_floor()) else 1.0)
+	var target_vel := Vector2.ZERO if pull_target != null else (Vector2(dir.x, dir.z) * eff_speed)
 	var accel_rate: float = ground_accel if (dir.length_squared() > 0.001 and pull_target == null) else ground_decel
 	horiz_vel = horiz_vel.move_toward(target_vel, accel_rate * delta)
 	if pull_target != null:

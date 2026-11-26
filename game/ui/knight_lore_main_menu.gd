@@ -7,6 +7,8 @@ extends Control
 
 signal start_game_requested(settings: Dictionary)
 signal exit_game_requested()
+signal settings_requested()
+signal load_game_requested()
 
 const ZX_PALETTE: Dictionary = {
 	"0": Color(0.0, 0.0, 0.0),        # Black
@@ -43,6 +45,8 @@ var _control_btn: Button
 var _camera_btn: Button
 var _mute_btn: Button
 var _start_btn: Button
+var _settings_btn: Button
+var _load_btn: Button
 var _exit_btn: Button
 
 
@@ -165,7 +169,7 @@ func _build_ui() -> void:
 	add_child(_menu_center)
 
 	var panel := PanelContainer.new()
-	panel.custom_minimum_size = Vector2(610, 395)
+	panel.custom_minimum_size = Vector2(610, 440)
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.07, 0.05, 0.05, 0.90)
 	style.border_color = Color(0.85, 0.72, 0.28, 0.92)
@@ -239,19 +243,36 @@ func _build_ui() -> void:
 	_mute_btn.pressed.connect(_on_toggle_mute)
 	btn_row.add_child(_mute_btn)
 
-	# Start & Exit Buttons
+	# Start & Extra Buttons
 	_start_btn = Button.new()
 	_start_btn.text = "► START GAME [Space / Enter] ◄"
-	_start_btn.custom_minimum_size = Vector2(320, 48)
+	_start_btn.custom_minimum_size = Vector2(320, 44)
 	_start_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_start_btn.add_theme_font_size_override("font_size", 18)
 	_start_btn.add_theme_color_override("font_color", Color(1.0, 0.92, 0.35))
 	_start_btn.pressed.connect(_on_start_pressed)
 	vbox.add_child(_start_btn)
 
+	var sub_row := HBoxContainer.new()
+	sub_row.add_theme_constant_override("separation", 12)
+	sub_row.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_child(sub_row)
+
+	_settings_btn = Button.new()
+	_settings_btn.text = "Settings"
+	_settings_btn.custom_minimum_size = Vector2(150, 36)
+	_settings_btn.pressed.connect(_on_settings_pressed)
+	sub_row.add_child(_settings_btn)
+
+	_load_btn = Button.new()
+	_load_btn.text = "Load Game"
+	_load_btn.custom_minimum_size = Vector2(150, 36)
+	_load_btn.pressed.connect(_on_load_pressed)
+	sub_row.add_child(_load_btn)
+
 	_exit_btn = Button.new()
 	_exit_btn.text = "Exit Game [Esc]"
-	_exit_btn.custom_minimum_size = Vector2(240, 38)
+	_exit_btn.custom_minimum_size = Vector2(240, 36)
 	_exit_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_exit_btn.add_theme_font_size_override("font_size", 15)
 	_exit_btn.add_theme_color_override("font_color", Color(0.95, 0.62, 0.58))
@@ -403,6 +424,18 @@ func _on_start_pressed() -> void:
 		"muted": _muted
 	}
 	start_game_requested.emit(settings)
+
+
+func _on_settings_pressed() -> void:
+	if _audio_mgr != null:
+		_audio_mgr.play_sfx("sfx_menu_select")
+	settings_requested.emit()
+
+
+func _on_load_pressed() -> void:
+	if _audio_mgr != null:
+		_audio_mgr.play_sfx("sfx_menu_select")
+	load_game_requested.emit()
 
 
 func _on_exit_pressed() -> void:

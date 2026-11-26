@@ -52,6 +52,7 @@ const CAULDRON_ROOM_ID: int = 136
 const TOTAL_CHARMS_REQUIRED: int = 14
 const MAX_DAYS: int = 40
 const STARTING_LIVES: int = 5
+const INFINITE_LIVES: int = 999999
 const DEFAULT_START_ROOMS: Array[int] = [47, 68, 143, 179]
 
 var kl_data: KnightLoreData
@@ -62,6 +63,8 @@ var current_room_id: int = 47
 var visited_rooms: Dictionary = {}
 
 var lives: int = STARTING_LIVES
+var infinite_lives: bool = false
+var invulnerable: bool = false
 var day_count: int = 1
 var is_night: bool = false
 var is_wulf: bool = false
@@ -349,7 +352,10 @@ func complete_transformation() -> bool:
 func apply_player_death() -> Dictionary:
 	if game_over or quest_completed:
 		return {"game_over": game_over, "lives": maxi(lives, 0)}
-	lives -= 1
+	if invulnerable:
+		return {"game_over": false, "lives": lives}
+	if not infinite_lives:
+		lives -= 1
 	pending_transform = false
 	is_wulf = is_night
 	if lives < 0:
@@ -362,6 +368,101 @@ func apply_player_death() -> Dictionary:
 	lives_changed.emit(lives)
 	form_changed.emit(is_wulf)
 	return {"game_over": false, "lives": lives}
+
+
+## Serializes complete game session state to a Dictionary for saving to disk.
+func serialize_state() -> Dictionary:
+	var items_copy: Array = []
+	for it: Dictionary in world_items:
+		var p: Vector3 = it.get("pos", Vector3.ZERO) as Vector3
+		items_copy.append({
+			"id": int(it.get("id", -1)),
+			"type_id": int(it.get("type_id", 0)),
+			"room_id": int(it.get("room_id", -1)),
+			"pos": [p.x, p.y, p.z],
+			"active": bool(it.get("active", true))
+		})
+	var visited_keys: Array = []
+	for k: Variant in visited_rooms.keys():
+		visited_keys.append(int(k))
+
+	return {
+		"version": 1,
+		"current_room_id": current_room_id,
+		"lives": lives,
+		"infinite_lives": infinite_lives,
+		"invulnerable": invulnerable,
+		"day_count": day_count,
+		"is_night": is_night,
+		"is_wulf": is_wulf,
+		"half_day_progress": half_day_progress,
+		"pending_transform": pending_transform,
+		"disable_spike_ball_drop": disable_spike_ball_drop,
+		"inventory": inventory.duplicate(),
+		"charms_collected": charms_collected,
+		"quest_completed": quest_completed,
+		"game_over": game_over,
+		"required_sequence": required_sequence.duplicate(),
+		"world_items": items_copy,
+		"visited_rooms": visited_keys,
+		"_next_item_id": _next_item_id
+	}
+
+
+## Hydrates session state from a serialized Dictionary.
+func hydrate_state(data: Dictionary) -> bool:
+	if data.is_empty():
+		return false
+	current_room_id = int(data.get("current_room_id", 47))
+	lives = int(data.get("lives", STARTING_LIVES))
+	infinite_lives = bool(data.get("infinite_lives", false))
+	invulnerable = bool(data.get("invulnerable", false))
+	day_count = int(data.get("day_count", 1))
+	is_night = bool(data.get("is_night", false))
+	is_wulf = bool(data.get("is_wulf", false))
+	half_day_progress = float(data.get("half_day_progress", 0.0))
+	pending_transform = bool(data.get("pending_transform", false))
+	disable_spike_ball_drop = bool(data.get("disable_spike_ball_drop", false))
+	charms_collected = int(data.get("charms_collected", 0))
+	quest_completed = bool(data.get("quest_completed", false))
+	game_over = bool(data.get("game_over", false))
+	_next_item_id = int(data.get("_next_item_id", 100))
+
+	inventory.clear()
+	for slot_v: Variant in (data.get("inventory", [-1, -1, -1]) as Array):
+		inventory.append(int(slot_v))
+	while inventory.size() < 3:
+		inventory.append(-1)
+
+	required_sequence.clear()
+	for seq_v: Variant in (data.get("required_sequence", []) as Array):
+		required_sequence.append(int(seq_v))
+
+	visited_rooms.clear()
+	for r_v: Variant in (data.get("visited_rooms", []) as Array):
+		visited_rooms[int(r_v)] = true
+
+	world_items.clear()
+	for it_v: Variant in (data.get("world_items", []) as Array):
+		if it_v is Dictionary:
+			var d: Dictionary = it_v as Dictionary
+			var p_arr: Array = d.get("pos", [0.0, 0.0, 0.0]) as Array
+			var px: float = float(p_arr[0]) if p_arr.size() > 0 else 0.0
+			var py: float = float(p_arr[1]) if p_arr.size() > 1 else 0.0
+			var pz: float = float(p_arr[2]) if p_arr.size() > 2 else 0.0
+			world_items.append({
+				"id": int(d.get("id", -1)),
+				"type_id": int(d.get("type_id", 0)),
+				"room_id": int(d.get("room_id", -1)),
+				"pos": Vector3(px, py, pz),
+				"active": bool(d.get("active", true))
+			})
+
+	inventory_changed.emit(inventory.duplicate())
+	lives_changed.emit(lives)
+	form_changed.emit(is_wulf)
+	cycle_updated.emit(day_count, is_night, half_day_progress)
+	return true
 
 
 func get_quest_percent() -> int:

@@ -251,3 +251,17 @@ All 6 phases of *Knight Lore Reimagined* are complete and verified (`./scripts/v
 
 ### HUD Toast Panel
 - Toast label wrapped in `PanelContainer` with dark pill `StyleBoxFlat` backing (`_make_badge_style()` in `core/knight_lore/knight_lore_hud.gd`) for legibility over the parchment background.
+
+### Settings Screen & Save/Load Game State (`game/ui/knight_lore_settings_dialog.gd`, `game/ui/knight_lore_save_load_dialog.gd`, `tests/test_knight_lore_settings_and_save.gd`)
+- **Settings Screen (`KnightLoreSettingsDialog`, layer 35)**:
+  - Lives mode: Normal (5), 99 Lives, Infinite Lives (HUD displays `LIVES INF` when lives >= 999999).
+  - Music Volume slider (0.0 to 1.0, step 0.05) & Sound FX Volume slider (0.0 to 1.0, step 0.05), dynamically routed to `ZxAudioManager` audio buses.
+  - Character Invulnerability toggle: guards session player death & hazard damage.
+  - Jump Boost toggle: increases jump velocity by 1.45× (1.96m Day / 2.39m Night) and horizontal air speed by 1.35×.
+  - Settings persisted to `user://settings.json` and loaded on startup.
+- **Save / Load System (`KnightLoreSaveLoadDialog`, layer 35)**:
+  - 3 save slots stored in `user://saves/slot_{1,2,3}.json`.
+  - Serializes & restores full room diorama, player position/yaw, camera mode, control mode, inventory, collected charms, day/cycle state, visited rooms, world items, and settings.
+  - Accessible from both Main Menu (Load Game, Settings) and Pause Menu (Settings, Save Game, Load Game).
+  - HUD toast confirmation on save and load.
+

@@ -10,6 +10,9 @@ signal return_to_menu_requested()
 signal control_mode_toggled(is_rotational: bool)
 signal camera_mode_toggled(is_dimetric: bool)
 signal sound_toggled(muted: bool)
+signal settings_requested()
+signal save_game_requested()
+signal load_game_requested()
 
 var _is_rotational: bool = false
 var _is_dimetric: bool = false
@@ -19,6 +22,9 @@ var _resume_btn: Button
 var _control_btn: Button
 var _camera_btn: Button
 var _sound_btn: Button
+var _settings_btn: Button
+var _save_btn: Button
+var _load_btn: Button
 var _restart_btn: Button
 var _menu_btn: Button
 
@@ -45,7 +51,7 @@ func _build_ui() -> void:
 
 	var panel := PanelContainer.new()
 	panel.name = "PausePanel"
-	panel.custom_minimum_size = Vector2(440, 420)
+	panel.custom_minimum_size = Vector2(440, 540)
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.08, 0.12, 0.96)
@@ -106,6 +112,24 @@ func _build_ui() -> void:
 	_sound_btn.custom_minimum_size = Vector2(280, 36)
 	_sound_btn.pressed.connect(_on_sound_pressed)
 	vbox.add_child(_sound_btn)
+
+	_settings_btn = Button.new()
+	_settings_btn.text = "Settings..."
+	_settings_btn.custom_minimum_size = Vector2(280, 36)
+	_settings_btn.pressed.connect(_on_settings_pressed)
+	vbox.add_child(_settings_btn)
+
+	_save_btn = Button.new()
+	_save_btn.text = "Save Game..."
+	_save_btn.custom_minimum_size = Vector2(280, 36)
+	_save_btn.pressed.connect(_on_save_pressed)
+	vbox.add_child(_save_btn)
+
+	_load_btn = Button.new()
+	_load_btn.text = "Load Game..."
+	_load_btn.custom_minimum_size = Vector2(280, 36)
+	_load_btn.pressed.connect(_on_load_pressed)
+	vbox.add_child(_load_btn)
 
 	_restart_btn = Button.new()
 	_restart_btn.text = "Restart Game [R]"
@@ -169,6 +193,18 @@ func _on_sound_pressed() -> void:
 	_is_muted = not _is_muted
 	_update_labels()
 	sound_toggled.emit(_is_muted)
+
+
+func _on_settings_pressed() -> void:
+	settings_requested.emit()
+
+
+func _on_save_pressed() -> void:
+	save_game_requested.emit()
+
+
+func _on_load_pressed() -> void:
+	load_game_requested.emit()
 
 
 func _on_restart_pressed() -> void:

@@ -674,7 +674,10 @@ func update_status(
 	if _day_night_dial != null:
 		_day_night_dial.set_cycle(is_night, progress)
 	_charms_label.text = "CHARMS %d/%d" % [charms, KnightLoreSession.TOTAL_CHARMS_REQUIRED]
-	_lives_label.text = "LIVES %d" % maxi(lives, 0)
+	if lives >= KnightLoreSession.INFINITE_LIVES:
+		_lives_label.text = "LIVES INF"
+	else:
+		_lives_label.text = "LIVES %d" % maxi(lives, 0)
 	_control_label.text = "[Tab] %s  |  [P] Pause" % ("Rotational" if is_rotational else "Directional")
 
 
