@@ -81,6 +81,7 @@ func _ready() -> void:
 	_world_viewport_container.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_world_viewport_container.stretch = true
 	_world_viewport_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_world_viewport_container.visible = false  # Hidden until gameplay starts
 	world_layer.add_child(_world_viewport_container)
 
 	_world_viewport = SubViewport.new()
@@ -146,6 +147,9 @@ func _ready() -> void:
 	else:
 		if main_menu != null:
 			main_menu.visible = false
+		# Show the 3D viewport immediately for direct-launch / capture modes.
+		if _world_viewport_container != null:
+			_world_viewport_container.visible = true
 		if score_sequencer != null:
 			score_sequencer.stop_cue(0.0)
 		_start_session()
@@ -172,6 +176,9 @@ func _show_main_menu(show_splash: bool = true) -> void:
 		main_menu.visible = true
 	if hud != null:
 		hud.visible = false
+	# Hide the 3D world so it does not render behind the menu.
+	if _world_viewport_container != null:
+		_world_viewport_container.visible = false
 	if audio_manager != null:
 		audio_manager.stop_ambience(0.4)
 	if score_sequencer != null and not score_sequencer.is_playing("menu"):
@@ -183,6 +190,9 @@ func _on_menu_start_game(settings: Dictionary) -> void:
 		main_menu.visible = false
 	if hud != null:
 		hud.visible = true
+	# Restore the 3D world display now that gameplay is starting.
+	if _world_viewport_container != null:
+		_world_viewport_container.visible = true
 	var c_mode: String = str(settings.get("control_mode", "directional"))
 	_use_rotational = (c_mode == "rotational")
 	var cam_m: String = str(settings.get("camera_mode", "true_isometric"))
