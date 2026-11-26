@@ -1,8 +1,8 @@
 # Godot 4.7+ Generated Cache & Local Build Outputs
 .godot/
 _verify/
+build/
 *.export_presets.cfg
-export_presets.cfg
 
 # NEVER ignore *.uid — Godot 4.4+ script/shader UID sidecars MUST be committed.
 
