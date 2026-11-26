@@ -265,3 +265,126 @@ All 6 phases of *Knight Lore Reimagined* are complete and verified (`./scripts/v
   - Accessible from both Main Menu (Load Game, Settings) and Pause Menu (Settings, Save Game, Load Game).
   - HUD toast confirmation on save and load.
 
+---
+
+## 11. Generic Filmation Engine Framework: Porting & Implementing Sister Titles (Alien 8, Pentagram, etc.)
+
+This repository serves not only as *Knight Lore Reimagined*, but as a **reusable Modern 3D Filmation Engine Framework**. The architectural invariants, kinematics, diorama rendering, and offline pipelines established here are directly portable to reimagining other Ultimate Play the Game Filmation classics (*Alien 8*, *Pentagram*, *Nightshade*, *Gunfright*) and classic isometric titles (*Chimera*, *Fairlight*, *Head over Heels*).
+
+### 11.1 The Common Ultimate Filmation Engine Paradigm
+The original 1984–1986 Tim & Chris Stamper Filmation engine shared an identical structural core across all titles:
+1. **Diorama Room Geometry**:
+   - Fixed orthographic diorama rooms (True Isometric `pitch = -35.2644°` or 2:1 Dimetric `pitch = -30.0°`, `yaw = 45.0°`).
+   - Discrete metric grid (`1.0 m` floor tiles, `0.5 m` entity half-snap).
+   - 4 cardinal doorway portals (North, East, South, West) with high-arch clearance (`3.0 m`), sill floor extensions (`0.80 m`), backstop physics colliders, and outward black doorway void boxes (`DoorwayVoidMesh`) to prevent backdrop bleed.
+   - South and East foreground occluders dynamically dithered via camera-ray casts (`foreground_cutaway.gdshader`) with paired opaque `ShadowCaster` sibling nodes preserving shadow continuity.
+2. **Object & Entity Kinematics (The Stacking Contract)**:
+   - Kinematic `CharacterBody3D` / `AnimatableBody3D` contracts (never unconstrained dynamic `RigidBody3D`).
+   - Discrete AABB collision bounding with vertical stack carrying (moving/pushing a bottom block carries upper entities).
+   - FIFO carry & drop inventory: character drops objects directly in front of their facing direction, allowing players to build staircases and bridges to reach high platforms.
+   - Dual-mode controls: modernized 8-way isometric Directional controls (default) paired with authentic Rotational tank steering (`[Tab]`).
+3. **Compositing & Performance Architecture**:
+   - Two-viewport compositor: 2D background texture (`layer = -5`), transparent 3D SubViewport (`layer = -3`), HUD/Menus (`layer = 0..35`).
+   - Pre-baked `VoxelGIData` per room (`tools/bake_voxel_gi.gd`): guarantees instant sub-frame room swaps across 100+ room game worlds without runtime baking stalls.
+   - Single persistent `RoomBuilder` and reused player controller between room transitions.
+
+---
+
+### 11.2 Comparative Breakdown: Filmation Sister Titles
+
+| Feature | *Knight Lore* (1984) | *Alien 8* (1985) | *Pentagram* (1986) |
+|---|---|---|---|
+| **Theme / Biome** | Medieval castle & dark woodland | Sci-fi starship / cryo-stasis colony ship | Arcane catacombs, ruined temples & forests |
+| **Protagonist** | Sabreman (dual Explorer / Werewolf forms) | Cybot / Alien 8 robot (wheeled/tracked chassis) | Sabreman as Apprentice Wizard (magic staff/robe) |
+| **Core Objective** | 14 sequential cauldron charms | 24 geometric canisters (□, ○, +, △) into cryo-pod sockets | 5 Pentagram fragments & well purification |
+| **Time Limit / Cycle** | 40-day Sun/Moon celestial cycle | Starship Life Support / Battery power % drain | Planetary alignment / cosmic cycle |
+| **Unique Mechanics** | Day/Night stat transformation, cauldron hint bubbles | Directional conveyor belts, magnetic pushers, remote droids | Ranged spell casting (projectile magic blasts), rune stacking |
+| **Hazards** | Gargoyles, spikes, dropping blocks, fire, ghosts | Laser tripwires, bouncing mines, automated sentry drones | Warlocks, floating wraiths, boiling pools, chasm pits |
+
+---
+
+### 11.3 Generic Engine Decoupling & Extension Architecture
+
+To implement a new Filmation title in this framework, decouple the game-specific content from the core engine primitives:
+
+```
+filmation-style-game/
+├── core/                         # GENERIC ENGINE PRIMITIVES (Reusable across all titles)
+│   ├── camera/diorama_camera_rig.gd    # Isometric/dimetric orthographic rig, boundary clamping
+│   ├── lighting/diorama_lighting.gd    # VoxelGI loader, AgX tonemapping, shadow mode, ambient presets
+│   ├── shaders/                        # foreground_cutaway, shadow casters, floor shaders
+│   ├── player/                         # player_controller (8-way/tank, asymmetric jump, drop-lift)
+│   ├── entities/                       # pushable_block, moving_platform, portcullis, hazards, triggers
+│   ├── world/room_builder.gd           # Room diorama builder, merged colliders, doorway sills/voids
+│   ├── world/world_manager.gd          # Room graph, neighbor preloading, save/load state hydration
+│   └── audio/zx_audio_manager.gd       # 1-bit beeper / AY PSG emulator + multichannel audio buses
+├── data/
+│   ├── knight_lore/                    # Knight Lore data pack (rooms, entities, audio, strings)
+│   ├── alien_8/                        # [FUTURE] Alien 8 data pack (starship decks, cryo sockets)
+│   └── pentagram/                      # [FUTURE] Pentagram data pack (catacombs, rune altars)
+└── game/
+    ├── knight_lore_game.gd             # Knight Lore orchestration & session integration
+    ├── alien_8_game.gd                 # [FUTURE] Alien 8 orchestration
+    └── pentagram_game.gd               # [FUTURE] Pentagram orchestration
+```
+
+#### 1. Data-Driven Game Packs (`data/<game_slug>/`)
+Every title should supply a isolated JSON configuration suite:
+- `rooms.json`: Room matrix (e.g. 128 rooms), dimensions (`8×8×6`, `4×8×6`), door exits, wall textures/tints, lighting preset IDs.
+- `entities.json`: Entity spawn definitions, initial coordinates, movement vectors, behavior parameters, and socket associations.
+- `items.json`: Collectibles, inventory metadata, model paths, and target matching rules (e.g. canister shape ↔ cryo-socket).
+- `audio.json`: 1-bit retro beeper frequencies, AY-3-8912 sound sequences, and orchestral/ambient track bindings.
+- `strings_and_ui.json`: Game title, quest dialogues, HUD badges, and UI strings.
+
+#### 2. Polymorphic Entity Specializations
+Generic base entities in `core/entities/` extend cleanly into title-specific behaviors:
+- **Conveyor Belts (*Alien 8*)**: Extend `AnimatableBody3D` / `FloorTiles` with a `conveyor_velocity: Vector3` applied to `character.move_and_slide()` or `pushable.move_and_collide()`.
+- **Magnetic Pushers / Repulsors (*Alien 8*)**: Extend `Area3D` to inject directional impulse onto pushables and player along isometric axes.
+- **Ranged Projectile Magic (*Pentagram*)**: Add `ProjectileSpell` (`CharacterBody3D` / `RayCast3D`) fired along player facing vector on `Input.is_action_just_pressed("spell_cast")`, testing collision against hazards with impact sparkle VFX.
+- **Socket Matching System**: Abstract Knight Lore's cauldron into a generic `SocketTarget` entity:
+  - Knight Lore: 1 Cauldron socket accepting items matching `session.current_requested_charm`.
+  - Alien 8: 24 Cryo-Chamber sockets accepting items matching `socket.required_canister_shape` (Circle, Square, Cross, Triangle).
+  - Pentagram: 5 Altar pedestals accepting Pentagram rune pieces in any order.
+
+#### 3. Session & Objective Director
+Create a unified `FilmationSession` base contract:
+- **Timer / Resource Model**:
+  - `Knight Lore`: `days_remaining` (40 days, Sun/Moon cycle).
+  - `Alien 8`: `power_reserves` (100% decaying over time, replenishable via power cells).
+  - `Pentagram`: `celestial_alignment` / `lives` counter.
+- **Inventory System**:
+  - Shared FIFO drop/carry mechanics. Supports 3 items (Knight Lore, Alien 8) or single item + active spell (Pentagram).
+- **Save / Load Serialization**:
+  - Store game state in `user://saves/<game_slug>_slot_{1,2,3}.json` tracking room ID, player coordinates, inventory, socket completion flags, and elapsed cycle.
+
+---
+
+### 11.4 Asset & Audio Pipeline Playbook for Sister Titles
+
+1. **3D Asset Generation & Normalization (`tools/asset_pipeline/`)**:
+   - **Original Sprites**: Extract 2D sprite sheets from ZX Spectrum / Amstrad / MSX ROM rips or high-res remakes.
+   - **Blender Normalization Invariants**:
+     - Metric scale: 1 unit = 1 meter. Characters = `1.4–1.6 m` height; Props = `0.5–1.0 m`; Walls = `6.0 m`.
+     - Origin pivot: **Always bottom-center `(0, 0, 0)`**.
+     - Collision: Add `-convcol` convex hull hulls or simple box shapes.
+     - Import flags: Ensure `meshes/generate_lods = false` on all architectural meshes.
+2. **Offline Pre-Baked VoxelGI (`tools/bake_voxel_gi.gd`)**:
+   - Maintain the offline GI baking standard. Accept `--game=<game_slug>` flag to generate compressed `room_XXX.res` files in `data/<game_slug>/voxel_gi/`.
+   - Never bake GI at runtime; pre-baking ensures seamless zero-latency flips between rooms.
+3. **Soundtrack & Audio Design**:
+   - Maintain dual audio: authentic 1-bit ZX beeper / AY PSG retro SFX alongside rich atmospheric soundscapes.
+   - *Alien 8*: Low industrial engine hum, airlock hisses, electrical crackle, high-tech computer beeps.
+   - *Pentagram*: Echoing dungeon water drips, whistling wind, mystic choral pads, explosive magical impacts.
+
+---
+
+### 11.5 Step-by-Step Implementation Recipe for a New Sister Title
+
+When initiating a new Filmation reimagining (e.g. *Alien 8*):
+1. **Define Data Pack**: Ingest room layouts, entity coordinates, and item mappings into `data/<game_slug>/`. Validate with Python scripts (`tools/validate_<game_slug>.py`).
+2. **Model Asset Kit**: Build and normalize architectural kit (bulkheads, metal floors, doors) and characters/hazards in Blender, registering in `assets/asset_manifest.json`.
+3. **Pre-bake Lighting**: Run `godot -s tools/bake_voxel_gi.gd -- --game=<game_slug>` to generate room GI cache.
+4. **Implement Session & Rules**: Create `<GameSlug>Session` and `<GameSlug>RoomDirector` handling specific quest logic and entity behaviors.
+5. **Construct Game Shell**: Assemble `game/<game_slug>_game.tscn` using the SubViewport diorama pattern, theme autoload, and save/load dialogs.
+6. **Verify Automated Suite**: Write dedicated unit tests in `tests/test_<game_slug>_*.gd` and add visual capture scenarios to `scripts/verify.sh`.
+
