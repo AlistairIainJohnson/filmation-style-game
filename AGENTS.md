@@ -19,9 +19,22 @@
   - Update `player_world_pos` global shader uniform every tick via `RenderingServer.global_shader_parameter_set(&"player_world_pos", pos)`.
   - Apply foreground cutaway dither shaders **ONLY** to tagged foreground occluder walls/columns (never whole rooms, to protect Early-Z).
 
+## 2D Background Compositor & UI Layer Hierarchy
+- **SubViewport 2D Backdrop Compositing**:
+  - In Godot 4, `CanvasLayer` always renders *after* the root 3D scene. To place 2D backdrops behind 3D rooms, encapsulate the 3D world in a `SubViewport(transparent_bg=true, own_world_3d=true)` within a `SubViewportContainer` on `CanvasLayer(layer = -3)`, with background `TextureRect` on `CanvasLayer(layer = -5)`.
+  - **Menu Transition Cleanup**: Always toggle `_world_viewport_container.visible = false` when returning to 2D menus (e.g. Main Menu / Title Screen) to prevent 3D rooms bleeding through menu overlays.
+- **Strict CanvasLayer Ordering**:
+  - `layer = -5`: Background backdrop texture
+  - `layer = -3`: 3D SubViewportContainer diorama
+  - `layer = 0..10`: In-game HUD, Day/Night dial, corner scrolls, toast badges
+  - `layer = 30`: Pause Menu overlay
+  - `layer = 35`: Modal Dialogs (Settings, Save / Load screens)
+
 ## Strict Godot 4 API Guardrails (Reject Godot 3 Syntax)
 - Use `Node3D` (not `Spatial`), `CharacterBody3D` (not `KinematicBody3D`), `await` (not `yield`), `@export` / `@onready` (not `export` / `onready`), `create_tween()` (not `Tween` node), `Callable` (not `funcref`).
 - All pushable puzzle blocks MUST use kinematic `CharacterBody3D` / `AnimatableBody3D` contracts—never unconstrained dynamic `RigidBody3D`.
+- **ThemeDB Invariant**: `ThemeDB.set_project_theme()` and `ThemeDB.project_theme` property do NOT exist in Godot 4.7.2. Always fetch `ThemeDB.get_project_theme()` and mutate the returned `Theme` in-place (e.g., via autoload `GameTheme`).
+- **Parchment UI Styling**: Default UI text uses `#2B1108` (deep burnt umber) with a 1px–2px `#E89B3C` (warm amber at 35% alpha) shadow for embossed parchment ink; modal dialogs and toasts must include opaque/pill backing panels (`StyleBoxFlat`) for legibility over modulated backgrounds.
 
 ## File, Asset & Scene Safety Boundaries
 - **Commit all `*.uid` files.** When moving or renaming `.gd` or `.gdshader` files, ALWAYS `git mv` the matching `.uid` sidecar together while Godot is closed.
