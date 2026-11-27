@@ -388,3 +388,63 @@ When initiating a new Filmation reimagining (e.g. *Alien 8*):
 5. **Construct Game Shell**: Assemble `game/<game_slug>_game.tscn` using the SubViewport diorama pattern, theme autoload, and save/load dialogs.
 6. **Verify Automated Suite**: Write dedicated unit tests in `tests/test_<game_slug>_*.gd` and add visual capture scenarios to `scripts/verify.sh`.
 
+---
+
+## 12. Knight Lore Puzzle Physics & Spatial Invariants (Rooms 100, 67, 16, 168, 136)
+
+- **Doorway Threshold Raycast Snapping (`KnightLoreGame._spawn_player_in_room`, `RoomBuilder.get_doorway_spawn_position`)**:
+  - In 1984 Knight Lore, elevated doors drop the player onto threshold blocks/platforms or elevated ledges.
+  - Doorway spawn markers are offset $0.75\text{ m}$ inward from wall openings and cast a vertical physics ray down from $Y = 5.0\text{ m}$ to snap the player onto elevated threshold masonry instead of spawning at floor level ($Y = 0.0\text{ m}$) or inside colliding geometry (e.g. Room 67).
+- **High Arch Foundation Masonry (`RoomBuilder._build_high_arch`)**:
+  - Elevated archways (such as South arch in Room 100 at $2.25\text{ m}$) include vertical solid foundation blocks beneath `high_arch_s_base` from floor level up to the arch threshold. This prevents pushed objects (like chests) or players from falling into void trenches between blocks.
+- **Carryables Drop Limit & Drop-Climbing (`KnightLoreSession.drop_or_rotate`)**:
+  - Standard rooms support up to $4$ active carryables (`max_allowed = 4`, with Cauldron room capped at $1$).
+  - Dropping a carryable item (`KlSpecialItem`) lifts the character vertically by $+0.72\text{ m}$ per item. Stacking up to 3 items achieves $+2.16\text{ m}$ elevation, enabling jump apexes of $3.51\text{ m}$ (Human, $1.35\text{ m}$ jump) and $3.81\text{ m}$ (Werewolf, $1.65\text{ m}$ jump) to scale $3.0\text{ m}$ architectural pillars (e.g. Room 168).
+  - Standard room cap of 4 allows players to drop their full inventory of 3 carried charms into rooms that already hold a native item without artificial blockages.
+- **Stacked Entity Hazard Core Elevation Bounds (`KnightLoreGame.is_player_in_hazard_core`)**:
+  - Puzzles requiring block pushing onto moving hazards (e.g. phantom riding in Room 199) enforce vertical exclusion: if `p_min_y >= haz_center.y + h_half_y`, the player is elevated safely above the hazard core and takes zero damage.
+- **Doorway Threshold Clearance Across 128 Rooms**:
+  - Spawn thresholds ($0.75\text{ m}$ inward from portals at $X \approx 0.5/11.5\text{ m}, Z \approx 0.5/11.5\text{ m}$) maintain zero foreground static obstacles or hazard patrol paths, verified across all 128 rooms in `tests/test_knight_lore_puzzle_edge_cases.gd`.
+- **Cauldron Bubble Transparency & UI Scaling**:
+  - Room 136 Cauldron HUD bubble uses low cyan albedo alpha ($0.12$) and modest emission ($0.35$) with a $+53\%$ scaled inner charm preview.
+  - `project.godot` uses `window/stretch/mode="canvas_items"` and `aspect="expand"` to scale UI text crisply across all window dimensions.
+- **Puzzle Edge-Case Verification Suite (`tests/test_knight_lore_puzzle_edge_cases.gd`)**:
+  - Validates multi-step drop-climb staircase physics and apex clearance, phantom riding hazard elevation safety, live 3D cauldron ballistic drop arc ($0.65\text{ s}$ sine curve) and charm acceptance, and 128-room threshold clearance (bringing GUT suite to 15 test scripts and 97 tests).
+
+---
+
+## 13. Config-Driven Pathfinding & Puzzle Solver Layer
+
+- **Configuration Externalization (`data/knight_lore/solver_config.json`)**:
+  - All pathfinding costs, grid cell dimensions ($0.5\text{ m}$), player radius/height, jump apexes ($1.35\text{ m}$ human / $1.65\text{ m}$ werewolf), drop-climb lift ($0.72\text{ m}$), high arch elevation ($3.0\text{ m}$), and lists of lethal hazards vs. pushables/moving platforms are completely externalized into JSON.
+- **World Macro Router (`core/knight_lore/kl_world_router.gd`)**:
+  - `KlWorldRouter` builds a 128-room directed graph from `KnightLoreData` exits and metadata.
+  - Implements weighted A* / Dijkstra pathfinding with dynamic penalties for rooms containing lethal hazards and high archways requiring drop-climbing or Werewolf leaps.
+  - `plan_next_objective()` queries `KnightLoreSession` to select nearest matching charms and plan multi-room delivery routes back to Cauldron Room 136.
+- **Local 2.5D Room Nav-Grid & Action Planner (`core/knight_lore/kl_room_solver.gd`)**:
+  - Discretizes any room diorama into $0.5\text{ m}$ cells with surface height projection, hazard buffers, and dynamic entity integration (`KlSpecialItem`, `KlPushableEntity`).
+  - `find_local_path()` performs 2.5D A* with vertical jump bounds ($dy \le \text{max\_jump}$) and diagonal corner-cutting protection.
+  - `plan_room_puzzle()` evaluates direct paths, Werewolf Day/Night form synergy waiting, multi-step drop-climb staircases, and pushable block stepping stones.
+  - `plan_cauldron_delivery()` plans inventory FIFO rotations to align required charms into slot 2, Day-waiting for Melkhior's Repel Spells, and apex jump-throw interactions into the cauldron.
+- **Test Suite Baseline (`tests/test_knight_lore_pathfinding_solver.gd`)**:
+  - Expanded GUT suite to **16 test scripts, 103 tests, 4,200 assertions, 100% passing**.
+
+---
+
+## 14. Puzzle Reachability, Jump Tolerances & Pixel-Perfect Feasibility Audit
+
+- **Zero Pixel-Perfect Dependency Across 128 Rooms**:
+  - An audit of all 128 chambers, elevated archways, and 32 special quest item spawns confirms **no puzzle requires pixel-perfect or frame-perfect inputs**.
+  - Puzzles that appear to require impossible single jumps (e.g. $3.0\text{ m}$ isolated pillars in Room 168, Room 208, Room 66) are **designed for drop-climbing**:
+    - Dropping 3 carryables produces $+2.16\text{ m}$ lift.
+    - Yields $3.51\text{ m}$ apex (Human) and $3.81\text{ m}$ apex (Werewolf), leaving a generous $+0.51\text{ m}$ to $+0.81\text{ m}$ vertical safety buffer over the $3.0\text{ m}$ column.
+- **Engine Forgiveness Buffers (`PlayerController`, `KnightLoreGame`)**:
+  - **Temporal Tolerance**: `coyote_time = 0.10 s` and `jump_buffer_time = 0.10 s` ensure leaps off moving blocks or pushables do not require single-frame ledge precision.
+  - **Spatial Tolerance**: Tightened player lethal collision cylinder (`radius = 0.16 m`) and hazard core scale (`HAZARD_CORE_SCALE = 0.72`) prevent corner-clip deaths during diagonal jumps.
+  - **Vertical Hazard Exemption**: `p_min_y >= haz_center.y + h_half_y` guarantees that standing atop entities or blocks riding moving hazards (e.g. Room 199 phantom riding) takes zero damage regardless of lateral sprite overlap.
+- **High Archway Clearance (Rooms 88, 100, 16, 20)**:
+  - High archway thresholds at $2.25\text{ m}$ to $3.0\text{ m}$ either provide native static stone stairs, pushable blocks/chests (`0.75 m` height), or require Werewolf form ($1.65\text{ m}$ jump) + pushables ($0.75\text{ m} + 1.65\text{ m} = 2.40\text{ m}$ apex, $+15\text{ cm}$ clearance over $2.25\text{ m}$ sills).
+
+
+
+

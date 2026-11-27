@@ -9,6 +9,7 @@ signal start_game_requested(settings: Dictionary)
 signal exit_game_requested()
 signal settings_requested()
 signal load_game_requested()
+signal prologue_requested()
 
 const ZX_PALETTE: Dictionary = {
 	"0": Color(0.0, 0.0, 0.0),        # Black
@@ -47,6 +48,7 @@ var _mute_btn: Button
 var _start_btn: Button
 var _settings_btn: Button
 var _load_btn: Button
+var _prologue_btn: Button
 var _exit_btn: Button
 
 
@@ -254,19 +256,25 @@ func _build_ui() -> void:
 	vbox.add_child(_start_btn)
 
 	var sub_row := HBoxContainer.new()
-	sub_row.add_theme_constant_override("separation", 12)
+	sub_row.add_theme_constant_override("separation", 10)
 	sub_row.alignment = BoxContainer.ALIGNMENT_CENTER
 	vbox.add_child(sub_row)
 
+	_prologue_btn = Button.new()
+	_prologue_btn.text = "Story / Guide"
+	_prologue_btn.custom_minimum_size = Vector2(120, 36)
+	_prologue_btn.pressed.connect(_on_prologue_pressed)
+	sub_row.add_child(_prologue_btn)
+
 	_settings_btn = Button.new()
 	_settings_btn.text = "Settings"
-	_settings_btn.custom_minimum_size = Vector2(150, 36)
+	_settings_btn.custom_minimum_size = Vector2(120, 36)
 	_settings_btn.pressed.connect(_on_settings_pressed)
 	sub_row.add_child(_settings_btn)
 
 	_load_btn = Button.new()
 	_load_btn.text = "Load Game"
-	_load_btn.custom_minimum_size = Vector2(150, 36)
+	_load_btn.custom_minimum_size = Vector2(120, 36)
 	_load_btn.pressed.connect(_on_load_pressed)
 	sub_row.add_child(_load_btn)
 
@@ -436,6 +444,12 @@ func _on_load_pressed() -> void:
 	if _audio_mgr != null:
 		_audio_mgr.play_sfx("sfx_menu_select")
 	load_game_requested.emit()
+
+
+func _on_prologue_pressed() -> void:
+	if _audio_mgr != null:
+		_audio_mgr.play_sfx("sfx_menu_select")
+	prologue_requested.emit()
 
 
 func _on_exit_pressed() -> void:

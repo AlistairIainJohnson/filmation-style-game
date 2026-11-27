@@ -15,6 +15,7 @@ signal save_game_requested()
 signal load_game_requested()
 signal map_requested()
 signal hint_requested()
+signal prologue_requested()
 
 var _is_rotational: bool = false
 var _is_dimetric: bool = false
@@ -23,6 +24,7 @@ var _is_muted: bool = false
 var _resume_btn: Button
 var _map_btn: Button
 var _hint_btn: Button
+var _prologue_btn: Button
 var _control_btn: Button
 var _camera_btn: Button
 var _sound_btn: Button
@@ -110,6 +112,12 @@ func _build_ui() -> void:
 	_hint_btn.custom_minimum_size = Vector2(280, 36)
 	_hint_btn.pressed.connect(_on_hint_pressed)
 	vbox.add_child(_hint_btn)
+
+	_prologue_btn = Button.new()
+	_prologue_btn.text = "Story & How to Play..."
+	_prologue_btn.custom_minimum_size = Vector2(280, 36)
+	_prologue_btn.pressed.connect(_on_prologue_pressed)
+	vbox.add_child(_prologue_btn)
 
 	_control_btn = Button.new()
 	_control_btn.text = "Controls: 8-Way Directional [Tab]"
@@ -201,6 +209,11 @@ func _on_map_pressed() -> void:
 func _on_hint_pressed() -> void:
 	close()
 	hint_requested.emit()
+
+
+func _on_prologue_pressed() -> void:
+	close()
+	prologue_requested.emit()
 
 
 func _on_control_pressed() -> void:

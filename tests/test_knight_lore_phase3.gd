@@ -75,17 +75,24 @@ func test_three_slot_inventory_fifo_rotation_displacement_and_extra_life() -> vo
 	assert_eq(int((drop1.get("dropped_item", {}) as Dictionary).get("type_id", -1)), 1)
 	assert_eq(sess.inventory, [-1, 3, 2])
 
-	# Drop slot occupied by 2 -> drops 2 (now 2 items in Room 47 -> next drop hits room_full limit!)
+	# Drop slot occupied by 2 -> drops 2
 	sess.drop_or_rotate(47, Vector3(4.5, 0.0, 4.0), true)
 	assert_eq(sess.inventory, [-1, -1, 3])
-	var full_res: Dictionary = sess.drop_or_rotate(47, Vector3(5.0, 0.0, 4.0), true)
-	assert_eq(str(full_res.get("action", "")), "room_full", "Room max 2 special objects must block 3rd drop")
+	# Drop third item (3) -> now 3 items in Room 47
+	sess.drop_or_rotate(47, Vector3(4.8, 0.0, 4.0), true)
+	assert_eq(sess.inventory, [-1, -1, -1])
+
+	# Add 4th item to room to hit room limit (max 4 carryables in standard rooms)
+	sess.inventory = [-1, -1, 5]
+	sess.drop_or_rotate(47, Vector3(5.0, 0.0, 4.0), true)
+	sess.inventory = [-1, -1, 4]
+	var full_res: Dictionary = sess.drop_or_rotate(47, Vector3(5.2, 0.0, 4.0), true)
+	assert_eq(str(full_res.get("action", "")), "room_full", "Room max 4 special objects must block 5th drop")
 
 	# Clear room and drop remaining charm, then verify empty-slot rotation
 	for e: Dictionary in sess.get_room_items(47):
 		e["active"] = false
-	sess.drop_or_rotate(47, Vector3(5.0, 0.0, 4.0), true)
-	assert_eq(sess.inventory, [-1, -1, -1])
+	sess.inventory = [-1, -1, -1]
 	sess.inventory = [6, -1, -1]
 	var rot_res: Dictionary = sess.drop_or_rotate(47, Vector3(4.0, 0.0, 4.0), true)
 	assert_eq(str(rot_res.get("action", "")), "rotated")

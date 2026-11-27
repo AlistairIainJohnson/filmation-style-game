@@ -30,12 +30,15 @@ var _settings_dialog: KnightLoreSettingsDialog
 var _save_load_dialog: KnightLoreSaveLoadDialog
 var _map_dialog: KnightLoreMapDialog
 var _hint_dialog: KnightLoreHintDialog
+var _prologue_dialog: KnightLorePrologueDialog
+var _pending_start_settings: Dictionary = {}
 var _current_settings: Dictionary = {
 	"lives_mode": "normal",
 	"music_volume": 0.85,
 	"sfx_volume": 0.90,
 	"invulnerable": false,
-	"jump_boost": false
+	"jump_boost": false,
+	"skip_prologue": false
 }
 const SETTINGS_PATH := "user://settings.json"
 var _camera_mode: DioramaCameraRig.ProjectionMode = DioramaCameraRig.ProjectionMode.TRUE_ISOMETRIC
@@ -139,6 +142,7 @@ func _ready() -> void:
 	pause_menu.load_game_requested.connect(_on_open_load_dialog)
 	pause_menu.map_requested.connect(_on_pause_map_requested)
 	pause_menu.hint_requested.connect(_on_pause_hint_requested)
+	pause_menu.prologue_requested.connect(_on_open_prologue)
 	add_child(pause_menu)
 
 	main_menu = KnightLoreMainMenu.new()
@@ -148,6 +152,7 @@ func _ready() -> void:
 	main_menu.exit_game_requested.connect(_on_menu_exit_game)
 	main_menu.settings_requested.connect(_on_open_settings)
 	main_menu.load_game_requested.connect(_on_open_load_dialog)
+	main_menu.prologue_requested.connect(_on_open_prologue)
 	add_child(main_menu)
 
 	_settings_dialog = KnightLoreSettingsDialog.new()
@@ -169,6 +174,10 @@ func _ready() -> void:
 	_hint_dialog = KnightLoreHintDialog.new()
 	_hint_dialog.closed.connect(_on_hint_closed)
 	add_child(_hint_dialog)
+
+	_prologue_dialog = KnightLorePrologueDialog.new()
+	_prologue_dialog.closed.connect(_on_prologue_closed)
+	add_child(_prologue_dialog)
 
 	_load_settings_from_disk()
 
@@ -205,6 +214,8 @@ func _ready() -> void:
 			_open_map()
 		elif capture_dialog == "hint" and _hint_dialog != null:
 			_open_hint(session.current_room_id)
+		elif capture_dialog == "prologue" and _prologue_dialog != null:
+			_open_prologue()
 		elif OS.get_environment("FILMATION_CAPTURE_PAUSE") == "1" and pause_menu != null:
 			pause_menu.open(_use_rotational, _camera_mode == DioramaCameraRig.ProjectionMode.DIMETRIC_2_1, false)
 		elif capture_end == "victory":
@@ -238,6 +249,15 @@ func _show_main_menu(show_splash: bool = true) -> void:
 
 
 func _on_menu_start_game(settings: Dictionary) -> void:
+	var skip_prologue: bool = bool(_current_settings.get("skip_prologue", false))
+	if not skip_prologue and _prologue_dialog != null:
+		_pending_start_settings = settings.duplicate()
+		_open_prologue()
+		return
+	_execute_start_game(settings)
+
+
+func _execute_start_game(settings: Dictionary) -> void:
 	if main_menu != null:
 		main_menu.visible = false
 	if hud != null:
@@ -425,22 +445,44 @@ func _load_room(room_id: int, spawn_dir: String) -> void:
 
 
 func _resolve_spawn_pos(doorways: Node3D, spawn_dir: String, room_dims: Vector3) -> Vector3:
+	var raw_pos := Vector3(room_dims.x * 0.5, 0.0, room_dims.z * 0.5)
 	if doorways != null:
 		if not spawn_dir.is_empty():
 			var preferred: Marker3D = doorways.get_node_or_null("Spawn_" + spawn_dir) as Marker3D
 			if preferred != null:
-				return preferred.position
-		var first_any: Marker3D = null
-		for child: Node in doorways.get_children():
-			if child is Marker3D:
-				var m: Marker3D = child as Marker3D
-				if first_any == null:
-					first_any = m
-				if m.position.y < 0.5:
-					return m.position
-		if first_any != null:
-			return first_any.position
-	return Vector3(room_dims.x * 0.5, 0.0, room_dims.z * 0.5)
+				raw_pos = preferred.position
+		else:
+			var first_any: Marker3D = null
+			for child: Node in doorways.get_children():
+				if child is Marker3D:
+					var m: Marker3D = child as Marker3D
+					if first_any == null:
+						first_any = m
+					if m.position.y < 0.5:
+						raw_pos = m.position
+						break
+			if raw_pos == Vector3(room_dims.x * 0.5, 0.0, room_dims.z * 0.5) and first_any != null:
+				raw_pos = first_any.position
+
+	# Geometric AABB test against architecture blocks in current_build to guarantee
+	# the player spawns safely atop any threshold blocks/steps without relying on async physics ticks
+	var arch_root: Node3D = current_build.get("architecture_root") as Node3D
+	if arch_root != null:
+		var p_radius: float = 0.28
+		for child: Node in arch_root.get_children():
+			if child is StaticBody3D:
+				var cshape: CollisionShape3D = child.get_node_or_null("CollisionShape3D") as CollisionShape3D
+				if cshape != null and cshape.shape is BoxShape3D:
+					var box: BoxShape3D = cshape.shape as BoxShape3D
+					var b_pos: Vector3 = child.position + cshape.position
+					var b_half: Vector3 = box.size * 0.5
+					# Check 2D horizontal overlap with player cylinder
+					if absf(raw_pos.x - b_pos.x) < (b_half.x + p_radius) and absf(raw_pos.z - b_pos.z) < (b_half.z + p_radius):
+						var block_top: float = b_pos.y + b_half.y
+						if block_top > raw_pos.y and block_top <= 1.55:
+							raw_pos.y = block_top
+
+	return raw_pos
 
 
 func _spawn_special_item_node(entry: Dictionary, parent_node: Node3D) -> KlSpecialItem:
@@ -500,6 +542,10 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		var k: InputEventKey = event as InputEventKey
 		if k.keycode == KEY_ESCAPE or k.keycode == KEY_P:
+			if _prologue_dialog != null and _prologue_dialog.visible:
+				_prologue_dialog.close()
+				get_viewport().set_input_as_handled()
+				return
 			if _hint_dialog != null and _hint_dialog.visible:
 				_hint_dialog.close()
 				get_viewport().set_input_as_handled()
@@ -805,11 +851,14 @@ func _spawn_cauldron_hint_bubble() -> void:
 	sph.radius = 0.34
 	sph.height = 0.68
 	var b_mat := StandardMaterial3D.new()
-	b_mat.albedo_color = Color(0.35, 0.98, 0.85, 0.36)
+	b_mat.albedo_color = Color(0.70, 0.95, 1.0, 0.12)
 	b_mat.emission_enabled = true
-	b_mat.emission = Color(0.25, 0.95, 0.78)
-	b_mat.emission_energy_multiplier = 1.4
+	b_mat.emission = Color(0.40, 0.85, 1.0)
+	b_mat.emission_energy_multiplier = 0.35
 	b_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	b_mat.cull_mode = BaseMaterial3D.CULL_BACK
+	b_mat.roughness = 0.1
+	b_mat.metallic = 0.1
 	sph.material = b_mat
 	orb_mesh.mesh = sph
 	bubble.add_child(orb_mesh)
@@ -819,8 +868,8 @@ func _spawn_cauldron_hint_bubble() -> void:
 		var packed: PackedScene = ResourceLoader.load(glb_path) as PackedScene
 		if packed != null:
 			var item_vis: Node3D = packed.instantiate() as Node3D
-			item_vis.position = Vector3(0.0, -0.22, 0.0)
-			item_vis.scale = Vector3(0.75, 0.75, 0.75)
+			item_vis.position = Vector3(0.0, -0.18, 0.0)
+			item_vis.scale = Vector3(1.15, 1.15, 1.15)
 			bubble.add_child(item_vis)
 
 	_cauldron_fx_root.add_child(bubble)
@@ -1188,6 +1237,33 @@ func _on_hint_closed() -> void:
 
 func _on_map_hint_requested(room_id: int) -> void:
 	_open_hint(room_id)
+
+
+func _on_open_prologue() -> void:
+	_open_prologue()
+
+
+func _open_prologue() -> void:
+	if _prologue_dialog == null:
+		return
+	if pause_menu != null and pause_menu.visible:
+		pause_menu.close()
+	get_tree().paused = true
+	var skip_p: bool = bool(_current_settings.get("skip_prologue", false))
+	_prologue_dialog.open(skip_p)
+	if audio_manager != null:
+		audio_manager.play_sfx("sfx_menu_select")
+
+
+func _on_prologue_closed(dont_show_again: bool) -> void:
+	_current_settings["skip_prologue"] = dont_show_again
+	_save_settings_to_disk()
+	if (_map_dialog == null or not _map_dialog.visible) and (_hint_dialog == null or not _hint_dialog.visible) and (pause_menu == null or not pause_menu.visible):
+		get_tree().paused = false
+	if not _pending_start_settings.is_empty():
+		var settings_to_start: Dictionary = _pending_start_settings.duplicate()
+		_pending_start_settings.clear()
+		_execute_start_game(settings_to_start)
 
 
 func _on_pause_map_requested() -> void:

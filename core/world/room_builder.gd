@@ -806,7 +806,7 @@ func _build_wall_along_x(
 
 	var spawn := Marker3D.new()
 	spawn.name = "Spawn_" + dir_name
-	var spawn_z: float = 1.25 if dir_name == "north" else float(door_pos[1]) - 0.25
+	var spawn_z: float = 0.75 if dir_name == "north" else float(door_pos[1]) + 0.25
 	spawn.position = Vector3(door_x + door_w * 0.5, 0.0, spawn_z)
 	spawn.set_meta("direction", dir_name)
 	spawn.set_meta("target_room", exit_cfg.get("target_room", [0, 0]))
@@ -934,7 +934,7 @@ func _build_wall_along_z(
 
 	var spawn := Marker3D.new()
 	spawn.name = "Spawn_" + dir_name
-	var spawn_x: float = 1.25 if dir_name == "west" else float(door_pos[0]) - 0.25
+	var spawn_x: float = 0.75 if dir_name == "west" else float(door_pos[0]) + 0.25
 	spawn.position = Vector3(spawn_x, 0.0, door_z + door_w * 0.5)
 	spawn.set_meta("direction", dir_name)
 	spawn.set_meta("target_room", exit_cfg.get("target_room", [0, 0]))
@@ -1479,6 +1479,16 @@ func _build_kl_background_features(
 				_spawn_glb_visual_on_node(ledge, "res://assets/props/stone_block.glb", sz, Vector3(1.0, 1.0, 1.0), Vector3(0.0, -sz.y * 0.5, 0.0), 0.0, wall_tag, ink_tint)
 				if (pos.y + sz.y) > HERO_CUTAWAY_HEIGHT_M:
 					_enable_cutaway_on_body(ledge, "stone_ledge")
+
+				# Create solid foundation masonry from the floor (y=0) up to the arch base ledge (y=pos.y)
+				# to prevent pushable chests/blocks from falling into empty floor voids beneath high archways
+				if pos.y > 0.1:
+					var found_sz := Vector3(sz.x, pos.y, sz.z)
+					var found_pos := Vector3(pos.x, pos.y * 0.5, pos.z)
+					var foundation: StaticBody3D = _create_static_box(arch_root, "HighArchFoundation_%s_%d" % [bg_name, o_idx], found_pos, found_sz, mat)
+					_spawn_glb_visual_on_node(foundation, "res://assets/props/stone_pillar.glb", found_sz, Vector3(found_sz.x, found_sz.y, found_sz.z), Vector3(0.0, -found_pos.y, 0.0), 0.0, wall_tag, ink_tint)
+					if (pos.y) > HERO_CUTAWAY_HEIGHT_M:
+						_enable_cutaway_on_body(foundation, "stone_ledge")
 		elif bg_name.begins_with("gate_"):
 			var bg_fg_types: Dictionary = kl_data.entities_cfg.get("foreground_types", {}) as Dictionary
 			var gate_tid: String = "27" if (bg_name == "gate_e" or bg_name == "gate_w") else "26"

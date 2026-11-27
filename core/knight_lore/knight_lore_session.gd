@@ -267,7 +267,7 @@ func drop_or_rotate(room_id: int, drop_pos: Vector3, headroom_clear: bool) -> Di
 	for entry: Dictionary in get_room_items(room_id):
 		if int(entry.get("type_id", 0)) < 7:
 			active_carryables += 1
-	var max_allowed: int = 1 if room_id == CAULDRON_ROOM_ID else 2
+	var max_allowed: int = 1 if room_id == CAULDRON_ROOM_ID else 4
 	if active_carryables >= max_allowed:
 		return {"action": "room_full", "dropped_item": {}, "is_cauldron_drop": false}
 

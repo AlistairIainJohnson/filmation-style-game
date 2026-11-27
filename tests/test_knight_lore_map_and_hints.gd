@@ -59,8 +59,14 @@ func test_hint_engine_handcrafted_rooms() -> void:
 
 	# Room 47: Start Room
 	var hint47: Dictionary = KnightLoreHintEngine.get_room_hint(47, _kl_data, _session)
-	assert_true(str(hint47.get("title", "")).contains("Archway"), "Room 47 title should be resolved")
+	assert_true(str(hint47.get("title", "")).contains("South-West"), "Room 47 title should mention South-West")
 	assert_false(str(hint47.get("solution", "")).is_empty(), "Solution text must not be empty")
+
+	# Room 155: Oscillating Platforms & Spikes (verified not pushable)
+	var hint155: Dictionary = KnightLoreHintEngine.get_room_hint(155, _kl_data, _session)
+	assert_true(str(hint155.get("title", "")).contains("Oscillating"), "Room 155 title should mention Oscillating Platforms")
+	assert_true(str(hint155.get("solution", "")).contains("oscillating shuttles"), "Solution must clarify moving blocks are autonomous shuttles")
+	assert_true(str(hint155.get("warning", "")).contains("cannot be pushed"), "Warning must clarify moving blocks cannot be pushed")
 
 
 func test_hint_engine_procedural_generation() -> void:
@@ -147,6 +153,27 @@ func test_pause_menu_map_and_hint_buttons_and_signals() -> void:
 	assert_signal_emitted(pause_menu, "hint_requested")
 	assert_false(pause_menu.visible, "Pause menu should close when hint requested")
 
+	# Reopen and test prologue button trigger
+	pause_menu.open(false, false, false)
+	pause_menu._on_prologue_pressed()
+	assert_signal_emitted(pause_menu, "prologue_requested")
+	assert_false(pause_menu.visible, "Pause menu should close when prologue requested")
+
+
+func test_prologue_dialog_lifecycle_and_signals() -> void:
+	var prologue_dlg := KnightLorePrologueDialog.new()
+	add_child_autofree(prologue_dlg)
+
+	assert_false(prologue_dlg.visible, "Prologue dialog should initially be hidden")
+	watch_signals(prologue_dlg)
+
+	prologue_dlg.open(false)
+	assert_true(prologue_dlg.visible, "Prologue dialog should be visible when opened")
+
+	prologue_dlg.close()
+	assert_false(prologue_dlg.visible, "Prologue dialog should be hidden after close()")
+	assert_signal_emitted(prologue_dlg, "closed")
+
 
 func test_authentic_woodland_ink_colors() -> void:
 	# Verify that woodland rooms distribute across Yellow and Magenta
@@ -164,3 +191,42 @@ func test_authentic_woodland_ink_colors() -> void:
 	assert_eq(yellow_forest.size(), 12, "There should be exactly 12 Yellow woodland rooms")
 	assert_eq(magenta_forest.size(), 12, "There should be exactly 12 Magenta woodland rooms")
 	assert_eq(yellow_forest.size() + magenta_forest.size(), 24, "All 24 woodland rooms must be Yellow or Magenta")
+
+
+func test_all_128_rooms_doorway_spawn_clearance_and_puzzle_reachability() -> void:
+	var builder := RoomBuilder.new()
+	var player_radius: float = 0.28
+	var player_height: float = 1.36
+	var werewolf_apex: float = 1.65
+
+	for rid: int in _kl_data.get_room_ids():
+		var root := Node3D.new()
+		var build: Dictionary = builder.build_knight_lore_room(root, rid, _kl_data, "castle_stone_skylight", "true_isometric", false)
+		assert_false(build.is_empty(), "Room %d must build successfully" % rid)
+
+		var doorways: Node3D = build.get("doorways_root") as Node3D
+		var arch_root: Node3D = build.get("architecture_root") as Node3D
+
+		if doorways != null and arch_root != null:
+			for child: Node in doorways.get_children():
+				if child is Marker3D and child.name.begins_with("Spawn_"):
+					var sp_pos: Vector3 = (child as Marker3D).position
+					for a_child: Node in arch_root.get_children():
+						if a_child is StaticBody3D:
+							var cshape: CollisionShape3D = a_child.get_node_or_null("CollisionShape3D") as CollisionShape3D
+							if cshape != null and cshape.shape is BoxShape3D:
+								var box: BoxShape3D = cshape.shape as BoxShape3D
+								var b_half: Vector3 = box.size * 0.5
+								var b_pos: Vector3 = a_child.position + cshape.position
+								var dx: float = absf(sp_pos.x - b_pos.x)
+								var dz: float = absf(sp_pos.z - b_pos.z)
+								if dx < (b_half.x + player_radius - 0.04) and dz < (b_half.z + player_radius - 0.04):
+									var player_bottom: float = sp_pos.y
+									var player_top: float = sp_pos.y + player_height
+									var block_bottom: float = b_pos.y - b_half.y
+									var block_top: float = b_pos.y + b_half.y
+									var overlaps: bool = (player_bottom < (block_top - 0.05) and player_top > (block_bottom + 0.05))
+									assert_false(overlaps, "Room %d doorway spawn [%s] must not overlap %s at %s" % [rid, child.name, a_child.name, b_pos])
+
+		root.free()
+

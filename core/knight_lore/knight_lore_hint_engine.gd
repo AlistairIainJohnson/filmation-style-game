@@ -78,8 +78,6 @@ static func get_room_hint(
 					hazards_detected.append("Collapsing Floor Tiles")
 			"block_ew", "block_ns":
 				has_moving_blocks = true
-				if not pushables_detected.has("Moving Platform Block"):
-					pushables_detected.append("Moving Platform Block")
 			"gargoyle":
 				has_gargoyles = true
 				if not hazards_detected.has("Stone Gargoyles"):
@@ -149,11 +147,14 @@ static func get_room_hint(
 		if pushables_detected.size() > 0:
 			solution_parts.append("Push the %s toward the elevated %s arch to build steps" % [pushables_detected[0].to_lower(), ", ".join(elevated_exits)])
 		elif has_moving_blocks:
-			solution_parts.append("Wait for the moving block to reach its lowest apex, jump on top, and leap into the high arch")
+			solution_parts.append("Time your leap onto the oscillating block shuttle as it approaches, ride it across the spikes, and jump into the elevated %s doorway" % ", ".join(elevated_exits))
 		else:
 			solution_parts.append("Scale surrounding stone perimeters or utilize high-reach jumps to access the %s doorway" % ", ".join(elevated_exits))
 	else:
-		solution_parts.append("Proceed carefully toward the %s exit portals" % (", ".join(standard_exits) if standard_exits.size() > 0 else "available"))
+		if has_moving_blocks:
+			solution_parts.append("Ride the moving block shuttles across hazardous ground to reach the %s exits" % (", ".join(standard_exits) if standard_exits.size() > 0 else "available"))
+		else:
+			solution_parts.append("Proceed carefully toward the %s exit portals" % (", ".join(standard_exits) if standard_exits.size() > 0 else "available"))
 
 	if pushables_detected.has("Sliding Chest"):
 		solution_parts.append("Chests slide when pushed until they contact an obstacle; jump onto them to gain height")

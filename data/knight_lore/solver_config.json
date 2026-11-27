@@ -1,0 +1,39 @@
+{
+  "grid_cell_size_m": 0.5,
+  "player_radius_m": 0.24,
+  "player_height_m": 1.36,
+  "jump_apex_human_m": 1.35,
+  "jump_apex_wulf_m": 1.65,
+  "drop_climb_lift_m": 0.72,
+  "cauldron_drop_min_y_m": 0.65,
+  "high_arch_elevation_m": 3.0,
+  "max_room_carryables_default": 4,
+  "max_room_carryables_cauldron": 1,
+  "edge_costs": {
+    "standard_exit": 1.0,
+    "high_arch_exit": 4.5,
+    "hazard_room_penalty": 1.5,
+    "lethal_cell_penalty": 1000.0,
+    "hazard_buffer_penalty": 6.0
+  },
+  "pushable_types": ["chest", "table", "moveable_block"],
+  "moving_platform_types": ["block_ew", "block_ns"],
+  "lethal_types": [
+    "spike",
+    "spike_high",
+    "gargoyle",
+    "fire_ew",
+    "fire_ns",
+    "guard_ew",
+    "guard_square",
+    "ghost",
+    "ball_bounce",
+    "ball_ud",
+    "ball_ud_x",
+    "ball_ud_y",
+    "ball_ud_xy",
+    "dropping_block",
+    "spike_ball_fall",
+    "spike_ball_high_fall"
+  ]
+}

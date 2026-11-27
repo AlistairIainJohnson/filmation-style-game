@@ -29,6 +29,15 @@
   - `layer = 0..10`: In-game HUD, Day/Night dial, corner scrolls, toast badges
   - `layer = 30`: Pause Menu overlay
   - `layer = 35`: Modal Dialogs (Settings, Save / Load screens)
+- **UI Stretch & Window Scaling Invariants**:
+  - Always configure `display/window/stretch/mode="canvas_items"` and `display/window/stretch/aspect="expand"` in `project.godot`.
+  - UI overlays (hints, prologue, menus, toasts) must anchor and expand dynamically so parchment ink text scales up proportionally and remains crisp and legible at all window dimensions and aspect ratios.
+
+## Filmation Puzzle Mechanics & Collision Invariants
+- **Drop-Climb Collision Height**: Dropping a carryable item (`KlSpecialItem`) lifts the character vertically by $+0.72\text{ m}$ per item. Stacking up to 3 items achieves $+2.16\text{ m}$ elevation, enabling jump apexes of $3.51\text{ m}$ (Human, $1.35\text{ m}$ jump) and $3.81\text{ m}$ (Werewolf, $1.65\text{ m}$ jump) to scale $3.0\text{ m}$ architectural pillars.
+- **Room Carryables Capacity**: Standard rooms MUST allow up to 4 carryables (`max_allowed = 4`), reserving `max_allowed = 1` solely for Cauldron Room 136. This permits players to drop all 3 carried charms into rooms that already contain 1 native charm (e.g. Room 168) without artificial inventory blockage.
+- **Elevated Puzzle Entity Hazard Exemption**: When the player stands on a pushable block or physical entity elevated atop a hazard (e.g. Room 199 phantom riding), vertical collision bounds (`p_min_y < haz_center.y + h_half_y`) must guarantee the player is outside the damaging core.
+- **Doorway Threshold Clearance**: Doorway spawn thresholds ($0.75\text{ m}$ inward from portals at $X \approx 0.5/11.5\text{ m}, Z \approx 0.5/11.5\text{ m}$) must maintain zero foreground obstacles or hazard patrol paths to prevent instant player death or collision trapping on room entry.
 
 ## Strict Godot 4 API Guardrails (Reject Godot 3 Syntax)
 - Use `Node3D` (not `Spatial`), `CharacterBody3D` (not `KinematicBody3D`), `await` (not `yield`), `@export` / `@onready` (not `export` / `onready`), `create_tween()` (not `Tween` node), `Callable` (not `funcref`).

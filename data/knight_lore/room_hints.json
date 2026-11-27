@@ -48,6 +48,41 @@
       "solution": "Gargoyles are stationary guardians. Path around their direct sightlines and scale the stone blocks on the opposite wall.",
       "warning": "Physical contact with a gargoyle causes instant death. Maintain safe spacing when jumping from block to block.",
       "form_synergy": "Jump diagonally past gargoyle perches rather than leaping directly across their positions."
+    },
+    "155": {
+      "title": "Oscillating Platforms & Spikes",
+      "challenge": "A treacherous chamber with razor-sharp floor spikes and an elevated archway on the South wall (3.0m elevation).",
+      "solution": "The stone blocks here are autonomous oscillating shuttles (not pushable). Climb onto the static blocks along the side, time your jump onto the moving block as it glides past, ride it across the spike pit, and leap through the elevated South arch.",
+      "warning": "The moving blocks cannot be pushed or stopped. Stepping or falling into the floor spikes is instantly fatal.",
+      "form_synergy": "Werewolf form (+22% jump apex) provides significantly safer clearance when leaping between the shuttles and the elevated South arch."
+    },
+    "100": {
+      "title": "The Chest & Trench Archway",
+      "challenge": "A narrow chamber with an elevated South archway (2.25m elevation) and a sliding wooden chest.",
+      "solution": "Push the chest south into the trench before the archway. Stand upon the dais/chest (elevation 0.75m). Reaching the 2.25m high arch requires a 1.50m vertical leap: wait for Night to transform into the Werewolf (+22% jump bonus = 1.65m leap), or drop-climb any carried charm from inventory to build an extra step in Human form.",
+      "warning": "Do not attempt the 1.50m leap as Human Sabreman without a drop-climb step — you will fall short by just a few inches.",
+      "form_synergy": "Werewolf form has the exact jump height needed to clear the 1.50m leap from the chest directly into the South arch."
+    },
+    "16": {
+      "title": "The Northern Spiked Precipice",
+      "challenge": "A sheer precipice with high masonry ledges (3.0m elevation) guarded by falling spiked balls.",
+      "solution": "This chamber is primarily designed as a one-way descent when journeying North from Room 32. From the high southern ledge, hop across the masonry platforms while timing past falling spiked balls, then drop down to the ground floor exit. Scaling back up from ground level to the South archway requires carrying charms in your inventory from neighboring rooms and drop-climbing ([Shift]) to build stepping stones.",
+      "warning": "The ground-level floor has no built-in masonry steps to the 2.25m ledges. Do not drop down unless you intend to journey northward.",
+      "form_synergy": "Werewolf form allows wider diagonal leaps across the high ledges to bypass falling spiked spheres."
+    },
+    "168": {
+      "title": "The Isolated Pillar Relic",
+      "challenge": "A sacred charm rests high atop the isolated eastern stone pillar (3.0m elevation). The three high pillars are separated by 3.0-meter chasms over floor spikes that exceed standard jump distance.",
+      "solution": "Do not attempt to leap across the yawning chasm between the high pillars — the gap cannot be cleared with a normal jump. Instead, walk along the safe ground floor directly to the base of the eastern pillar. Drop-climb two carried charms from your inventory ([Shift]) at the pillar's foot to build a two-step staircase, then hop up to claim the relic.",
+      "warning": "Stepping off the high western pillar will drop you straight into the iron spike traps below.",
+      "form_synergy": "If 'Jump Boost' is enabled in Settings, Werewolf form can leap directly across the chasm; otherwise, ground-floor drop-climbing is the intended solution."
+    },
+    "199": {
+      "title": "The Ghost & Elevated Gate",
+      "challenge": "A chamber with an elevated Southern gate (3.0m elevation) guarded by a wandering spectral phantom.",
+      "solution": "A moveable stone block sits atop the roaming ghost. In Werewolf form, leap onto the moving block as it passes, ride the phantom across the chamber, and jump directly into the 3.0m South doorway (1.50m block elevation + 1.65m Werewolf apex = 3.15m reach). In Human form, carry an inventory charm and drop-climb it onto the moveable block to gain the needed height.",
+      "warning": "Human jump (1.35m) from atop the block reaches 2.85m, falling 15cm short of the 3.0m high archway. Use Werewolf form or an extra drop-climb item.",
+      "form_synergy": "Werewolf form possesses the full vertical apex required to leap from the moving ghost stack straight into the southern arch."
     }
   }
 }

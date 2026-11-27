@@ -194,5 +194,38 @@
         "requires_completion": true
       }
     ]
+  },
+  "prologue": {
+    "title": "THE CURSE OF KNIGHT LORE",
+    "subtitle": "Forty Days & Forty Nights to Break the Lycanthropy Hex",
+    "poem": [
+      "The curse of the Werewolf is upon you...",
+      "Deep within the labyrinthine halls of Knight Lore Castle,",
+      "the ancient wizard Melkhior stokes his steaming cauldron.",
+      "Seek him out in his deep cavern chamber (Room 136).",
+      "Fourteen sacred charms he demands to brew the elixir of release.",
+      "Bring each charm before the turning of forty days and forty nights,",
+      "or remain forever damned to prowl the shadows as a beast of darkness!"
+    ],
+    "guides": [
+      {
+        "heading": "THE SUN & MOON CYCLE",
+        "detail": "The dial in the upper scroll turns relentlessly. By Day, you tread the stone as mortal Sabreman. When Night falls, you transform into a fearsome Werewolf."
+      },
+      {
+        "heading": "THE CAULDRON QUEST",
+        "detail": "Melkhior's cauldron summons specific charms one by one (shown in the lower scroll). Carry the requested charm to Room 136 and drop it into the cauldron."
+      },
+      {
+        "heading": "CASTLE NAVIGATION & WISDOM",
+        "detail": "Press [M] at any time to inspect the 16×16 Castle Map. Press [H] in any chamber to seek Melkhior's Wisdom for puzzle hints and hazards."
+      },
+      {
+        "heading": "EXPLORER CONTROLS",
+        "detail": "WASD / Arrows to Move • Space to Jump • Shift to Pick Up & Drop • Esc / P to Pause • Tab to Toggle Rotational vs Directional Movement."
+      }
+    ],
+    "dismiss_prompt": "PRESS SPACE OR ENTER TO ENTER THE CASTLE",
+    "dont_show_again_label": "Do not show prologue again on start"
   }
 }
