@@ -445,6 +445,26 @@ When initiating a new Filmation reimagining (e.g. *Alien 8*):
 - **High Archway Clearance (Rooms 88, 100, 16, 20)**:
   - High archway thresholds at $2.25\text{ m}$ to $3.0\text{ m}$ either provide native static stone stairs, pushable blocks/chests (`0.75 m` height), or require Werewolf form ($1.65\text{ m}$ jump) + pushables ($0.75\text{ m} + 1.65\text{ m} = 2.40\text{ m}$ apex, $+15\text{ cm}$ clearance over $2.25\text{ m}$ sills).
 
+---
+
+## 15. WebGL 2 Compatibility, Cutaway Silhouette Guardrails & Entity Physics Fixes
+
+- **WebGL 2 (Compatibility Renderer) Lighting & Audio Stabilization**:
+  - Web export utilizes `gl_compatibility` (WebGL 2), where linear summation of directional ($1.85$), area ($24.0$), and ambient ($0.45$) lights caused chalk-white daylight overexposure without Forward+ clustered GI absorption. Rebalanced `castle_stone_skylight` to directional $1.25$, area $8.0$, ambient $0.28$, tonemap exposure $0.95$.
+  - Web browsers enforce strict `AudioContext` autoplay restrictions until user interaction. Added DOM click listener to `html/head_include` in `export_presets.cfg` and first key/mouse unlock handler in `KnightLoreGame._input()` to seamlessly unpause `AudioContext` and start soundtrack playback.
+- **Foreground Cutaway Silhouette Guardrails (`foreground_cutaway.gdshader`, `RoomBuilder`)**:
+  - Restricted cutaway materials exclusively to tall freestanding foreground columns/arches/boulders (`col_top_y > 1.40 m` and `behavior == "static_solid" or type_name == "gargoyle"`). Never applied to back walls (`pos.x <= 0.6 or pos.z <= 0.6`), low walls, pushables, dynamic platforms, or hazard props.
+  - Replaced spherical view-distance cutaway with a capsule-bounded silhouette test (`delta.y > -0.75 and delta.y < 0.65 and abs(delta.x) < 0.55`). This eliminates false cutaway holes on overhead arch lintels and side walls when the hero stands in front of or beneath structures.
+- **Special Charm Pillar Push Locking (`KlSpecialItem.try_push()`)**:
+  - Disabled horizontal push movement (`try_push() -> false`) for special quest items (charms). Charms remain solid and climbable under gravity but cannot be inadvertently nudged off $1.0\times 1.0\text{ m}$ pillar tops when landing (e.g. Room 168).
+- **Physical Support Tracking for Spiked Balls (`KlHazardEntity`)**:
+  - In chambers where spiked balls start stacked atop pushable tables (e.g. Room 52), balls continuously check vertical ground support via `test_move(global_transform, Vector3(0.0, -0.08, 0.0))`.
+  - When tables are pushed out from underneath, unsupported balls immediately transition from `SpikeState.SUSPENDED` to `SpikeState.FALLING`, accelerating downward under gravity until resting on the floor or a lower table tier, preventing levitating hazard anomalies.
+- **Dropping Block Elevator Return (`KlDynamicBlock`)**:
+  - In chambers with vertical dropping platforms (e.g. Room 16), stepping onto the block steadily lowers it to the floor. Once the player steps off, a $0.6\text{ s}$ delay timer elapses, after which the platform smoothly ascends back to its starting height `_origin_pos.y` at $1.2\text{ m/s}$, allowing repeatable two-way vertical transit without softlocking.
+- **Verification Suite Baseline**:
+  - All **16 test scripts, 103 tests, and 4,203 assertions** pass cleanly with exit code 0 (`./scripts/verify.sh`).
+
 
 
 
