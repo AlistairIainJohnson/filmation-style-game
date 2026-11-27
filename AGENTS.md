@@ -19,6 +19,14 @@
   - Update `player_world_pos` global shader uniform every tick via `RenderingServer.global_shader_parameter_set(&"player_world_pos", pos)`.
   - Apply foreground cutaway dither shaders **ONLY** to tagged foreground occluder walls/columns (never whole rooms, to protect Early-Z).
 
+## Web Platform & WebGL 2 Invariants
+- **Web Audio Mixer Pipeline**:
+  - Always enforce `audio/general/default_playback_type.web = 0` (Stream mode) in `project.godot`. Never use Sample mode (`1`) when using multiple custom audio buses, bus effects (reverb/delay), or synthetic beeper audio.
+  - Wrap Web exports in a custom HTML shell (`web/shell.html`) with a user-gesture start gate to satisfy browser autoplay policies prior to `AudioContext` startup.
+- **WebGL 2 Shader Uniform Limits**:
+  - **NEVER** use `instance uniform` for room-scale occluders, structural geometry, or assets that exceed 1024 instances (hardware uniform buffer cap in WebGL 2).
+  - Use regular `uniform` variables and assign lazily duplicated `ShaderMaterial`s to individual occluder bodies on demand.
+
 ## 2D Background Compositor & UI Layer Hierarchy
 - **SubViewport 2D Backdrop Compositing**:
   - In Godot 4, `CanvasLayer` always renders *after* the root 3D scene. To place 2D backdrops behind 3D rooms, encapsulate the 3D world in a `SubViewport(transparent_bg=true, own_world_3d=true)` within a `SubViewportContainer` on `CanvasLayer(layer = -3)`, with background `TextureRect` on `CanvasLayer(layer = -5)`.
@@ -38,6 +46,8 @@
 - **Room Carryables Capacity**: Standard rooms MUST allow up to 4 carryables (`max_allowed = 4`), reserving `max_allowed = 1` solely for Cauldron Room 136. This permits players to drop all 3 carried charms into rooms that already contain 1 native charm (e.g. Room 168) without artificial inventory blockage.
 - **Elevated Puzzle Entity Hazard Exemption**: When the player stands on a pushable block or physical entity elevated atop a hazard (e.g. Room 199 phantom riding), vertical collision bounds (`p_min_y < haz_center.y + h_half_y`) must guarantee the player is outside the damaging core.
 - **Doorway Threshold Clearance**: Doorway spawn thresholds ($0.75\text{ m}$ inward from portals at $X \approx 0.5/11.5\text{ m}, Z \approx 0.5/11.5\text{ m}$) must maintain zero foreground obstacles or hazard patrol paths to prevent instant player death or collision trapping on room entry.
+- **Hazard Dynamic Ground Support**: Elevated hazard entities resting on pushable objects (tables, blocks) must continuously test ground support; when support moves, they must switch immediately to falling physics (`SpikeState.FALLING`).
+- **Reversible Elevator Platforms**: Descending puzzle platforms (`KlDynamicBlock`) must include an ascent return delay timer (`~0.6s`) and steadily return to their origin height when vacated, permitting puzzle retries.
 
 ## Strict Godot 4 API Guardrails (Reject Godot 3 Syntax)
 - Use `Node3D` (not `Spatial`), `CharacterBody3D` (not `KinematicBody3D`), `await` (not `yield`), `@export` / `@onready` (not `export` / `onready`), `create_tween()` (not `Tween` node), `Callable` (not `funcref`).
