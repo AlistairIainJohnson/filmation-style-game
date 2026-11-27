@@ -468,3 +468,9 @@ When initiating a new Filmation reimagining (e.g. *Alien 8*):
 
 
 
+
+## 16. Web Export Audio & Shader Limits (Verified Working)
+
+- **Audio playback type**: `project.godot` sets `audio/general/default_playback_type.web=0` (Stream). Godot's web default (1 = Sample) produced silent output with this project's multi-bus/effect layout. Do not revert.
+- **Autoplay gate**: `web/shell.html` (set via `html/custom_html_shell` in `export_presets.cfg`) shows a "CLICK TO START" screen and only calls `engine.startGame()` inside the user gesture, so the AudioContext boots allowed. `html/head_include` also tracks AudioContexts in `window.__godotAudioContexts` and resumes them on first input; `KnightLoreGame.unlock_web_audio()` does the same via `JavaScriptBridge`.
+- **No instance uniforms**: WebGL 2 caps `instance uniform` items at 1024. `foreground_cutaway.gdshader` uses a regular `cutaway_active` uniform; `PlayerController._set_cutaway_active_recursive()` lazily gives each occluder body a private material copy (meta `cutaway_private`). Never reintroduce `instance uniform` for per-mesh state.
