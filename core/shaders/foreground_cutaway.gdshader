@@ -12,7 +12,9 @@ uniform float depth_bias : hint_range(0.0, 1.0) = 0.10;
 uniform float max_cutaway_transparency : hint_range(0.0, 0.95) = 0.58;
 uniform vec4 emission_color : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 uniform float emission_energy : hint_range(0.0, 8.0) = 0.0;
-instance uniform float cutaway_active : hint_range(0.0, 1.0) = 0.0;
+// Regular (per-material) uniform: PlayerController gives each occluder body its own material copy.
+// Avoids instance uniforms, which are capped at 1024 items on WebGL 2 hardware.
+uniform float cutaway_active : hint_range(0.0, 1.0) = 0.0;
 
 float bayer8(ivec2 p) {
 	int x = p.x & 7;

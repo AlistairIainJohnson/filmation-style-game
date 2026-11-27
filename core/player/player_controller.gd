@@ -570,10 +570,47 @@ func update_occluder_cutaways(world_origin: Vector3 = Vector3.INF) -> void:
 		occ.set_meta("cutaway_active", occluded)
 
 
-static func _set_cutaway_active_recursive(node: Node, active_val: float) -> void:
+const CUTAWAY_SHADER_PATH: String = "res://core/shaders/foreground_cutaway.gdshader"
+
+
+static func _is_cutaway_material(mat: Material) -> bool:
+	return mat is ShaderMaterial and (mat as ShaderMaterial).shader != null and (mat as ShaderMaterial).shader.resource_path == CUTAWAY_SHADER_PATH
+
+
+## Returns a per-body private copy of a shared cutaway material (created lazily once) and applies the value.
+static func _resolve_cutaway_material(mat: Material, active_val: float, mat_map: Dictionary) -> ShaderMaterial:
+	if not _is_cutaway_material(mat):
+		return null
+	var target: ShaderMaterial = mat as ShaderMaterial
+	if not target.has_meta(&"cutaway_private"):
+		if mat_map.has(target):
+			target = mat_map[target] as ShaderMaterial
+		else:
+			var dup: ShaderMaterial = target.duplicate() as ShaderMaterial
+			dup.set_meta(&"cutaway_private", true)
+			mat_map[target] = dup
+			target = dup
+	target.set_shader_parameter(&"cutaway_active", active_val)
+	return target
+
+
+static func _set_cutaway_active_recursive(node: Node, active_val: float, mat_map: Dictionary = {}) -> void:
 	if node.name == "ShadowCaster":
 		return
 	if node is MeshInstance3D:
-		(node as MeshInstance3D).set_instance_shader_parameter(&"cutaway_active", active_val)
+		var mi: MeshInstance3D = node as MeshInstance3D
+		var ov: ShaderMaterial = _resolve_cutaway_material(mi.material_override, active_val, mat_map)
+		if ov != null:
+			mi.material_override = ov
+		if mi.mesh != null:
+			if mi.mesh is BoxMesh:
+				var bm: BoxMesh = mi.mesh as BoxMesh
+				var bm_mat: ShaderMaterial = _resolve_cutaway_material(bm.material, active_val, mat_map)
+				if bm_mat != null:
+					bm.material = bm_mat
+			for s_idx: int in range(mi.mesh.get_surface_count()):
+				var sm: ShaderMaterial = _resolve_cutaway_material(mi.get_surface_override_material(s_idx), active_val, mat_map)
+				if sm != null:
+					mi.set_surface_override_material(s_idx, sm)
 	for child: Node in node.get_children():
-		_set_cutaway_active_recursive(child, active_val)
+		_set_cutaway_active_recursive(child, active_val, mat_map)

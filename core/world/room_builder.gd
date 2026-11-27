@@ -120,17 +120,15 @@ func _load_prop_scene(res_path: String) -> PackedScene:
 	return packed
 
 
-static func _configure_static_model_recursive(node: Node, override_mat: Material = null, cutaway_active_zero: bool = false) -> void:
+static func _configure_static_model_recursive(node: Node, override_mat: Material = null, _cutaway_active_zero: bool = false) -> void:
 	if node is MeshInstance3D:
 		var mi: MeshInstance3D = node as MeshInstance3D
 		mi.layers = 1
 		mi.gi_mode = GeometryInstance3D.GI_MODE_STATIC
 		if override_mat != null:
 			mi.material_override = override_mat
-		if cutaway_active_zero:
-			mi.set_instance_shader_parameter(&"cutaway_active", 0.0)
 	for child: Node in node.get_children():
-		_configure_static_model_recursive(child, override_mat, cutaway_active_zero)
+		_configure_static_model_recursive(child, override_mat, _cutaway_active_zero)
 
 
 static func _compute_relative_transform(node: Node3D, ancestor: Node3D) -> Transform3D:
@@ -266,9 +264,6 @@ func build_room_into(
 			blk_node.add_to_group("foreground_occluders")
 			blk_node.set_meta("cutaway", true)
 			blk_node.set_meta("cutaway_active", false)
-			var blk_mesh: MeshInstance3D = blk_node.get_node_or_null("Mesh") as MeshInstance3D
-			if blk_mesh != null:
-				blk_mesh.set_instance_shader_parameter(&"cutaway_active", 0.0)
 
 	# 4. Foreground Occluders (tagged for Stage 2 cutaway shader)
 	var occluders: Array = room_data.get("foreground_occluders", []) as Array
@@ -293,9 +288,6 @@ func build_room_into(
 		occ_node.set_meta("cutaway_active", false)
 		if use_cutaway:
 			_attach_cutaway_shadow_caster(occ_node, get_material(mat_name))
-			var occ_mesh: MeshInstance3D = occ_node.get_node_or_null("Mesh") as MeshInstance3D
-			if occ_mesh != null:
-				occ_mesh.set_instance_shader_parameter(&"cutaway_active", 0.0)
 
 	# 5. Entities (Stage 3 deterministic puzzle entity factory)
 	var entity_factory := EntityFactory.new()
@@ -1364,7 +1356,6 @@ func _apply_cutaway_materials_recursive(node: Node, fallback_mat_name: String) -
 					else _create_cutaway_material(fallback_mat_name)
 				)
 				mi.set_surface_override_material(s_idx, cut_mat)
-		mi.set_instance_shader_parameter(&"cutaway_active", 0.0)
 	for child: Node in node.get_children():
 		_apply_cutaway_materials_recursive(child, fallback_mat_name)
 
