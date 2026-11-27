@@ -34,11 +34,19 @@ float bayer8(ivec2 p) {
 void fragment() {
 	if (cutaway_active > 0.001) {
 		vec3 player_view = (VIEW_MATRIX * vec4(player_world_pos, 1.0)).xyz;
+		// In camera view space (-Z is forward):
+		// An occluder in FRONT of the player (between camera and player) has a LESS negative Z than the player.
+		// VERTEX.z is in view space. Therefore VERTEX.z > player_view.z + depth_bias means occluder is closer to camera.
 		if (VERTEX.z > player_view.z + depth_bias) {
-			float dist_xy = length(VERTEX.xy - player_view.xy);
-			float factor = (1.0 - smoothstep(cutaway_radius - cutaway_softness, cutaway_radius, dist_xy)) * cutaway_active * max_cutaway_transparency;
-			if (factor > bayer8(ivec2(FRAGCOORD.xy))) {
-				discard;
+			vec2 delta = VERTEX.xy - player_view.xy;
+			// Only clip occluders directly covering the player capsule silhouette (not overhead arch tops or side walls):
+			if (delta.y > -0.75 && delta.y < 0.65 && abs(delta.x) < 0.55) {
+				vec2 norm_delta = vec2(delta.x / 0.50, delta.y / 0.65);
+				float dist_capsule = length(norm_delta);
+				float factor = (1.0 - smoothstep(0.65, 1.0, dist_capsule)) * cutaway_active * max_cutaway_transparency;
+				if (factor > bayer8(ivec2(FRAGCOORD.xy))) {
+					discard;
+				}
 			}
 		}
 	}

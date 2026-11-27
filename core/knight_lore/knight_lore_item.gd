@@ -99,16 +99,11 @@ func _on_pickup_area_entered(body: Node3D) -> void:
 		extra_life_touched.emit(item_id)
 
 
-func try_push(motion: Vector3) -> bool:
-	if is_extra_life or is_arcing:
-		return false
-	var horiz := Vector3(motion.x, 0.0, motion.z)
-	if horiz.length_squared() < 1e-8:
-		return false
-	if test_move(global_transform, horiz):
-		return false
-	global_position += horiz
-	return true
+## Special items (charms) are solid, climbable objects under gravity.
+## Unlike heavy puzzle blocks/chests, charms cannot be pushed by walking into them,
+## preventing accidental displacement off high 1x1m pillars when landing.
+func try_push(_motion: Vector3) -> bool:
+	return false
 
 
 func launch_cauldron_arc(target_pos: Vector3, on_finished: Callable) -> void:

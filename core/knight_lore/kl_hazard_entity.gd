@@ -34,6 +34,8 @@ var _diag_vel_xz: Vector2 = Vector2.ZERO
 var _anim_phase: float = 0.0
 var _target_yaw: float = 0.0
 var _step_dist_acc: float = 0.0
+var _was_supported: bool = false
+var _checked_initial_support: bool = false
 
 
 func _init() -> void:
@@ -167,8 +169,24 @@ func _gravity_mps2() -> float:
 
 
 func _step_falling_spike_ball(delta: float) -> void:
+	if not _checked_initial_support:
+		_checked_initial_support = true
+		_was_supported = test_move(global_transform, Vector3(0.0, -0.08, 0.0))
+
 	match _spike_state:
 		SpikeState.SUSPENDED:
+			# If the ball was resting on a surface (e.g. table in Room 52),
+			# check whether that support has been pushed away:
+			var has_support: bool = test_move(global_transform, Vector3(0.0, -0.08, 0.0))
+			if has_support:
+				_was_supported = true
+			elif _was_supported and position.y > 0.05:
+				# Support was pushed away -> immediately fall under gravity!
+				_spike_state = SpikeState.FALLING
+				velocity = Vector3.ZERO
+				return
+
+			# Otherwise, trigger ceiling drop by random chance:
 			if director.is_spike_ball_drop_disabled():
 				return
 			if director.active_falling_spike_ball != null:
@@ -188,10 +206,14 @@ func _step_falling_spike_ball(delta: float) -> void:
 					position.y = 0.0
 				_spike_state = SpikeState.LANDED
 				velocity = Vector3.ZERO
+				_was_supported = true
 				if director.active_falling_spike_ball == self:
 					director.active_falling_spike_ball = null
 		SpikeState.LANDED:
 			velocity = Vector3.ZERO
+			# If resting on an elevated entity (e.g. table) that gets pushed away again, resume falling:
+			if position.y > 0.05 and not is_on_floor() and not test_move(global_transform, Vector3(0.0, -0.08, 0.0)):
+				_spike_state = SpikeState.FALLING
 
 
 func _step_linear_patrol(delta: float, axis: Vector3) -> void:

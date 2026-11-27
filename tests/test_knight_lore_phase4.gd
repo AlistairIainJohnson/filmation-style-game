@@ -144,6 +144,10 @@ func test_dynamic_blocks_moving_dropping_and_collapsing() -> void:
 	assert_true(found_sparkle, "collapsing_block must spawn collapse KlSparkleVfx on trigger")
 	assert_true(not is_instance_valid(col_blk) or col_blk.is_queued_for_deletion(), "collapsing_block must vanish after trigger")
 
+	# dropping_block must ascend back up towards initial position once rider departs
+	await wait_physics_frames(60)
+	assert_gt(drop_blk.position.y, 1.85, "dropping_block must ascend back towards origin once rider departs")
+
 
 func test_falling_spike_ball_odd_room_latch_and_mutex() -> void:
 	var kl: KnightLoreData = KnightLoreData.load_default()
@@ -180,6 +184,27 @@ func test_falling_spike_ball_odd_room_latch_and_mutex() -> void:
 	await wait_physics_frames(45)
 	assert_almost_eq(sb1.position.y, 0.0, 0.08, "First spike ball must land on floor")
 	assert_lt(sb2.position.y, 2.49, "Second spike ball may fall once first has landed")
+
+	# Test table-supported spike ball: pushing table away causes immediate drop under gravity
+	var table := KlPushableEntity.new()
+	table.configure("table", fg_types["7"] as Dictionary, Vector3(0.95, 0.75, 0.95), Vector3(3.5, 0.0, 3.5))
+	ent.add_child(table)
+
+	var sb_table := KlHazardEntity.new()
+	var fall_cfg: Dictionary = (fg_types["18"] as Dictionary).duplicate(true)
+	(fall_cfg["params"] as Dictionary)["trigger_chance"] = 0.0 # Will not drop from random timer
+	sb_table.configure("spike_ball_fall", fall_cfg, Vector3(0.75, 0.75, 0.75), Vector3(3.5, 0.76, 3.5))
+	sb_table.bind_director(director)
+	sb_table.simulation_active = true
+	ent.add_child(sb_table)
+
+	await wait_physics_frames(2)
+	assert_almost_eq(sb_table.position.y, 0.76, 0.02, "Spike ball must rest stably on table")
+
+	# Push table out from under the spike ball
+	table.position += Vector3(1.5, 0.0, 0.0)
+	await wait_physics_frames(25)
+	assert_lt(sb_table.position.y, 0.50, "Spike ball must drop when table support is pushed away")
 
 
 func test_patrol_bouncer_ghost_and_repel_spell_behaviors() -> void:

@@ -538,6 +538,20 @@ func _save_active_item_positions() -> void:
 	session.save_room_item_positions(session.current_room_id, pos_by_id)
 
 
+var _web_audio_unlocked: bool = false
+
+
+func _input(event: InputEvent) -> void:
+	if not _web_audio_unlocked and (event is InputEventKey or event is InputEventMouseButton):
+		_web_audio_unlocked = true
+		if OS.has_feature("web") and score_sequencer != null:
+			if main_menu != null and main_menu.visible and not score_sequencer.is_playing("menu"):
+				score_sequencer.play_cue("menu", true)
+			elif not score_sequencer.is_playing():
+				var is_night: bool = session != null and session.is_night
+				score_sequencer.play_cue("gameplay_night" if is_night else "gameplay_day", true)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		var k: InputEventKey = event as InputEventKey

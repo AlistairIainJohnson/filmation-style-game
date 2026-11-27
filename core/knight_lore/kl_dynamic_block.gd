@@ -23,6 +23,7 @@ var _phase_time: float = 0.0
 var _collapsed: bool = false
 var _amplitude_m: float = 1.0
 var _speed_mps: float = 0.875
+var _return_delay_timer: float = 0.0
 
 
 func _init() -> void:
@@ -141,17 +142,24 @@ func _has_standing_rider() -> bool:
 
 
 func _step_dropping_block(delta: float) -> void:
-	if position.y <= 0.005:
-		position.y = 0.0
-		return
-	if not _has_standing_rider():
-		return
-	if down_cast != null:
-		down_cast.force_shapecast_update()
-		if down_cast.is_colliding():
+	if _has_standing_rider():
+		_return_delay_timer = 0.6
+		if position.y <= 0.005:
+			position.y = 0.0
 			return
-	var fall_speed: float = director.kl_speed_to_mps(1.5) if director != null else 1.3125
-	position.y = maxf(0.0, position.y - fall_speed * delta)
+		if down_cast != null:
+			down_cast.force_shapecast_update()
+			if down_cast.is_colliding():
+				return
+		var fall_speed: float = director.kl_speed_to_mps(1.5) if director != null else 1.3125
+		position.y = maxf(0.0, position.y - fall_speed * delta)
+	else:
+		if _return_delay_timer > 0.0:
+			_return_delay_timer = maxf(0.0, _return_delay_timer - delta)
+			return
+		if position.y < _origin_pos.y:
+			var rise_speed: float = director.kl_speed_to_mps(1.2) if director != null else 1.05
+			position.y = minf(_origin_pos.y, position.y + rise_speed * delta)
 
 
 func _step_collapsing_block() -> void:
