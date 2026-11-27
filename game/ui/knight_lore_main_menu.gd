@@ -315,6 +315,18 @@ func _dismiss_splash() -> void:
 	if not _splash_active:
 		return
 	_splash_active = false
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("""
+			if (window.__godotAudioContexts) {
+				window.__godotAudioContexts.forEach(function(ctx) {
+					if (ctx && ctx.state === 'suspended') {
+						ctx.resume();
+					}
+				});
+			}
+		""")
+	if _score_seq != null and not _score_seq.is_playing("menu"):
+		_score_seq.play_cue("menu", true)
 	_play_click()
 	if _menu_center != null:
 		_menu_center.visible = true
@@ -422,6 +434,16 @@ func _play_click() -> void:
 
 
 func _on_start_pressed() -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("""
+			if (window.__godotAudioContexts) {
+				window.__godotAudioContexts.forEach(function(ctx) {
+					if (ctx && ctx.state === 'suspended') {
+						ctx.resume();
+					}
+				});
+			}
+		""")
 	if _audio_mgr != null:
 		_audio_mgr.play_sfx("sfx_menu_select")
 	if _score_seq != null:

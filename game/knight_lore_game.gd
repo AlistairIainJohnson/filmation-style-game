@@ -541,9 +541,23 @@ func _save_active_item_positions() -> void:
 var _web_audio_unlocked: bool = false
 
 
+static func unlock_web_audio() -> void:
+	if OS.has_feature("web"):
+		JavaScriptBridge.eval("""
+			if (window.__godotAudioContexts) {
+				window.__godotAudioContexts.forEach(function(ctx) {
+					if (ctx && ctx.state === 'suspended') {
+						ctx.resume();
+					}
+				});
+			}
+		""")
+
+
 func _input(event: InputEvent) -> void:
 	if not _web_audio_unlocked and (event is InputEventKey or event is InputEventMouseButton):
 		_web_audio_unlocked = true
+		unlock_web_audio()
 		if OS.has_feature("web") and score_sequencer != null:
 			if main_menu != null and main_menu.visible and not score_sequencer.is_playing("menu"):
 				score_sequencer.play_cue("menu", true)
