@@ -100,7 +100,8 @@ class AssetPipelineTests(unittest.TestCase):
 
     def test_knight_lore_spritesheet_extraction(self) -> None:
         sheet = self.root / "concept-art" / "knight-lore-sprites.jpg"
-        self.assertTrue(sheet.exists(), "Missing concept-art/knight-lore-sprites.jpg")
+        if not sheet.exists():
+            self.skipTest("Missing concept-art/knight-lore-sprites.jpg (untracked offline concept art)")
         with tempfile.TemporaryDirectory() as tmp:
             tmp_dir = Path(tmp)
             out_dir = tmp_dir / "extracted"
@@ -127,6 +128,8 @@ class AssetPipelineTests(unittest.TestCase):
 
     def test_extract_all_knight_lore_sprites(self) -> None:
         sheet = self.root / "concept-art" / "knight-lore-sprites.jpg"
+        if not sheet.exists():
+            self.skipTest("Missing concept-art/knight-lore-sprites.jpg (untracked offline concept art)")
         with tempfile.TemporaryDirectory() as tmp:
             tmp_dir = Path(tmp)
             all_dir = tmp_dir / "all"

@@ -23,3 +23,9 @@ tools/audio_pipeline/.midi/
 .DS_Store
 *.tmp
 *.log
+
+# Excluded Concept & Documentation Folders
+concept-art/
+concept-game-logic/
+docs/
+

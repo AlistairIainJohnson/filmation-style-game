@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "project": "Knight Lore Reimagined — Modern 3D Filmation Engine",
+  "version": "1.0.0",
+  "description": "Comprehensive record of intellectual property, open-source code, fonts, audio, 3D assets, art, and tooling attributions.",
+  "attributions": [
+    {
+      "id": "knight_lore_original_game",
+      "category": "Original Game Concept & Intellectual Property",
+      "name": "Knight Lore (1984)",
+      "creators": [
+        "Tim Stamper",
+        "Chris Stamper"
+      ],
+      "original_publisher": "Ultimate Play the Game (Ashby Computers & Graphics Ltd)",
+      "platform": "Sinclair ZX Spectrum 48K",
+      "license": "Copyright © 1984 Ultimate Play the Game / Rights held by Microsoft (Rare Ltd). Used here non-commercially for educational tribute, historical preservation, and technological reimagining.",
+      "usage_in_project": "Core game mechanics, 128-room map topology, 40-day celestial Sun/Moon cycle, Sabreman / Werewolf transformation, 14 cauldron charms, Melkhior the Wizard, and entity kinematic behaviours.",
+      "source_or_url": "https://en.wikipedia.org/wiki/Knight_Lore"
+    },
+    {
+      "id": "skoolkit_knight_lore_disassembly",
+      "category": "Research & Disassembly",
+      "name": "The Complete Knight Lore Disassembly & RAM Map",
+      "creators": [
+        "Richard Dymond (SkoolKit)"
+      ],
+      "license": "Educational / Research Reference",
+      "usage_in_project": "Reference for coordinate systems (X, Y, Z discrete 0..255 space), room layout tables (location_tbl), graphic sprite indices (0..187), and authentic entity collision bounding boxes.",
+      "source_or_url": "https://skoolkid.github.io/knightlore/"
+    },
+    {
+      "id": "godot_engine",
+      "category": "Game Engine",
+      "name": "Godot Engine (v4.7.2 Standard)",
+      "creators": [
+        "Juan Linietsky",
+        "Ariel Manzur",
+        "Godot Engine Contributors"
+      ],
+      "license": "MIT License",
+      "license_url": "https://godotengine.org/license",
+      "copyright": "Copyright (c) 2014-present Godot Engine contributors; Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur",
+      "usage_in_project": "Core runtime game engine (Forward+ renderer, scene graph, GDScript 2.0 runtime, SubViewport compositor, and multi-platform export pipelines).",
+      "source_or_url": "https://godotengine.org/"
+    },
+    {
+      "id": "jolt_physics",
+      "category": "Physics Engine",
+      "name": "Godot Jolt (Jolt Physics 3D)",
+      "creators": [
+        "Jorrit Rouwe",
+        "Godot Jolt Contributors"
+      ],
+      "license": "MIT License",
+      "license_url": "https://github.com/godot-jolt/godot-jolt/blob/master/LICENSE.txt",
+      "copyright": "Copyright (c) 2023-present Jorrit Rouwe, Godot Jolt contributors",
+      "usage_in_project": "Default 3D physics engine for Godot 4, driving CharacterBody3D and AnimatableBody3D kinematic simulation, half-grid pushable block snapping, and analytical jumping.",
+      "source_or_url": "https://github.com/godot-jolt/godot-jolt"
+    },
+    {
+      "id": "gut_testing_framework",
+      "category": "Testing Framework",
+      "name": "GUT (Godot Unit Test) v9.6.1",
+      "creators": [
+        "Tom 'Butch' Wesley"
+      ],
+      "license": "MIT License",
+      "license_url": "res://addons/gut/LICENSE.md",
+      "copyright": "Copyright (c) 2018 Tom 'Butch' Wesley",
+      "usage_in_project": "Automated headless unit and physics testing framework (running 100+ tests and 4,000+ assertions across 16 test suites in CI/verification).",
+      "source_or_url": "https://github.com/bitwes/Gut"
+    },
+    {
+      "id": "metamorphous_font",
+      "category": "Typography & Font",
+      "name": "Metamorphous Regular",
+      "creators": [
+        "James Grieshaber"
+      ],
+      "publisher": "Sorkin Type Co",
+      "license": "SIL Open Font License, Version 1.1 (OFL-1.1)",
+      "license_url": "http://scripts.sil.org/OFL",
+      "copyright": "Copyright (c) 2011, Sorkin Type Co (www.sorkintype.com) with Reserved Font Name 'Metamorphous'",
+      "usage_in_project": "Primary user interface typeface for embossed medieval parchment text across menus, HUD scrolls, dialogue prompts, and toast notifications (res://assets/ui/Metamorphous-Regular.ttf).",
+      "source_or_url": "https://fonts.google.com/specimen/Metamorphous"
+    },
+    {
+      "id": "generaluser_gs_soundfont",
+      "category": "Audio SoundFont",
+      "name": "GeneralUser GS (v1.471)",
+      "creators": [
+        "S. Christian Collins"
+      ],
+      "license": "Permissive (Free for musical creation, personal and commercial software projects)",
+      "copyright": "Copyright © 1997-2015 by S. Christian Collins",
+      "usage_in_project": "General MIDI orchestral soundfont sample library used by FluidSynth to render multi-track orchestral scores (Strings, French Horn, Oboe, Harp, Flute, Cello, Timpani, Celesta).",
+      "source_or_url": "http://www.schristiancollins.com/generaluser.php"
+    },
+    {
+      "id": "original_zx_musical_themes",
+      "category": "Music Composition (Original Motifs)",
+      "name": "Knight Lore 1-Bit Beeper Tunes (Title, Fanfare, Shimmer, Epilogue)",
+      "creators": [
+        "Tim Stamper",
+        "Chris Stamper"
+      ],
+      "original_publisher": "Ultimate Play the Game",
+      "license": "Original compositions © 1984 Ultimate Play the Game",
+      "usage_in_project": "Melodic and contrapuntal themes decoded from ZX Spectrum beeper frequency routines (data/knight_lore/audio.json) and adapted into full orchestral arrangements.",
+      "source_or_url": "https://en.wikipedia.org/wiki/Knight_Lore"
+    },
+    {
+      "id": "orchestral_scores_reimagined",
+      "category": "Music Production & Arrangement",
+      "name": "Knight Lore Reimagined Orchestral Soundtrack",
+      "creators": [
+        "Alistair Johnson"
+      ],
+      "license": "Project Proprietary / Creative Commons BY-NC 4.0",
+      "usage_in_project": "Full symphonic contrapuntal arrangements rendered offline via FluidSynth (score_menu.ogg, score_start_game.ogg, score_gameplay_day.ogg, score_gameplay_night.ogg, score_game_over.ogg, score_game_complete.ogg in assets/audio/music/).",
+      "source_or_url": "tools/audio_pipeline/compose_score.py"
+    },
+    {
+      "id": "procedural_soundscapes_and_sfx",
+      "category": "Sound Design & Foley",
+      "name": "Natural Biome Soundscapes & Acoustic Sound Effects",
+      "creators": [
+        "Alistair Johnson"
+      ],
+      "license": "Project Proprietary / Creative Commons BY-NC 4.0",
+      "usage_in_project": "Procedurally synthesized 30-second stereo ambience loops (woodland day/night, dungeon) and 24 acoustic foley effects (footsteps, landings, block scrapes, iron gates, magic sparkles) in assets/audio/ambience/ and assets/audio/sfx/.",
+      "source_or_url": "tools/audio_pipeline/render_soundscapes.py"
+    },
+    {
+      "id": "blender_3d_assets",
+      "category": "3D Models & Rigs",
+      "name": "Knight Lore 41 Normalized PBR 3D Assets",
+      "creators": [
+        "Alistair Johnson"
+      ],
+      "tooling": "Blender 5.3.0 headless procedural sculpt & normalization pipeline",
+      "license": "Project Proprietary / Creative Commons BY-NC 4.0",
+      "usage_in_project": "41 PBR .glb assets spanning 17-bone rigged characters (Sabreman Explorer, Werewolf, Melkhior Wizard, Sentinel), architecture (masonry panels, arches, lintels), interactive props, and 7 quest charms.",
+      "source_or_url": "assets/asset_manifest.json"
+    },
+    {
+      "id": "parchment_ui_and_branding",
+      "category": "2D Graphic Design & UI Art",
+      "name": "Parchment UI Backing & Reimagined Emblem Logo",
+      "creators": [
+        "Alistair Johnson"
+      ],
+      "license": "Project Proprietary / Creative Commons BY-NC 4.0",
+      "usage_in_project": "Aged parchment background texture (assets/ui/background.webp) and defringed medieval illuminated logo (assets/ui/knight_lore_reimagined_logo.png).",
+      "source_or_url": "assets/ui/"
+    },
+    {
+      "id": "python_audio_and_3d_tooling_libraries",
+      "category": "Offline Build Tooling Libraries",
+      "name": "Python Ecosystem Libraries",
+      "components": [
+        { "name": "mido", "version": ">=1.3.3", "license": "MIT License", "author": "Ole Martin Bjørndalen" },
+        { "name": "numpy", "version": ">=2.2.0", "license": "BSD 3-Clause", "author": "NumPy Developers" },
+        { "name": "scipy", "version": ">=1.15.0", "license": "BSD 3-Clause", "author": "SciPy Developers" },
+        { "name": "pillow", "version": ">=11.0.0", "license": "HPND / MIT-like", "author": "Jeffrey A. Clark and contributors" },
+        { "name": "trimesh", "version": ">=4.6.0", "license": "MIT License", "author": "Michael Dawson-Haggerty" },
+        { "name": "pygltflib", "version": ">=1.16.0", "license": "MIT License", "author": "Luke Miller" },
+        { "name": "jsonschema", "version": ">=4.23.0", "license": "MIT License", "author": "Julian Berman" },
+        { "name": "httpx", "version": ">=0.28.0", "license": "BSD 3-Clause", "author": "Encode OSS" }
+      ],
+      "usage_in_project": "Offline asset conditioning, Blender mesh analysis, MIDI orchestration, DSP sound synthesis, and schema validation (tools/pyproject.toml).",
+      "source_or_url": "tools/pyproject.toml"
+    }
+  ]
+}
